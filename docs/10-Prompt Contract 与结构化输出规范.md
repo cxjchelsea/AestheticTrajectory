@@ -1,4 +1,4 @@
-# AI 审美形成系统：Prompt Contract 与结构化输出规范
+﻿# AI 审美形成系统：Prompt Contract 与结构化输出规范
 
 ## 1. 文档目的
 
@@ -118,7 +118,7 @@ prompt_output_validator.validate(parsedOutput)
 返回结构化结果 / 结构化错误
 ```
 
-后端业务代码不应该直接拼接 prompt，也不应该直接把 LLM 原始输出保存到 Oracle。
+后端业务代码不应该直接拼接 prompt，也不应该直接把 LLM 原始输出保存到 PostgreSQL。
 
 ## 5. Prompt Template 与 Versioning 扩展
 
@@ -249,35 +249,53 @@ v1
   "inputId": "input_001",
   "featureType": "image",
   "lowLevelFeatures": {
-    "color": {
-      "dominantColors": [],
-      "saturation": "low | medium | high | unknown",
-      "brightness": "low | medium | high | unknown",
-      "contrast": "low | medium | high | unknown"
+    "saturation": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.82,
+      "evidence": ["画面整体以低纯度灰蓝色为主"]
     },
-    "composition": {
-      "density": "low | medium | high | unknown",
-      "symmetry": "low | medium | high | unknown",
-      "negativeSpace": "low | medium | high | unknown",
-      "focusPosition": "center | edge | distributed | unknown"
+    "brightness": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.74,
+      "evidence": ["主体区域缺少高亮色块"]
     },
-    "subject": {
-      "mainSubjects": [],
-      "humanPresence": "absent | partial | present | unknown",
-      "objectTypes": []
+    "colorTemperature": {
+      "value": "cool | neutral | warm | unknown",
+      "confidence": 0.8,
+      "evidence": ["蓝灰色占比较高"]
     },
-    "texture": {
-      "materialFeeling": [],
-      "sharpness": "soft | medium | sharp | unknown"
+    "colorContrast": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.71,
+      "evidence": ["主要色块之间对比不强"]
+    },
+    "personPresence": {
+      "value": "absent | weak | central | unknown",
+      "confidence": 0.95,
+      "evidence": ["画面中没有明显人物主体"]
+    },
+    "spatialDensity": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.78,
+      "evidence": ["空间元素数量较少，留白明显"]
+    },
+    "compositionComplexity": {
+      "value": "simple | medium | complex | unknown",
+      "confidence": 0.7,
+      "evidence": ["画面结构以少量几何块面为主"]
+    },
+    "textureComplexity": {
+      "value": "smooth | medium | complex | unknown",
+      "confidence": 0.68,
+      "evidence": ["材质表面纹理变化较少"]
+    },
+    "moodAtmosphere": {
+      "value": "calm | bright | oppressive | soft | tense | unknown",
+      "confidence": 0.66,
+      "evidence": ["低饱和色彩和空旷空间形成安静氛围"]
     }
   },
-  "evidence": [
-    {
-      "feature": "negativeSpace",
-      "observation": "画面中主体周围留白面积较大",
-      "confidence": 0.82
-    }
-  ],
+  "sampleEvidence": ["画面中大面积灰色墙面", "人物缺席", "空间元素较少"],
   "uncertainty": [],
   "promptVersion": "image_features.extract.v1"
 }
@@ -302,9 +320,10 @@ v1
 ### Validation Rules
 
 - `featureType` 必须等于 `image`。
+- 每个底层特征必须包含 `value`、`confidence`、`evidence`。
 - `confidence` 范围必须是 0 到 1。
 - 枚举字段不能输出 schema 外的值。
-- `evidence` 不能为空。
+- 重要字段的 `evidence` 不能为空。
 
 ## 8. 文本底层特征提取 Prompt Contract
 
@@ -335,22 +354,53 @@ v1
   "inputId": "input_002",
   "featureType": "text",
   "lowLevelFeatures": {
-    "keywords": [],
-    "topics": [],
-    "tone": ["calm"],
-    "emotionSignals": ["quiet", "nostalgic"],
-    "sentenceStyle": "short | medium | long | mixed | unknown",
-    "imagery": [],
-    "abstractionLevel": "concrete | mixed | abstract | unknown"
-  },
-  "evidence": [
-    {
-      "feature": "tone",
-      "sourceText": "原文片段",
-      "observation": "句子节奏较慢，形容词偏柔和",
-      "confidence": 0.76
+    "sentimentTone": {
+      "value": "bright | neutral | low | unknown",
+      "confidence": 0.78,
+      "evidence": ["使用了“空房间”“没有回声”等表达"]
+    },
+    "emotionIntensity": {
+      "value": "weak | medium | strong | unknown",
+      "confidence": 0.7,
+      "evidence": ["情绪表达克制，没有强烈情绪词"]
+    },
+    "narrativeDensity": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.76,
+      "evidence": ["文本更像片段观察，而不是完整事件叙述"]
+    },
+    "concreteness": {
+      "value": "abstract | mixed | concrete | unknown",
+      "confidence": 0.72,
+      "evidence": ["既有具体空间意象，也有抽象感受"]
+    },
+    "imageryDensity": {
+      "value": "low | medium | high | unknown",
+      "confidence": 0.74,
+      "evidence": ["出现多个空间和光线相关意象"]
+    },
+    "rhythm": {
+      "value": "short | calm | jumpy | expansive | unknown",
+      "confidence": 0.69,
+      "evidence": ["句子节奏较慢，停顿感较强"]
+    },
+    "timeOrientation": {
+      "value": "past | present | future | circular | vague | unknown",
+      "confidence": 0.63,
+      "evidence": ["时间指向不明确，更像当下片段"]
+    },
+    "spatialReference": {
+      "value": "weak | medium | strong | unknown",
+      "confidence": 0.8,
+      "evidence": ["反复出现房间、门、墙等空间词"]
+    },
+    "subjectDistance": {
+      "value": "self_close | observer | de_subjective | unknown",
+      "confidence": 0.67,
+      "evidence": ["叙述者更像旁观者，而不是直接表达自我"]
     }
-  ],
+  },
+  "sampleEvidence": ["原文片段 1", "原文片段 2"],
   "uncertainty": [],
   "promptVersion": "text_features.extract.v1"
 }
@@ -367,7 +417,7 @@ v1
 必须：
 
 - 保留原文 evidence。
-- 区分 `emotionSignals` 和高层解释。
+- 区分 `sentimentTone`、`emotionIntensity` 等底层文本特征和高层解释。
 
 ## 9. 动态解释候选 Prompt Contract
 
@@ -377,7 +427,7 @@ v1
 
 ### System Goal
 
-基于底层特征、聚类结果和用户历史，生成多个可能解释，而不是生成唯一真相。
+基于底层特征、相似性分组结果和用户历史，生成多个可能解释，而不是生成唯一真相。
 
 ### Input Schema
 
@@ -385,7 +435,7 @@ v1
 {
   "jobId": "job_001",
   "userId": "user_001",
-  "clusters": [],
+  "similarityGroups": [],
   "globalPatterns": [],
   "recentFeatures": [],
   "userHistory": [],
@@ -478,7 +528,7 @@ v1
 
 ### System Goal
 
-将底层特征、聚类结果和解释候选组织成用户可读的审美报告。
+将底层特征、相似性分组结果和解释候选组织成用户可读的审美报告。
 
 报告要清晰、有依据、有温度，但不能把审美解释变成人格判断。
 
@@ -490,7 +540,7 @@ v1
   "userId": "user_001",
   "analysisJobId": "job_001",
   "featureSummary": {},
-  "clusterSummary": {},
+  "similarityGroupSummary": {},
   "interpretations": [],
   "feedbackHistory": []
 }
@@ -645,7 +695,7 @@ v1
 后续让 AI 编写代码时，可以使用以下约束：
 
 ```text
-请根据 `11-Prompt Contract 与结构化输出规范.md` 实现对应 prompt 调用。
+请根据 `10-Prompt Contract 与结构化输出规范.md` 实现对应 prompt 调用。
 
 要求：
 1. prompt 输出必须通过 Pydantic schema 校验。
@@ -654,3 +704,7 @@ v1
 4. 记录 promptVersion、modelName、modelVersion。
 5. 失败时返回结构化错误，并写入 analysis_logs。
 ```
+
+
+
+

@@ -1,4 +1,4 @@
-# AI 审美形成系统：AI Workflow 编排与任务执行文档
+﻿# AI 审美形成系统：AI Workflow 编排与任务执行文档
 
 ## 1. 文档目的
 
@@ -27,7 +27,7 @@ generateEmbeddings()
 ↓
 writeVectorsToChromaDB()
 ↓
-clusterInputs()
+groupInputsBySimilarity()
 ↓
 generatePossibleInterpretations()
 ↓
@@ -39,8 +39,10 @@ updateJobStatus()
 ↓
 collectFeedback()
 ↓
-updateUserProfile()
+updateUserProfile()  // V2，可异步
 ```
+
+MVP 必须完成到 `collectFeedback()`。`updateUserProfile()` 属于 V2 的轻量画像能力，第一版可以只保存反馈，不立刻更新画像。
 
 后续进阶阶段可以把其中的步骤封装为 Function Calling tools，由 workflow orchestrator 或 Agent 动态选择调用。
 
@@ -51,7 +53,7 @@ updateUserProfile()
   "workflowId": "aesthetic_analysis_v1",
   "entrypoint": "POST /api/analysis-jobs",
   "runtime": "FastAPI backend",
-  "businessDatabase": "Oracle",
+  "businessDatabase": "PostgreSQL",
   "vectorDatabase": "ChromaDB",
   "statusTable": "analysis_jobs",
   "logTable": "analysis_logs"
@@ -69,7 +71,7 @@ running
 feature_extracting
 embedding_generating
 vector_writing
-clustering
+similarity_grouping
 interpreting
 report_generating
 completed
@@ -93,7 +95,7 @@ embedding_generating
 ↓
 vector_writing
 ↓
-clustering
+similarity_grouping
 ↓
 interpreting
 ↓
@@ -146,7 +148,7 @@ POST /api/analysis-jobs
 
 ### 输出去向
 
-- Oracle：`analysis_jobs`
+- PostgreSQL：`analysis_jobs`
 
 ### 是否异步
 
@@ -178,7 +180,7 @@ POST /api/analysis-jobs
 
 ### 输入来源
 
-- Oracle：`aesthetic_inputs`
+- PostgreSQL：`aesthetic_inputs`
 - 本地文件存储或对象存储
 
 ### 输出去向
@@ -223,11 +225,11 @@ POST /api/analysis-jobs
 ### 输入来源
 
 - workflow memory 中的图片和文本输入
-- `11-Prompt Contract 与结构化输出规范.md`
+- `10-Prompt Contract 与结构化输出规范.md`
 
 ### 输出去向
 
-- Oracle：`input_features`
+- PostgreSQL：`input_features`
 - `analysis_logs`
 
 ### 是否异步
@@ -285,7 +287,7 @@ POST /api/analysis-jobs
 
 ### 输入来源
 
-- Oracle：`input_features`
+- PostgreSQL：`input_features`
 - 原始文本摘要
 - 图片特征摘要
 
@@ -293,7 +295,7 @@ POST /api/analysis-jobs
 
 - workflow memory
 - ChromaDB 待写入数据
-- Oracle 可保存 embedding metadata，不建议保存大向量本体
+- PostgreSQL 可保存 embedding metadata，不建议保存大向量本体
 
 ### 是否异步
 
@@ -305,7 +307,7 @@ POST /api/analysis-jobs
 
 ### 是否允许部分失败
 
-允许。某个输入 embedding 失败时，该输入不参与后续聚类。
+允许。某个输入 embedding 失败时，该输入不参与后续分组。
 
 ### timeout
 
@@ -364,7 +366,7 @@ POST /api/analysis-jobs
 }
 ```
 
-## 11. Step 6：聚类与共性分析
+## 11. Step 6：相似性分组与共性分析
 
 ### Step ID
 
@@ -374,12 +376,12 @@ POST /api/analysis-jobs
 
 - 当前 job 的 embedding
 - ChromaDB 相似输入检索结果
-- Oracle 历史报告摘要
+- PostgreSQL 历史报告摘要
 
 ### 输出去向
 
 - workflow memory
-- Oracle：可保存到 `analysis_results` 或报告相关 JSON 字段
+- PostgreSQL：可保存到 `analysis_results` 或报告相关 JSON 字段
 
 ### 是否异步
 
@@ -391,7 +393,7 @@ POST /api/analysis-jobs
 
 ### 是否允许部分失败
 
-允许。如果样本不足，跳过聚类，输出 `insufficient_samples`。
+允许。如果样本不足，跳过分组，输出 `insufficient_samples`。
 
 ### timeout
 
@@ -417,13 +419,13 @@ POST /api/analysis-jobs
 ### 输入来源
 
 - 底层特征
-- 聚类结果
+- 相似性分组结果
 - 用户历史反馈
 - `interpretations.generate.v1` prompt contract
 
 ### 输出去向
 
-- Oracle：`possible_interpretations`
+- PostgreSQL：`possible_interpretations`
 - `analysis_logs`
 
 ### 是否异步
@@ -458,15 +460,15 @@ POST /api/analysis-jobs
 ### 输入来源
 
 - 特征摘要
-- 聚类摘要
+- 相似性分组摘要
 - possible_interpretations
 - 用户反馈历史
 - `report.generate.v1` prompt contract
 
 ### 输出去向
 
-- Oracle：`reports`
-- Oracle：`insights`
+- PostgreSQL：`reports`
+- PostgreSQL：`insights`
 - ChromaDB collection：`reports`，可在报告保存后写入
 
 ### 是否异步
@@ -509,8 +511,8 @@ POST /api/analysis-jobs
 
 ### 输出去向
 
-- Oracle：`reports`
-- Oracle：`insights`
+- PostgreSQL：`reports`
+- PostgreSQL：`insights`
 - ChromaDB collection：`reports`
 
 ### 是否异步
@@ -523,7 +525,7 @@ POST /api/analysis-jobs
 
 ### 是否允许部分失败
 
-允许。Oracle 保存成功但 ChromaDB 写入失败时，报告仍可展示，但需要记录向量写入失败。
+允许。PostgreSQL 保存成功但 ChromaDB 写入失败时，报告仍可展示，但需要记录向量写入失败。
 
 ### timeout
 
@@ -552,7 +554,7 @@ POST /api/insights/{insightId}/feedback
 
 ### 输出去向
 
-- Oracle：`insight_feedback`
+- PostgreSQL：`insight_feedback`
 
 ### 是否异步
 
@@ -581,7 +583,7 @@ POST /api/insights/{insightId}/feedback
 
 ### 输出去向
 
-- Oracle：`user_aesthetic_profiles`
+- PostgreSQL：`user_aesthetic_profiles`
 - ChromaDB collection：`user_profiles`
 
 ### 是否异步
@@ -686,13 +688,18 @@ MVP 不要求一步到位，但代码结构必须为异步任务预留边界。
 后续让 AI 编写 workflow 代码时，可以使用以下约束：
 
 ```text
-请根据 `12-AI Workflow 编排与任务执行文档.md` 实现 aesthetic_analysis_v1 workflow。
+请根据 `09-AI Workflow 编排与任务执行文档.md` 实现 aesthetic_analysis_v1 workflow。
 
 要求：
 1. 每个 step 独立成 service 函数。
 2. 不允许把所有逻辑堆在 FastAPI route 中。
 3. 每个 step 必须写 analysis_logs。
-4. LLM 输出必须先通过 `11-Prompt Contract 与结构化输出规范.md` 中的 schema 校验。
-5. Oracle 负责业务数据，ChromaDB 负责向量数据，不要混用职责。
+4. LLM 输出必须先通过 `10-Prompt Contract 与结构化输出规范.md` 中的 schema 校验。
+5. PostgreSQL 负责业务数据，ChromaDB 负责向量数据，不要混用职责。
 6. 失败时更新 analysis_jobs 状态，并返回可查询的错误信息。
 ```
+
+
+
+
+

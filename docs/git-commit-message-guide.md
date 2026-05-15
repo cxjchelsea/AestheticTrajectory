@@ -1,4 +1,4 @@
-# Git 提交信息规范
+﻿# Git 提交信息规范
 
 ## 1. 目标
 
@@ -436,3 +436,7 @@ docs: 新增 Git 提交信息规范
 
 BREAKING CHANGE: <migration or compatibility note>
 ```
+
+
+
+
