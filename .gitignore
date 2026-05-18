@@ -1,3 +1,23 @@
 # IDE project files
 .idea/
 
+# Node / frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+backend/.venv/
+
+# Local environment files
+.env
+*.env.local
+backend/.env
+frontend/.env
+
