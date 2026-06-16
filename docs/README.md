@@ -13,6 +13,7 @@
 13-14 验证与展示
 15 迭代记录
 16 开发收口
+iterations 当前迭代任务单
 archive 历史归档
 ```
 
@@ -25,13 +26,9 @@ archive 历史归档
 
 准备开发时读：
 
-1. `04-审美表征体系文档.md`
-2. `07-数据结构与系统架构文档.md`
-3. `08-项目目录结构与代码分层规范.md`
-4. `09-AI Workflow 编排与任务执行文档.md`
-5. `16-V1开发收口清单.md`
-6. `12-开发任务拆分与里程碑计划.md`
-7. `15-迭代执行记录.md`
+1. `12-开发任务拆分与里程碑计划.md`
+2. `iterations/v1-a-real-feature-extraction.md`
+3. 当前 iteration 明确引用的 specs
 
 当前第一阶段只做 V0 / V1：
 
@@ -56,3 +53,7 @@ archive 历史归档
 历史归档：
 
 - `archive/v1/`
+
+当前迭代：
+
+- `iterations/v1-a-real-feature-extraction.md`
