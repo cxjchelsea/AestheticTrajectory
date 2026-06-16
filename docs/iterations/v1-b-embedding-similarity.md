@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-planned / research_required
+planned / research_completed / design_required
 ```
 
 创建日期：
@@ -144,45 +144,363 @@ V1-A accepted / archived
 当前状态：
 
 ```text
-待调研
+completed
 ```
 
-必须至少覆盖：
+#### 记录 1：OpenAI Vector Embeddings
 
-- embedding 输入构造：文本、结构化 feature summary、多模态输入如何转成 embedding text。
-- embedding client 抽象：不同模型 / provider 的封装方式。
-- 向量相似度：cosine similarity、dot product、归一化策略。
-- 小样本分组：threshold grouping、top-k、图连通分量、feature overlap。
-- 分组解释：如何生成 `commonFeatures` 和 uncertainty。
-- 向量库边界：本轮不接 ChromaDB runtime 时，metadata 与真实检索能力如何区分。
+来源名称：OpenAI Vector embeddings
 
-调研记录格式：
+来源类型：API 文档
 
-```text
-来源名称：
-来源类型：文档 / 论文 / 产品 / 框架 / 博客 / API 文档
-链接或出处：
+链接或出处：`https://developers.openai.com/api/docs/guides/embeddings`
+
 调研问题：
+
+- embeddings 能否用于 clustering、recommendations、search 等任务？
+- 应该使用什么距离函数比较 embedding？
+
 核心做法：
+
+- 文本被转换为浮点向量。
+- embeddings 可用于 search、clustering、recommendations、anomaly detection、classification。
+- OpenAI 推荐 cosine similarity。
+- OpenAI embeddings 归一化到长度 1，因此 cosine similarity、dot product 和 Euclidean ranking 在排序上可等价或接近。
+
 可借鉴点：
+
+- V1-B 可以用 cosine similarity 作为最小相似度计算。
+- `EmbeddingClient` 需要记录 `modelName` 和 `vectorDimension`。
+- embedding 可用于 grouping，但 grouping 结果需要解释层补充，不能只输出向量距离。
+
 不能照搬点：
+
+- 本轮不直接接 OpenAI embedding API。
+- 本轮不做大规模向量检索或推荐系统。
+- 不能把 mock embedding 相似性当成真实用户长期偏好。
+
 对 V1-B 的影响：
+
+- 采用 cosine similarity 作为默认相似度函数。
+- 保留未来真实 embedding provider 替换空间。
+
 采用 / 不采用结论：
-```
 
-外部调研完成后，需要把本节从 `待调研` 更新为具体记录。
+- 采用 cosine similarity 思路。
+- 暂不采用真实 OpenAI embedding runtime。
 
-### 5.4 可借鉴模式初稿
+#### 记录 2：OpenAI Embeddings FAQ
 
-以下只是待验证的初稿，不能作为最终设计依据：
+来源名称：OpenAI Embeddings FAQ
 
-- embedding client 抽象：隔离 mock、真实 embedding API 和未来本地模型。
-- cosine similarity：可能作为最小可解释相似度计算。
-- threshold grouping：可能用于组织小样本。
-- feature overlap：可能用于解释 commonFeatures，避免只凭向量黑盒生成结论。
-- uncertainty 文案：需要明确样本少、阈值粗糙、mock embedding 的限制。
+来源类型：帮助文档
 
-待调研确认后，才能决定是否采用。
+链接或出处：`https://help.openai.com/en/articles/6824809-embeddings-faq`
+
+调研问题：
+
+- 快速检索大量 embedding 是否需要向量数据库？
+- distance function 是否必须复杂选择？
+
+核心做法：
+
+- 大量向量快速检索推荐使用 vector database。
+- 距离函数通常不需要过度复杂化，推荐 cosine similarity。
+- OpenAI embeddings 归一化后 dot product 可更快。
+
+可借鉴点：
+
+- 当前小样本阶段可以不接 ChromaDB runtime。
+- 后续进入大量历史输入或 V3 检索增强时，再引入真实向量数据库。
+
+不能照搬点：
+
+- FAQ 面向真实 OpenAI embedding，不适用于当前 mock embedding 效果判断。
+- 不能因为文档推荐 vector database 就提前接 ChromaDB runtime。
+
+对 V1-B 的影响：
+
+- V1-B 聚焦本地 pairwise similarity。
+- ChromaDB 继续明确为 metadata / 后续 runtime 边界。
+
+采用 / 不采用结论：
+
+- 采用“小样本本地计算、大规模再接向量数据库”的边界。
+
+#### 记录 3：Sentence Transformers Semantic Textual Similarity
+
+来源名称：Sentence Transformers Semantic Textual Similarity
+
+来源类型：开源库文档
+
+链接或出处：`https://www.sbert.net/docs/sentence_transformer/usage/semantic_textual_similarity.html`
+
+调研问题：
+
+- 句子 embedding 如何计算语义相似度？
+- similarity matrix 是否适合当前一批输入之间的 pairwise comparison？
+
+核心做法：
+
+- 先为文本生成 embeddings，再计算相似度。
+- `model.similarity(embeddings1, embeddings2)` 返回所有 pair 的 similarity matrix。
+- 默认 similarity function 是 cosine。
+- 如果 embedding 已归一化，dot product 可作为更快替代。
+
+可借鉴点：
+
+- V1-B 可生成当前 job 内所有输入的 pairwise similarity matrix。
+- 对当前 3-10 个输入，小矩阵计算足够简单可解释。
+- similarity matrix 可作为后续 group builder 的输入。
+
+不能照搬点：
+
+- 本轮不引入 Sentence Transformers 依赖。
+- 不接本地模型下载、GPU、模型缓存等运行时复杂度。
+
+对 V1-B 的影响：
+
+- 设计 `similarity_matrix` 或 pairwise score helper。
+- 当前实现优先纯 Python / mock vector，不新增 ML 依赖。
+
+采用 / 不采用结论：
+
+- 采用 pairwise similarity matrix 思路。
+- 不采用 Sentence Transformers runtime。
+
+#### 记录 4：scikit-learn cosine_similarity
+
+来源名称：scikit-learn `cosine_similarity`
+
+来源类型：开源库 API 文档
+
+链接或出处：`https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html`
+
+调研问题：
+
+- cosine similarity 的定义和输入输出约束是什么？
+- 空向量、维度不一致时应该如何处理？
+
+核心做法：
+
+- cosine similarity 是归一化 dot product：`K(X, Y) = <X, Y> / (||X|| * ||Y||)`。
+- `Y=None` 时，返回 `X` 内所有样本之间的 pairwise similarities。
+- 对 L2-normalized 数据，cosine similarity 等价于 linear kernel。
+
+可借鉴点：
+
+- V1-B 实现可按该公式写轻量 helper。
+- 需要显式校验空向量和维度不一致。
+- similarity matrix 应该和输入顺序保持一致。
+
+不能照搬点：
+
+- 本轮不必新增 scikit-learn 依赖。
+- 不需要支持 sparse matrix 或大型数据优化。
+
+对 V1-B 的影响：
+
+- 新增 `cosine_similarity` helper。
+- 单元测试覆盖相同向量、正交向量、空向量、维度不一致。
+
+采用 / 不采用结论：
+
+- 采用公式和校验思路。
+- 不采用 scikit-learn runtime 依赖。
+
+#### 记录 5：scikit-learn Clustering / Agglomerative / DBSCAN
+
+来源名称：scikit-learn clustering documentation
+
+来源类型：开源库文档
+
+链接或出处：`https://sklearn.org/stable/modules/clustering.html`
+
+调研问题：
+
+- 小样本相似性分组可以参考哪些聚类策略？
+- 什么时候不适合 K-Means？
+
+核心做法：
+
+- Agglomerative clustering 可以使用 cosine distance，适合层次合并。
+- DBSCAN 使用密度概念，需要选择 `eps` 和 `min_samples`。
+- K-Means 通常要求预设 cluster 数量，且默认更偏 Euclidean 空间。
+- 预计算 similarity 用于 clustering 时，通常需要转换为 distance，例如 `1 - similarity`。
+
+可借鉴点：
+
+- V1-B 不适合一上来用 K-Means，因为用户输入只有 3-10 个样本，cluster 数量不稳定。
+- 可以借鉴 threshold / graph connected components：相似度超过阈值就连边，再形成小组。
+- 样本不足或没有强相似边时，应输出 uncertainty，而不是强行聚类。
+
+不能照搬点：
+
+- 本轮不引入完整聚类库。
+- 不做 DBSCAN / Agglomerative runtime。
+- 不输出“绝对聚类结论”。
+
+对 V1-B 的影响：
+
+- 初始采用阈值连边 + 连通分量方式，比 K-Means 更适合小样本。
+- uncertainty 必须说明阈值和样本数量限制。
+
+采用 / 不采用结论：
+
+- 采用 threshold graph 的小样本分组思想。
+- 不采用 K-Means / DBSCAN / Agglomerative 依赖。
+
+#### 记录 6：ChromaDB Collections / Query
+
+来源名称：ChromaDB collection add / query documentation
+
+来源类型：向量数据库文档
+
+链接或出处：
+
+- `https://docs.trychroma.com/docs/collections/add-data`
+- `https://docs.trychroma.com/docs/querying-collections/query-and-get`
+
+调研问题：
+
+- ChromaDB 存储什么？
+- metadata 与真实向量检索能力的边界是什么？
+
+核心做法：
+
+- collection 可保存 `ids`、`documents`、`embeddings`、`metadatas`。
+- 如果已经计算 embedding，可以直接传入 embeddings。
+- query 用于 nearest-neighbor similarity search。
+- query embedding 维度必须匹配 collection embedding 维度。
+- `where` 可过滤 metadata，`where_document` 可过滤文本内容。
+
+可借鉴点：
+
+- `EmbeddingRecord` 记录 `collectionName`、`chromaId`、`modelName`、`vectorDimension` 是合理的 metadata 边界。
+- 真实 ChromaDB runtime 接入时，需要确保 embedding 维度一致。
+- metadata 不能替代业务数据库，也不能表示已经做了真实向量检索。
+
+不能照搬点：
+
+- 本轮不调用 ChromaDB `.add()` 或 `.query()`。
+- 不把 ChromaDB 当业务数据库。
+- 不用 metadata 假装完成 runtime 写入。
+
+对 V1-B 的影响：
+
+- 本轮继续只保存 embedding metadata。
+- 文档中必须明确：相似性分组来自本地计算，不是 ChromaDB query。
+
+采用 / 不采用结论：
+
+- 采用 metadata 边界和维度一致性要求。
+- 不采用 ChromaDB runtime。
+
+#### 记录 7：Pinecone Chunking Strategies
+
+来源名称：Pinecone Chunking Strategies for LLM Applications
+
+来源类型：向量数据库 / RAG 工程文章
+
+链接或出处：`https://www.pinecone.io/learn/chunking-strategies/`
+
+调研问题：
+
+- embedding 输入文本应该多长、包含哪些上下文？
+- 输入片段是否需要语义上自洽？
+
+核心做法：
+
+- 文本需要先被切分成有语义意义的 chunk，再 embedding。
+- 如果 chunk 太小或太大，会影响检索效果。
+- 一个实用原则是：如果这个文本片段离开上下文后人类仍能理解，模型也更可能理解。
+- 语义 chunking 可以根据主题变化切分。
+
+可借鉴点：
+
+- V1-B 每个 input 的 embedding text 应该是一个短而自洽的 summary。
+- 图片 placeholder 阶段，不能只 embed 空 file url，应组合 title、description、feature summary。
+- 文本输入应优先使用 `contentText`，必要时补 title / description。
+
+不能照搬点：
+
+- 本轮不是 RAG，不需要复杂 chunking pipeline。
+- 输入是 3-10 个用户样本，不是长文档库。
+
+对 V1-B 的影响：
+
+- 设计 `embedding text builder`：
+  - text：`title + contentText + description + feature summary`
+  - image：`title + description + placeholder / feature summary`
+  - 空文本禁止 embedding。
+
+采用 / 不采用结论：
+
+- 采用“embedding text 必须语义自洽”的原则。
+- 不采用复杂 chunking。
+
+#### 记录 8：LangChain Vector Store Integrations
+
+来源名称：LangChain vector store integrations
+
+来源类型：框架文档
+
+链接或出处：`https://docs.langchain.com/oss/python/integrations/vectorstores`
+
+调研问题：
+
+- embedding model 与 vector store 应如何分层？
+- vector store 的统一接口通常暴露哪些能力？
+
+核心做法：
+
+- vector store 存储 embedded data 并执行 similarity search。
+- 初始化 vector store 时传入 embedding model。
+- 常见接口包括 `add_documents`、`delete`、`similarity_search`。
+- 很多 vector store 支持 metadata filtering。
+- 相似度度量可能是 cosine、Euclidean distance 或 dot product。
+
+可借鉴点：
+
+- `EmbeddingClient` 和 vector store 应分层，不能混在 workflow step 中。
+- V1-B 可以先实现 embedding client 和本地 similarity；真实 vector store 留到后续。
+- metadata filtering 是后续能力，不属于本轮。
+
+不能照搬点：
+
+- 本轮不引入 LangChain。
+- 不把当前小样本分组改造成 RAG retrieval。
+
+对 V1-B 的影响：
+
+- 保持 `EmbeddingClient`、`write_vectors`、`cluster_inputs` 的职责分离。
+
+采用 / 不采用结论：
+
+- 采用分层思想。
+- 不采用 LangChain runtime。
+
+### 5.4 调研结论与可借鉴模式
+
+本轮可采用：
+
+- `EmbeddingClient` 抽象，隔离 mock 和未来真实 embedding provider。
+- embedding text builder，保证每个 input 的 embedding 文本短而自洽。
+- cosine similarity，作为本地 pairwise similarity 的最小实现。
+- threshold graph / connected components，用于 3-10 个样本的小样本分组。
+- feature overlap，用于生成 `commonFeatures`，避免只凭向量黑盒解释。
+- uncertainty 文案，明确样本少、mock embedding、阈值初始值和非绝对聚类结论。
+- ChromaDB 只保留 metadata 边界，不做 runtime query。
+
+本轮不采用：
+
+- 真实 OpenAI / Sentence Transformers embedding runtime。
+- scikit-learn clustering runtime。
+- K-Means。
+- DBSCAN / Agglomerative runtime。
+- ChromaDB `.add()` / `.query()` runtime。
+- LangChain / Pinecone runtime。
+- 复杂 RAG chunking pipeline。
 
 ### 5.5 可选方案
 
@@ -192,17 +510,17 @@ V1-A accepted / archived
 - 问题：不能验证 V1-B 的核心问题。
 - 结论：不采用。
 
-方案 B：基于 mock embedding 做 cosine similarity，再用阈值形成小样本分组。
+方案 B：基于 mock embedding 做 cosine similarity，再用阈值图形成小样本分组。
 
 - 优点：能验证相似度计算和分组 workflow。
 - 问题：mock embedding 不代表真实语义效果。
-- 结论：待外部调研确认，当前只是候选。
+- 结论：采用，作为 V1-B 的主路径。
 
 方案 C：基于 `InputFeature` 的 feature overlap 分组，不使用 embedding。
 
 - 优点：解释性更强。
 - 问题：不能验证 embedding 链路。
-- 结论：待外部调研确认，可能作为 `commonFeatures` 来源。
+- 结论：部分采用，只用于生成 `commonFeatures` 和解释，不单独作为分组依据。
 
 方案 D：直接接入真实 embedding API 和 ChromaDB runtime。
 
@@ -210,27 +528,27 @@ V1-A accepted / archived
 - 问题：会扩大到模型配置、成本、runtime 依赖和向量库联调，不适合本轮。
 - 结论：本轮不采用。
 
-### 5.6 本轮待确认方案
+### 5.6 本轮采用方案
 
-当前暂定方案，外部调研完成前不能进入实现：
+外部调研后采用：
 
 ```text
 EmbeddingClient 抽象
 MockEmbeddingClient 默认保留
 embedding text builder 明确规则
 cosine similarity 计算
-mock embedding + feature overlap 共同生成小样本分组
+threshold graph / connected components 生成小样本分组
+feature overlap 生成 commonFeatures
 SimilarityGroup 输出 commonFeatures 和 uncertainty
 ChromaDB 继续只记录 metadata 边界
 ```
 
-正式实现前需要确认：
+正式实现前仍需设计确认：
 
 - embedding text builder 的字段优先级。
 - 相似度阈值的初始值。
 - 样本不足时的输出策略。
 - `commonFeatures` 的生成规则。
-- 外部调研记录已补齐。
 
 ## 6. 系统边界
 
