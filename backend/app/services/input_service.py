@@ -1,12 +1,10 @@
-from app.repositories.input_repository import InputRepository
-from app.repositories.memory_store import MemoryStore
 from app.schemas.common import new_id, utc_now
 from app.schemas.input import AestheticInputResponse, CreateInputRequest
 
 
 class InputService:
-    def __init__(self, store: MemoryStore) -> None:
-        self.repository = InputRepository(store)
+    def __init__(self, repository) -> None:
+        self.repository = repository
 
     def create_input(self, request: CreateInputRequest) -> AestheticInputResponse:
         input_record = AestheticInputResponse(

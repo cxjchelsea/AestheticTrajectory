@@ -1,12 +1,10 @@
-from app.repositories.feedback_repository import FeedbackRepository
-from app.repositories.memory_store import MemoryStore
 from app.schemas.common import new_id, utc_now
 from app.schemas.feedback import CreateInsightFeedbackRequest, InsightFeedbackResponse
 
 
 class FeedbackService:
-    def __init__(self, store: MemoryStore) -> None:
-        self.repository = FeedbackRepository(store)
+    def __init__(self, repository) -> None:
+        self.repository = repository
 
     def create_feedback(self, insight_id: str, request: CreateInsightFeedbackRequest) -> InsightFeedbackResponse:
         feedback = InsightFeedbackResponse(

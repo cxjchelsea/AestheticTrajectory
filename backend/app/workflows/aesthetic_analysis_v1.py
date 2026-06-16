@@ -1,9 +1,14 @@
+from app.repositories.analysis_log_repository import AnalysisLogRepository
+from app.repositories.embedding_record_repository import EmbeddingRecordRepository
+from app.repositories.feature_repository import FeatureRepository
 from app.repositories.memory_store import MemoryStore
 from app.repositories.report_repository import ReportRepository
+from app.repositories.workflow_persistence import WorkflowPersistence
 from app.schemas.analysis_job import AnalysisJobResponse
 from app.schemas.common import new_id, utc_now
 from app.schemas.input import AestheticInputResponse
 from app.schemas.report import ReportResponse
+from app.workflows.steps.analysis_logging import record_step
 from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
@@ -12,26 +17,54 @@ from app.workflows.steps.write_vectors import write_vectors
 
 
 def run_mock_aesthetic_analysis(
-    store: MemoryStore,
     job: AnalysisJobResponse,
     inputs: list[AestheticInputResponse],
+    persistence: WorkflowPersistence,
 ) -> AnalysisJobResponse:
-    feature_result = extract_features(inputs)
-    for feature in feature_result:
-        store.features[feature.input_id] = feature
-
-    embeddings = generate_embeddings(inputs, feature_result)
-    embedding_records = write_vectors(job, inputs, embeddings)
-    for record in embedding_records:
-        store.embedding_records[record.id] = record
-
-    groups, interpretations, insights = cluster_inputs(
-        [input_record.id for input_record in inputs],
-        feature_result,
-        embeddings,
+    feature_result = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "extract_features",
+        lambda: extract_features(inputs),
     )
-    report = generate_report(new_id("report"), feature_result, groups, interpretations, insights)
-    ReportRepository(store).save(report)
+    persistence.feature_repository.save_many(feature_result)
+
+    embeddings = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "generate_embeddings",
+        lambda: generate_embeddings(inputs, feature_result),
+    )
+    embedding_records = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "write_vectors",
+        lambda: write_vectors(job, inputs, embeddings),
+    )
+    persistence.embedding_record_repository.save_many(embedding_records)
+
+    groups, interpretations, insights = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "cluster_inputs",
+        lambda: cluster_inputs(
+            [input_record.id for input_record in inputs],
+            feature_result,
+            embeddings,
+        ),
+    )
+    report = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "generate_report",
+        lambda: generate_report(new_id("report"), feature_result, groups, interpretations, insights),
+    )
+    record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "save_report",
+        lambda: persistence.report_repository.save(report, user_id=job.user_id, job_id=job.id),
+    )
 
     return AnalysisJobResponse(
         id=job.id,
@@ -43,4 +76,13 @@ def run_mock_aesthetic_analysis(
         createdAt=job.created_at,
         startedAt=job.started_at,
         finishedAt=utc_now(),
+    )
+
+
+def memory_workflow_persistence(store: MemoryStore) -> WorkflowPersistence:
+    return WorkflowPersistence(
+        feature_repository=FeatureRepository(store),
+        embedding_record_repository=EmbeddingRecordRepository(store),
+        report_repository=ReportRepository(store),
+        analysis_log_repository=AnalysisLogRepository(store),
     )

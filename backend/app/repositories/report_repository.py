@@ -6,7 +6,7 @@ class ReportRepository:
     def __init__(self, store: MemoryStore) -> None:
         self.store = store
 
-    def save(self, report: ReportResponse) -> ReportResponse:
+    def save(self, report: ReportResponse, user_id: str | None = None, job_id: str | None = None) -> ReportResponse:
         self.store.reports[report.report_id] = report
         return report
 

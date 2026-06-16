@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from app.schemas.analysis_log import AnalysisLogRecord
 from app.schemas.analysis_job import AnalysisJobResponse
 from app.schemas.embedding import EmbeddingRecord
 from app.schemas.feedback import InsightFeedbackResponse
@@ -16,6 +17,7 @@ class MemoryStore:
     jobs: dict[str, AnalysisJobResponse] = field(default_factory=dict)
     reports: dict[str, ReportResponse] = field(default_factory=dict)
     feedback: dict[str, InsightFeedbackResponse] = field(default_factory=dict)
+    analysis_logs: dict[str, AnalysisLogRecord] = field(default_factory=dict)
 
 
 store = MemoryStore()

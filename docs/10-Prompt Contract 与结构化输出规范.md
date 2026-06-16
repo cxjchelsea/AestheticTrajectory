@@ -1,4 +1,4 @@
-﻿# AI 审美形成系统：Prompt Contract 与结构化输出规范
+# AI 审美形成系统：Prompt Contract 与结构化输出规范
 
 ## 1. 文档目的
 

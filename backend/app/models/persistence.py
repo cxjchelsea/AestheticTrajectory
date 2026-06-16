@@ -1,0 +1,151 @@
+from datetime import datetime
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import JSON
+
+from app.db.base import Base
+
+
+def json_column(nullable: bool = False):
+    return mapped_column(JSON().with_variant(JSONB(), "postgresql"), nullable=nullable)
+
+
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    anonymous_id: Mapped[str | None] = mapped_column(String(128), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AestheticInputModel(Base):
+    __tablename__ = "aesthetic_inputs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    type: Mapped[str] = mapped_column(String(16))
+    content_text: Mapped[str | None] = mapped_column(Text)
+    file_url: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(64))
+    title: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class InputFeatureModel(Base):
+    __tablename__ = "input_features"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    input_id: Mapped[str] = mapped_column(String(64), index=True)
+    feature_type: Mapped[str] = mapped_column(String(16))
+    model_name: Mapped[str] = mapped_column(String(128))
+    prompt_version: Mapped[str] = mapped_column(String(128))
+    feature_json: Mapped[dict] = json_column()
+    summary: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class EmbeddingRecordModel(Base):
+    __tablename__ = "embedding_records"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    owner_type: Mapped[str] = mapped_column(String(32), index=True)
+    owner_id: Mapped[str] = mapped_column(String(64), index=True)
+    collection_name: Mapped[str] = mapped_column(String(128))
+    chroma_id: Mapped[str] = mapped_column(String(128))
+    model_name: Mapped[str] = mapped_column(String(128))
+    vector_dimension: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AnalysisJobModel(Base):
+    __tablename__ = "analysis_jobs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    input_count: Mapped[int] = mapped_column(Integer)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    report_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AestheticReportModel(Base):
+    __tablename__ = "aesthetic_reports"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    job_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    summary: Mapped[str] = mapped_column(Text)
+    low_level_features_json: Mapped[list] = json_column()
+    similarity_groups_json: Mapped[list] = json_column()
+    interpretations_json: Mapped[list] = json_column()
+    report_json: Mapped[dict] = json_column()
+    markdown: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PossibleInterpretationModel(Base):
+    __tablename__ = "possible_interpretations"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    report_id: Mapped[str] = mapped_column(String(64), ForeignKey("aesthetic_reports.id"), index=True)
+    target_type: Mapped[str] = mapped_column(String(32))
+    target_id: Mapped[str | None] = mapped_column(String(64))
+    name: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[float] = mapped_column(Float)
+    evidence_json: Mapped[list] = json_column()
+    alternative_names_json: Mapped[list | None] = json_column(nullable=True)
+    uncertainty: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class InsightModel(Base):
+    __tablename__ = "insights"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    report_id: Mapped[str] = mapped_column(String(64), ForeignKey("aesthetic_reports.id"), index=True)
+    interpretation_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    observation: Mapped[str] = mapped_column(Text)
+    evidence_json: Mapped[list] = json_column()
+    interpretation: Mapped[str] = mapped_column(Text)
+    uncertainty: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class InsightFeedbackModel(Base):
+    __tablename__ = "insight_feedback"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    insight_id: Mapped[str] = mapped_column(String(64), index=True)
+    interpretation_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    rating: Mapped[str] = mapped_column(String(32))
+    comment: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AnalysisLogModel(Base):
+    __tablename__ = "analysis_logs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    job_id: Mapped[str] = mapped_column(String(64), index=True)
+    step_id: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    model_name: Mapped[str | None] = mapped_column(String(128))
+    prompt_version: Mapped[str | None] = mapped_column(String(128))
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    error_type: Mapped[str | None] = mapped_column(String(128))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
