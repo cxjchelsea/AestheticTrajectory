@@ -27,7 +27,7 @@ archive 历史归档
 准备开发时读：
 
 1. `12-开发任务拆分与里程碑计划.md`
-2. `iterations/v1-b-embedding-similarity.md`
+2. `iterations/v1-c-report-feedback.md`
 3. 当前 iteration 明确引用的 specs
 
 当前第一阶段只做 V0 / V1：
@@ -56,4 +56,4 @@ archive 历史归档
 
 当前迭代：
 
-- `iterations/v1-b-embedding-similarity.md`
+- `iterations/v1-c-report-feedback.md`

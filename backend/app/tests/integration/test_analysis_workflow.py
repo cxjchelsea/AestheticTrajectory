@@ -39,3 +39,8 @@ def test_mock_workflow_completes_and_saves_report() -> None:
     assert result.status == "completed"
     assert result.report_id is not None
     assert result.report_id in store.reports
+    assert store.embedding_records
+    report = store.reports[result.report_id]
+    assert report.similarity_groups
+    assert report.similarity_groups[0].common_features
+    assert "不代表长期偏好或绝对分类" in report.similarity_groups[0].uncertainty

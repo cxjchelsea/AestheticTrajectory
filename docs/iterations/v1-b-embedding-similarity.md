@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-planned / research_completed / design_required
+accepted / archived
 ```
 
 创建日期：
@@ -543,14 +543,253 @@ SimilarityGroup 输出 commonFeatures 和 uncertainty
 ChromaDB 继续只记录 metadata 边界
 ```
 
-正式实现前仍需设计确认：
+设计确认结果：
 
-- embedding text builder 的字段优先级。
-- 相似度阈值的初始值。
-- 样本不足时的输出策略。
-- `commonFeatures` 的生成规则。
+- embedding text builder 字段优先级已确认。
+- 相似度阈值初始值已确认：`0.82`。
+- 样本不足策略已确认：少于 3 个不生成 similarity group。
+- `commonFeatures` 生成规则已确认：优先取 feature key/value overlap。
 
-## 6. 系统边界
+## 6. 设计确认
+
+当前状态：
+
+```text
+confirmed
+```
+
+本节把外部调研结论落成 V1-B 可执行设计。完成本节后，V1-B 可以进入代码实现。
+
+### 6.1 Embedding Text Builder 字段优先级
+
+设计目标：
+
+```text
+为每个 input 生成短而自洽的 embedding text，避免空字符串、纯 fileUrl 或不可解释 metadata 进入 embedding。
+```
+
+文本输入字段优先级：
+
+1. `title`
+2. `contentText`
+3. `description`
+4. `InputFeature.lowLevelFeatures` summary
+5. `InputFeature.sampleEvidence`
+
+文本拼接规则：
+
+```text
+标题：{title}
+正文：{contentText}
+描述：{description}
+特征：{feature_key}={value}; ...
+证据：{sampleEvidence}
+```
+
+图片输入字段优先级：
+
+1. `title`
+2. `description`
+3. `InputFeature.lowLevelFeatures` summary
+4. `InputFeature.sampleEvidence`
+5. `fileUrl` 只作为最后占位引用，不作为主要语义内容
+
+图片 placeholder 阶段拼接规则：
+
+```text
+标题：{title}
+描述：{description}
+当前边界：图片真实分析尚未接入，本轮仅使用用户提供的标题、描述和已抽取 placeholder feature。
+特征：{feature_key}={value}; ...
+证据：{sampleEvidence}
+```
+
+空文本处理：
+
+- 如果拼接结果为空，不能调用 `EmbeddingClient`。
+- 当前 input 应跳过 embedding，并进入分组 uncertainty。
+- 不用 `inputId` 单独充当语义 embedding text。
+
+长度策略：
+
+- 本轮不做复杂 chunking。
+- 每个 input 只生成一个 embedding text。
+- 如果文本过长，先截取到一个短 summary 范围，后续真实模型接入时再按 token limit 调整。
+
+### 6.2 相似度计算设计
+
+采用算法：
+
+```text
+cosine similarity
+```
+
+输出范围：
+
+```text
+-1 到 1
+```
+
+解释规则：
+
+- `1` 表示方向完全一致。
+- `0` 表示没有明显方向相似。
+- 小于 `0` 表示方向相反或弱相关。
+- 本轮 mock embedding 下，分数只用于 workflow 验证，不解释为真实语义强度。
+
+异常规则：
+
+- 空向量：抛出结构化错误或跳过并记录 uncertainty。
+- 维度不一致：抛出结构化错误。
+- 全零向量：不能参与 cosine similarity。
+
+实现约束：
+
+- 不新增 scikit-learn 依赖。
+- 使用轻量 Python helper。
+- 单元测试覆盖相同向量、正交向量、空向量、维度不一致。
+
+### 6.3 相似度阈值
+
+初始阈值：
+
+```text
+0.82
+```
+
+采用原因：
+
+- V1-B 是小样本分组，宁可少分组，也不要过度合并。
+- mock embedding 语义可信度有限，阈值不应过低。
+- 分组结果需要保持“观察到的相似结构”，而不是绝对聚类。
+
+阈值使用方式：
+
+- 两个 input 的 similarity >= `0.82` 时建立相似边。
+- 基于相似边构造 connected components。
+- component size >= 2 时生成一个 `SimilarityGroup`。
+- 没有满足阈值的边时，不强行生成相似组，可输出空组或弱 uncertainty。
+
+后续可调整：
+
+- 如果手动验收发现过度分组，阈值提高到 `0.86`。
+- 如果完全无法形成组，阈值可降到 `0.78`，但必须记录原因。
+
+### 6.4 样本不足策略
+
+输入少于 3 个：
+
+```text
+不生成 similarity group。
+```
+
+原因：
+
+- MVP 规则建议至少 3 个样本。
+- 少于 3 个时，相似性结构缺乏稳定性。
+
+输出策略：
+
+- `similarityGroups` 返回空数组。
+- report / downstream interpretation 如果需要说明，使用 uncertainty 文案：
+
+```text
+样本数量不足，本轮不生成相似性分组。当前结果只表示单个输入的可观察特征，不代表稳定偏好。
+```
+
+输入等于 3 个：
+
+- 可以生成分组，但 uncertainty 必须强调样本较少。
+
+输入大于 3 个：
+
+- 按阈值图生成 groups。
+- 每组仍必须包含 uncertainty。
+
+### 6.5 CommonFeatures 生成规则
+
+来源：
+
+```text
+InputFeature.lowLevelFeatures
+```
+
+生成规则：
+
+1. 对 group 内每个 input 取 `lowLevelFeatures`。
+2. 优先找相同 feature key 且相同 value 的交集。
+3. 如果没有 key/value 完全一致，则找相同 feature key 的交集。
+4. `commonFeatures` 最多保留 3-5 个。
+5. 不使用没有 evidence 的 feature。
+
+输出格式：
+
+```text
+{feature_key}:{value}
+```
+
+示例：
+
+```text
+saturation:low
+narrativeDensity:low
+subjectDistance:distant
+```
+
+fallback 策略：
+
+- 如果没有可解释交集，则使用：
+
+```text
+commonFeatures: ["weak_shared_structure"]
+```
+
+- 同时 uncertainty 必须说明：
+
+```text
+该组主要由 embedding 相似度形成，当前可解释共同特征较弱，需要更多样本确认。
+```
+
+禁止：
+
+- 不生成“高级”“孤独”“治愈感人格”等无证据标签。
+- 不把 `commonFeatures` 写成心理诊断。
+- 不用 embedding distance 直接反推出审美概念。
+
+### 6.6 SimilarityGroup 命名与 Uncertainty
+
+group name 规则：
+
+- 基于 `commonFeatures` 生成中性名称。
+- 示例：`低密度相似组`、`空间意象相似组`、`弱共同结构组`。
+- 不使用人格化、玄学化或价值判断名称。
+
+uncertainty 必须包含：
+
+- 样本数量限制。
+- mock embedding 限制。
+- 阈值分组不是绝对聚类。
+
+默认 uncertainty 模板：
+
+```text
+该分组基于当前样本的 embedding 相似度和可解释 feature overlap 生成。样本数量较少，且当前仍使用 mock embedding，因此它只表示本次输入中的相似结构，不代表长期偏好或绝对分类。
+```
+
+### 6.7 最终实现顺序
+
+1. 定义 `EmbeddingClient` 抽象。
+2. 调整 `MockEmbeddingClient` 对齐抽象。
+3. 新增 embedding text builder。
+4. 修改 `generate_embeddings` 支持 client 注入和空文本处理。
+5. 新增 cosine similarity helper。
+6. 新增 threshold graph / connected components group builder。
+7. 修改 `cluster_inputs` 接收 features 和 embeddings。
+8. 保持 report API 路径和 response shape 不变。
+9. 补单元测试和 workflow 集成测试。
+10. 更新 V1-B 执行记录和验收结果。
+
+## 7. 系统边界
 
 本轮包含的能力：
 
@@ -585,7 +824,7 @@ V1-B 只验证“当前一批输入能否形成可解释的相似性结构”。
 真实向量库和历史检索属于后续持久化 / V3 检索增强范围。
 ```
 
-## 7. 架构设计
+## 8. 架构设计
 
 本轮涉及的前端：
 
@@ -619,7 +858,7 @@ V1-B 只验证“当前一批输入能否形成可解释的相似性结构”。
 - 不涉及长期记忆。
 - 只处理当前 analysis job 的一批输入。
 
-本轮调用关系待设计：
+本轮调用关系：
 
 ```text
 run_mock_aesthetic_analysis
@@ -633,9 +872,9 @@ cluster_inputs(input_ids, features, embeddings)
 SimilarityGroup / PossibleInterpretation / Insight
 ```
 
-## 8. 模块契约
+## 9. 模块契约
 
-### 8.1 EmbeddingClient
+### 9.1 EmbeddingClient
 
 模块职责：
 
@@ -670,7 +909,7 @@ SimilarityGroup / PossibleInterpretation / Insight
 - 只处理用户已提交输入派生出的文本。
 - 不访问额外外部资源。
 
-### 8.2 Similarity Calculator
+### 9.2 Similarity Calculator
 
 模块职责：
 
@@ -682,7 +921,7 @@ SimilarityGroup / PossibleInterpretation / Insight
 
 输出：
 
-- 0-1 或 -1-1 区间内的 similarity score，具体区间在实现前确认。
+- `-1` 到 `1` 区间内的 similarity score。
 
 异常情况：
 
@@ -694,7 +933,7 @@ SimilarityGroup / PossibleInterpretation / Insight
 - 不访问 ChromaDB。
 - 不保存业务数据。
 
-### 8.3 Similarity Group Builder
+### 9.3 Similarity Group Builder
 
 模块职责：
 
@@ -716,9 +955,9 @@ SimilarityGroup / PossibleInterpretation / Insight
 - 不做绝对聚类结论。
 - 不修改 report API。
 
-## 9. 实现范围
+## 10. 实现范围
 
-### 9.1 EmbeddingClient 抽象
+### 10.1 EmbeddingClient 抽象
 
 需要定义统一抽象：
 
@@ -738,7 +977,7 @@ EmbeddingClient
 - 新增真实 embedding client 时不能破坏现有 mock workflow。
 - workflow 不直接依赖具体 embedding 实现。
 
-### 9.2 Embedding 输入文本构造
+### 10.2 Embedding 输入文本构造
 
 本轮需要明确 embedding 的输入来源。
 
@@ -749,7 +988,7 @@ EmbeddingClient
 - 不把空字符串送入 embedding client。
 - 每个 input 都能生成 embedding 或被明确跳过并记录原因。
 
-### 9.3 相似度计算
+### 10.3 相似度计算
 
 本轮需要新增基础相似度计算能力。
 
@@ -760,7 +999,7 @@ EmbeddingClient
 - 空向量不能参与相似度计算。
 - 相似度计算不依赖 ChromaDB runtime。
 
-### 9.4 小样本相似性分组
+### 10.4 小样本相似性分组
 
 本轮需要让 `cluster_inputs` 不再只按固定 mock 分组。
 
@@ -772,7 +1011,7 @@ EmbeddingClient
 - 分组描述不能被写成绝对聚类结论。
 - 分组可以先基于 mock embedding + feature overlap，不要求真实机器学习聚类。
 
-### 9.5 Schema 与输出边界
+### 10.5 Schema 与输出边界
 
 本轮不新增复杂 schema，优先复用：
 
@@ -785,7 +1024,7 @@ EmbeddingClient
 - 前端 TypeScript type。
 - `docs/10-Prompt Contract 与结构化输出规范.md` 或对应设计文档。
 
-## 10. 不允许 AI 自行决定的内容
+## 11. 不允许 AI 自行决定的内容
 
 本轮禁止自行扩大范围：
 
@@ -801,7 +1040,7 @@ EmbeddingClient
 - 不删除 mock embedding client。
 - 不把相似性分组描述为绝对聚类或人格判断。
 
-## 11. 预期涉及文件
+## 12. 预期涉及文件
 
 后端可能涉及：
 
@@ -825,7 +1064,7 @@ backend/app/ai/clients/
 
 前端本轮原则上不改，除非 `SimilarityGroup` 或报告响应 schema 发生变化。
 
-## 12. 验收标准
+## 13. 验收标准
 
 本轮完成需要满足：
 
@@ -841,7 +1080,7 @@ backend/app/ai/clients/
 - 样本不足时能跳过分组或给出明确 uncertainty。
 - 报告仍然不包含人格诊断、玄学表达或绝对聚类结论。
 
-## 13. 完成后需要更新
+## 14. 完成后需要更新
 
 完成本轮后，需要更新：
 
@@ -850,7 +1089,65 @@ backend/app/ai/clients/
 - `docs/archive/v1/V1-验收核对表.md`
 - 如有接口或 schema 变化，更新对应设计文档。
 
-## 14. 下一轮入口
+当前完成记录：
+
+```text
+已完成：
+- EmbeddingClient 抽象。
+- MockEmbeddingClient 默认保留。
+- embedding text builder。
+- generate_embeddings 支持 feature-aware text 和 client 注入。
+- write_vectors 使用同一个 embedding client 的 modelName。
+- cosine similarity helper。
+- threshold graph / connected components 小样本分组。
+- feature overlap 生成 commonFeatures。
+- cluster_inputs 接收 features 和 embeddings。
+- workflow 已接入 V1-B 分组逻辑。
+- 单元测试覆盖 embedding text、空文本跳过、cosine similarity 异常、threshold 分组、样本不足。
+- 集成测试覆盖 workflow 保存 embedding metadata 和 similarity group。
+
+未完成：
+- 真实 embedding API。
+- ChromaDB runtime 写入和 query。
+- 大规模聚类。
+- 历史输入检索。
+```
+
+验证记录：
+
+```text
+2026-06-16：
+- backend：python -m pytest，10 passed, 3 warnings。
+- frontend：npm run build，通过。
+- lints：无新增错误。
+
+2026-06-16 手动验收：
+- 用户已完成 V1-B 手动验收。
+- 报告仍可生成并展示相似性分组。
+- 相似性分组表达未被包装为绝对聚类结论。
+- 当前仍接受 mock embedding 边界，不判断真实语义效果。
+```
+
+验收结论：
+
+```text
+V1-B 通过验收。
+
+已确认：
+- EmbeddingClient 抽象和注入边界可用。
+- embedding text builder 可为文本和图片 placeholder 构造语义文本。
+- cosine similarity 和 threshold graph / connected components 分组逻辑已接入 workflow。
+- commonFeatures 来自可解释 feature overlap。
+- 样本不足时可以跳过 similarity group。
+- 报告链路、反馈链路和现有 API 行为未被破坏。
+
+保留风险：
+- 当前 embedding 仍是 mock，不代表真实语义相似度。
+- ChromaDB 仍是 metadata 边界，没有 runtime add/query。
+- 相似度阈值 0.82 是初始工程阈值，后续可根据样本观察调整。
+```
+
+## 15. 下一轮入口
 
 如果本轮通过，下一轮进入：
 

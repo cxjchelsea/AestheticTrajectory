@@ -20,12 +20,16 @@ def run_mock_aesthetic_analysis(
     for feature in feature_result:
         store.features[feature.input_id] = feature
 
-    embeddings = generate_embeddings(inputs)
+    embeddings = generate_embeddings(inputs, feature_result)
     embedding_records = write_vectors(job, inputs, embeddings)
     for record in embedding_records:
         store.embedding_records[record.id] = record
 
-    groups, interpretations, insights = cluster_inputs([input_record.id for input_record in inputs])
+    groups, interpretations, insights = cluster_inputs(
+        [input_record.id for input_record in inputs],
+        feature_result,
+        embeddings,
+    )
     report = generate_report(new_id("report"), feature_result, groups, interpretations, insights)
     ReportRepository(store).save(report)
 
