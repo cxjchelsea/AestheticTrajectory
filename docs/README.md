@@ -27,13 +27,13 @@ archive 历史归档
 准备开发时读：
 
 1. `12-开发任务拆分与里程碑计划.md`
-2. `iterations/v1-c-report-feedback.md`
+2. 当前 iteration 文档
 3. 当前 iteration 明确引用的 specs
 
 当前第一阶段只做 V0 / V1：
 
 - V0：前端原型 + mock 报告。
-- V1：真实输入、底层特征、embedding、相似性分组、报告、反馈。
+- V1：真实输入、底层特征抽象、embedding 抽象、相似性分组、报告、反馈、PostgreSQL 持久化、analysis logs。
 
 不要在第一版提前实现：
 
@@ -56,4 +56,5 @@ archive 历史归档
 
 当前迭代：
 
-- V1-E 稳定版验收待创建
+- V1-E 已验收归档：`iterations/v1-e-stable-acceptance.md`
+- 下一步：V2 前置规划，详见 `12-开发任务拆分与里程碑计划.md`

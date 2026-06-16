@@ -1,6 +1,12 @@
 # V1 归档入口
 
-这个目录保存 V1 精简 MVP 的历史事实快照。
+这个目录保存 V1 stable baseline 的历史事实快照。
+
+当前状态：
+
+```text
+V1-E 稳定版验收通过，V1 已归档为 stable baseline。
+```
 
 归档原则：
 
