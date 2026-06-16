@@ -1,11 +1,13 @@
 # IDE project files
 .idea/
+screencapture-*.png
 
 # Node / frontend
 node_modules/
 frontend/node_modules/
 dist/
 frontend/dist/
+*.tsbuildinfo
 
 # Python / backend
 __pycache__/

@@ -41,6 +41,14 @@ def test_mock_workflow_completes_and_saves_report() -> None:
     assert result.report_id in store.reports
     assert store.embedding_records
     report = store.reports[result.report_id]
+    assert "倾向" in report.summary
+    assert "不是人格诊断" in report.summary
     assert report.similarity_groups
     assert report.similarity_groups[0].common_features
     assert "不代表长期偏好或绝对分类" in report.similarity_groups[0].uncertainty
+    assert report.possible_interpretations
+    assert report.possible_interpretations[0].evidence_refs
+    assert "可能观察" in report.possible_interpretations[0].uncertainty
+    assert report.insights
+    assert report.insights[0].evidence_refs
+    assert "人格诊断" in report.insights[0].uncertainty

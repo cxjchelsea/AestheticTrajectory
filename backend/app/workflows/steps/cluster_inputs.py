@@ -15,9 +15,12 @@ def cluster_inputs(
     similarity_threshold: float = SIMILARITY_THRESHOLD,
 ) -> tuple[list[SimilarityGroup], list[PossibleInterpretation], list[Insight]]:
     generator = MockInterpretationGenerator()
-    evidence_refs = input_ids[:3]
     groups = build_similarity_groups(input_ids, features, embeddings, similarity_threshold)
-    return groups, generator.interpret(evidence_refs), generator.insights(evidence_refs)
+    return (
+        groups,
+        generator.interpret(groups, features, input_ids),
+        generator.insights(groups, features, input_ids),
+    )
 
 
 def build_similarity_groups(
