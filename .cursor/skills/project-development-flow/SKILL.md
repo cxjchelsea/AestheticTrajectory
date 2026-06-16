@@ -70,6 +70,17 @@ The version-level task sheet must record:
 6. Which decisions are version-level and cannot be reinvented by sub-stages.
 7. The version-level acceptance criteria.
 
+After a version-level gate is accepted, promote durable decisions into the authoritative design docs before starting implementation sub-stages. Do not leave architecture, memory rules, data model decisions, module contracts, validation metrics, or governance rules only in `docs/iterations/`.
+
+Design promotion targets:
+
+- Product / Agent direction changes: `docs/01-产品概念说明书.md` or `docs/02-版本迭代路线图.md`
+- Data structures, memory model, storage boundaries, and system architecture: `docs/07-数据结构与系统架构文档.md`
+- Module responsibilities, inputs, outputs, dependencies, and interface tests: `docs/11-模块拆分与接口测试文档.md`
+- Validation metrics, evaluation methods, and governance checks: `docs/13-验证与评估文档.md`
+- Execution plan and current next step: `docs/12-开发任务拆分与里程碑计划.md`
+- Actual execution record and retrospective: `docs/15-迭代执行记录.md`
+
 For each independently acceptable iteration, establish these before implementation:
 
 1. Iteration goal: version, target, hypothesis, and what the user can do afterward.

@@ -549,7 +549,7 @@ Memory / User Model
 ↓
 V2-B
 ↓
-user_profile / profile_items / profile_evidence
+user_profiles / profile_items / profile_evidence
 ↓
 画像中的每个倾向都有 evidence refs
 ```
@@ -624,7 +624,7 @@ V2-A：历史报告列表与详情回看
 ```text
 V2-B：轻量画像数据模型与 profile evidence
 状态：next / research_required
-目标：建立 user_profile / profile_items / profile_evidence，定义 profile item 和 evidence 的最小闭环。
+目标：建立 user_profiles / profile_items / profile_evidence，定义 profile item 和 evidence 的最小闭环。
 依赖：V2-0 记忆规则；V2-A 历史报告。
 不做：复杂权重、自动遗忘、报告对比、推荐。
 验收：能生成只读轻量画像，画像中的每个倾向都有 evidence refs。
@@ -668,7 +668,38 @@ V2-E：V2 稳定验收与记忆治理检查
 - 不接 MCP。
 - 不做复杂登录权限。
 
-## 10. 验收标准
+## 10. Design Promotion
+
+V2-0 是版本级调研与架构闸门。长期有效的设计决策不能只停留在本 iteration 文档中。
+
+2026-06-16 已完成以下设计上升：
+
+```text
+数据结构 / 记忆模型 / 存储边界：
+已上升到 docs/07-数据结构与系统架构文档.md
+- user_profiles
+- profile_items
+- profile_evidence
+- V2 Memory / User Model 写入、更新、冲突、遗忘和治理规则
+
+模块职责 / 输入输出 / 接口测试：
+已上升到 docs/11-模块拆分与接口测试文档.md
+- 基础用户画像模块职责
+- 输入输出契约
+- profile item / evidence 模块边界
+- V2-B 测试方式和验收标准
+
+验证指标 / 治理检查：
+已上升到 docs/13-验证与评估文档.md
+- V2 Memory / User Model 数据层、行为层、表达层、治理层验收
+- 被否定解释复现检查
+- evidence coverage
+- 用户反馈优先于模型推断
+```
+
+后续 V2-B / V2-C / V2-D / V2-E 必须引用上述权威设计文档中的稳定规则。本文件保留调研过程、外部来源和决策证据。
+
+## 11. 验收标准
 
 本轮完成时必须满足：
 
@@ -677,6 +708,7 @@ V2-E：V2 稳定验收与记忆治理检查
 - 轻量画像、反馈权重、历史对比的依赖关系已明确。
 - V2 子阶段重新拆分完成。
 - V2-B 开始前必须遵守的版本级规则已写清楚。
+- 长期设计决策已上升到权威设计文档。
 - `docs/12-开发任务拆分与里程碑计划.md` 和 `docs/15-迭代执行记录.md` 已同步。
 
 验收记录：
@@ -696,13 +728,14 @@ V2-E：V2 稳定验收与记忆治理检查
 - V2 数据模型方向。
 - Traceability Matrix。
 - V2 子阶段最终拆分。
+- V2-0 长期设计决策已上升到 07 / 11 / 13 权威设计文档。
 
 结论：
 V2-0 accepted / archived。
-V2-B 可以进入轻量画像数据模型与 profile evidence 的调研阶段，但必须继承 V2-0 的版本级规则。
+V2-B 可以进入轻量画像数据模型与 profile evidence 的调研阶段，但必须继承已上升到权威设计文档的 V2 Memory / User Model 规则。
 ```
 
-## 11. 下一步
+## 12. 下一步
 
 ```text
 进入 V2-B：轻量画像数据模型与 profile evidence。

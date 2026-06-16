@@ -1,4 +1,4 @@
-﻿# AI 审美形成系统：AI Workflow 编排与任务执行文档
+# AI 审美形成系统：AI Workflow 编排与任务执行文档
 
 ## 1. 文档目的
 
@@ -583,8 +583,8 @@ POST /api/insights/{insightId}/feedback
 
 ### 输出去向
 
-- PostgreSQL：`user_aesthetic_profiles`
-- ChromaDB collection：`user_profiles`
+- PostgreSQL：`user_profiles`、`profile_items`、`profile_evidence`
+- ChromaDB：V2 不作为业务记忆来源，后续只服务 personalized retrieval
 
 ### 是否异步
 
