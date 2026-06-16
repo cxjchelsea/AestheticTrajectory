@@ -99,6 +99,21 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
         assert feedback.insight_id == report.insights[0].insight_id
 
 
+def test_database_report_repository_lists_reports_by_user() -> None:
+    session_factory = _session_factory()
+
+    first_report_id = _persist_report(session_factory, "user_a", "job_user_a_1", "a1")
+    second_report_id = _persist_report(session_factory, "user_a", "job_user_a_2", "a2")
+    _persist_report(session_factory, "user_b", "job_user_b_1", "b1")
+
+    with session_factory() as session:
+        history = DatabaseReportRepository(session).list_by_user("user_a", limit=20, offset=0)
+
+    assert history.total == 2
+    assert [report.report_id for report in history.reports] == [second_report_id, first_report_id]
+    assert all(report.input_count == 3 for report in history.reports)
+
+
 def _session_factory():
     engine = create_engine(
         "sqlite+pysqlite://",
@@ -107,3 +122,53 @@ def _session_factory():
     )
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
+
+
+def _persist_report(session_factory, user_id: str, job_id: str, input_prefix: str) -> str:
+    now = utc_now()
+    inputs = [
+        AestheticInputResponse(
+            id=f"{input_prefix}_input_{index}",
+            userId=user_id,
+            type="text",
+            contentText=f"{input_prefix} sample {index}",
+            fileUrl=None,
+            source="test",
+            title=f"{input_prefix} sample {index}",
+            description=None,
+            createdAt=now,
+        )
+        for index in range(3)
+    ]
+    job = AnalysisJobResponse(
+        id=job_id,
+        userId=user_id,
+        status="created",
+        inputCount=3,
+        errorMessage=None,
+        reportId=None,
+        createdAt=now,
+        startedAt=now,
+        finishedAt=None,
+    )
+
+    with session_factory() as session:
+        input_repository = DatabaseInputRepository(session)
+        for input_record in inputs:
+            input_repository.save(input_record)
+        DatabaseAnalysisJobRepository(session).save(job)
+        result = run_mock_aesthetic_analysis(
+            job,
+            inputs,
+            WorkflowPersistence(
+                feature_repository=DatabaseFeatureRepository(session),
+                embedding_record_repository=DatabaseEmbeddingRecordRepository(session),
+                report_repository=DatabaseReportRepository(session),
+                analysis_log_repository=DatabaseAnalysisLogRepository(session),
+            ),
+        )
+        DatabaseAnalysisJobRepository(session).save(result)
+        session.commit()
+
+    assert result.report_id is not None
+    return result.report_id

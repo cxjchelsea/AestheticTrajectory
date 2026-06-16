@@ -30,10 +30,11 @@ archive 历史归档
 2. 当前 iteration 文档
 3. 当前 iteration 明确引用的 specs
 
-当前第一阶段只做 V0 / V1：
+当前第一阶段已完成 V0 / V1，并进入 V2：
 
 - V0：前端原型 + mock 报告。
 - V1：真实输入、底层特征抽象、embedding 抽象、相似性分组、报告、反馈、PostgreSQL 持久化、analysis logs。
+- V2-A：历史报告列表与详情回看。
 
 不要在第一版提前实现：
 
@@ -56,5 +57,6 @@ archive 历史归档
 
 当前迭代：
 
-- V1-E 已验收归档：`iterations/v1-e-stable-acceptance.md`
-- 下一步：V2 前置规划，详见 `12-开发任务拆分与里程碑计划.md`
+- V2-A 已验收归档：`iterations/v2-a-report-history.md`
+- V2-0 已验收归档：`iterations/v2-0-memory-user-model-research.md`
+- 下一步：V2-B 轻量画像数据模型与 profile evidence，详见 `12-开发任务拆分与里程碑计划.md`

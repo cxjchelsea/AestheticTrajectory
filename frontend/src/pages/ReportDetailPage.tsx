@@ -9,9 +9,10 @@ interface ReportDetailPageProps {
   report: ReportResponse;
   inputs: AestheticInput[];
   onRestart: () => void;
+  onViewHistory: () => void;
 }
 
-export function ReportDetailPage({ report, inputs, onRestart }: ReportDetailPageProps) {
+export function ReportDetailPage({ report, inputs, onRestart, onViewHistory }: ReportDetailPageProps) {
   const evidenceInputs = inputs.length >= 3 ? inputs : starterInputs;
 
   return (
@@ -22,7 +23,10 @@ export function ReportDetailPage({ report, inputs, onRestart }: ReportDetailPage
           <h1>{report.title}</h1>
           <p>{report.summary}</p>
         </div>
-        <Button variant="secondary" onClick={onRestart}>重新上传</Button>
+        <div className="hero-actions">
+          <Button variant="secondary" onClick={onViewHistory}>历史报告</Button>
+          <Button variant="secondary" onClick={onRestart}>重新上传</Button>
+        </div>
       </div>
 
       <ReportSection title="底层特征摘要">

@@ -1,4 +1,4 @@
-export type AppRoute = "home" | "upload" | "analysis" | "report";
+export type AppRoute = "home" | "upload" | "analysis" | "report" | "history";
 
 export type InputType = "image" | "text";
 
@@ -61,6 +61,22 @@ export interface ReportResponse {
   possibleInterpretations: PossibleInterpretation[];
   insights: Insight[];
   disclaimer: string;
+}
+
+export interface ReportSummary {
+  reportId: string;
+  jobId: string | null;
+  title: string;
+  summary: string;
+  inputCount: number;
+  createdAt: string;
+}
+
+export interface ReportHistoryResponse {
+  reports: ReportSummary[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export type FeedbackRating = "not_me" | "unsure" | "somewhat_me" | "very_me";

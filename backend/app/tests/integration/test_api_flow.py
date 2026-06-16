@@ -34,6 +34,13 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert report["insights"]
     assert report["insights"][0]["evidenceRefs"]
 
+    history_response = client.get("/api/users/user_anonymous/reports")
+    assert history_response.status_code == 200
+    history = history_response.json()
+    assert history["total"] >= 1
+    assert history["reports"][0]["reportId"] == job["reportId"]
+    assert history["reports"][0]["inputCount"] == 3
+
     feedback_response = client.post(
         f"/api/insights/{report['insights'][0]['insightId']}/feedback",
         json={"rating": "somewhat_me", "comment": "validation test"},

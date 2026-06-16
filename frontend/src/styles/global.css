@@ -133,7 +133,9 @@ input {
 .feature-card,
 .wide-item,
 .insight-card,
-.feedback-panel {
+.feedback-panel,
+.history-card,
+.empty-state {
   border: 1px solid #ddd3c5;
   border-radius: 8px;
   background: #fffdf8;
@@ -152,7 +154,9 @@ input {
 .upload-form,
 .preview-list,
 .report-page,
-.interpretation-list {
+.interpretation-list,
+.history-page,
+.history-list {
   display: grid;
   gap: 14px;
 }
@@ -309,6 +313,28 @@ textarea {
   margin-bottom: 14px;
 }
 
+.history-card {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.history-card h2,
+.empty-state h2 {
+  margin: 0;
+}
+
+.history-card small {
+  color: #676059;
+}
+
+.empty-state {
+  display: grid;
+  gap: 12px;
+  max-width: 640px;
+}
+
 .evidence-list {
   display: grid;
   gap: 8px;
@@ -336,8 +362,13 @@ textarea {
     grid-template-rows: 130px 130px;
   }
 
-  .report-header,
   .preview-item {
     grid-template-columns: 1fr;
+  }
+
+  .report-header,
+  .history-card {
+    display: flex;
+    flex-direction: column;
   }
 }

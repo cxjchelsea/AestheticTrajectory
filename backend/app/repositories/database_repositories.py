@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -22,7 +22,7 @@ from app.schemas.embedding import EmbeddingRecord
 from app.schemas.feature import InputFeature
 from app.schemas.feedback import InsightFeedbackResponse
 from app.schemas.input import AestheticInputResponse
-from app.schemas.report import ReportResponse
+from app.schemas.report import ReportHistoryResponse, ReportResponse, ReportSummary
 
 
 class DatabaseInputRepository:
@@ -212,6 +212,35 @@ class DatabaseReportRepository:
         if row is None:
             return None
         return ReportResponse.model_validate(row.report_json)
+
+    def list_by_user(self, user_id: str, limit: int, offset: int) -> ReportHistoryResponse:
+        total = self.session.scalar(
+            select(func.count()).select_from(AestheticReportModel).where(AestheticReportModel.user_id == user_id)
+        )
+        rows = self.session.execute(
+            select(AestheticReportModel, AnalysisJobModel.input_count)
+            .outerjoin(AnalysisJobModel, AestheticReportModel.job_id == AnalysisJobModel.id)
+            .where(AestheticReportModel.user_id == user_id)
+            .order_by(AestheticReportModel.created_at.desc(), AestheticReportModel.id.desc())
+            .offset(offset)
+            .limit(limit)
+        ).all()
+        return ReportHistoryResponse(
+            reports=[
+                ReportSummary(
+                    reportId=report.id,
+                    jobId=report.job_id,
+                    title=report.title,
+                    summary=report.summary,
+                    inputCount=input_count or 0,
+                    createdAt=report.created_at,
+                )
+                for report, input_count in rows
+            ],
+            total=total or 0,
+            limit=limit,
+            offset=offset,
+        )
 
 
 class DatabaseFeedbackRepository:

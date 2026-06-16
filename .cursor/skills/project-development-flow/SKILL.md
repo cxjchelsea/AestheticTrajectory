@@ -16,11 +16,26 @@ Use this skill before implementing or planning:
 
 ## Core Rule
 
-First split the project into a version roadmap. Then run every version through this loop:
+First split the project into a version roadmap. Before implementing any major version, run a version-level research and architecture gate. Only then split the version into implementation iterations.
+
+Version-level gate:
+
+```text
+产品概念 / Agent 前沿方向
+-> 版本级调研
+-> 版本能力地图
+-> 版本架构边界
+-> 子阶段拆分
+-> 子阶段执行
+```
+
+For each implementation iteration, use this loop:
 
 ```text
 问题定义 -> 边界 -> 契约 -> 数据 -> 接口 -> Prompt/Skill/Workflow -> AI 生成 -> 测试 -> 重构 -> 复盘
 ```
+
+Do not jump directly from one accepted version into a feature slice of the next version. Establish the version hypothesis, Agent frontier directions, memory/user-model implications, capability map, sub-stage dependencies, and acceptance criteria first.
 
 Do not jump directly into code for iteration work. Establish the target, boundary, contracts, data/API impact, and acceptance criteria first.
 
@@ -43,11 +58,23 @@ For a new project, fill the project-level sections in `workflow-template.md`.
 
 ## Iteration Workflow
 
+Before creating the first implementation iteration of a major version, create a version-level task sheet under `docs/iterations/`, such as `v2-0-memory-user-model-research.md`.
+
+The version-level task sheet must record:
+
+1. Which Agent frontier directions from `docs/01-产品概念说明书.md` this version advances.
+2. The version-level research questions.
+3. The capability map for the whole version.
+4. Memory / user model write, update, forget, conflict, explainability, and governance rules if the version touches memory.
+5. The sub-stage split and dependency order.
+6. Which decisions are version-level and cannot be reinvented by sub-stages.
+7. The version-level acceptance criteria.
+
 For each independently acceptable iteration, establish these before implementation:
 
 1. Iteration goal: version, target, hypothesis, and what the user can do afterward.
 2. Problem definition: what this iteration solves, what it does not solve, and why it comes now.
-3. Research and option choice: existing products, papers, frameworks, reusable patterns, and final approach.
+3. Research and option choice: existing products, papers, frameworks, reusable patterns, and final approach. Separate version-level research from implementation-level research.
 4. System boundary: included capabilities, postponed capabilities, explicit non-goals, and reasons.
 5. Acceptance criteria: function, effect, exception, security/permission, and documentation checks.
 6. Architecture impact: frontend, backend, database, runtime, tools, memory layer, and call flow.
@@ -61,6 +88,8 @@ For each independently acceptable iteration, establish these before implementati
 14. Documentation and retrospective: design notes, module/API/prompt docs, run notes, test records, unfinished work, failure cases, next target, reusable modules, and reusable skills.
 
 If an item does not apply, explicitly record "不涉及" in the iteration documentation instead of omitting it.
+
+Every sub-stage must cite its upstream version-level decisions. If no version-level gate exists for the major version, stop and create it before implementation.
 
 ## Project Documentation Targets
 

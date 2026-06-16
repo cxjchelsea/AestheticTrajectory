@@ -16,6 +16,7 @@ class MemoryStore:
     embedding_records: dict[str, EmbeddingRecord] = field(default_factory=dict)
     jobs: dict[str, AnalysisJobResponse] = field(default_factory=dict)
     reports: dict[str, ReportResponse] = field(default_factory=dict)
+    report_metadata: dict[str, dict[str, object]] = field(default_factory=dict)
     feedback: dict[str, InsightFeedbackResponse] = field(default_factory=dict)
     analysis_logs: dict[str, AnalysisLogRecord] = field(default_factory=dict)
 

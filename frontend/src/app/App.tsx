@@ -3,8 +3,11 @@ import { HomePage } from "../pages/HomePage";
 import { UploadPage } from "../pages/UploadPage";
 import { AnalysisJobPage } from "../pages/AnalysisJobPage";
 import { ReportDetailPage } from "../pages/ReportDetailPage";
+import { HistoryPage } from "../pages/HistoryPage";
 import { mockReport } from "../services/mockData";
 import type { AestheticInput, AppRoute, ReportResponse } from "../types/aesthetic";
+
+const CURRENT_USER_ID = "user_anonymous";
 
 export function App() {
   const [route, setRoute] = useState<AppRoute>("home");
@@ -38,8 +41,36 @@ export function App() {
   }
 
   if (route === "report") {
-    return <ReportDetailPage report={report} inputs={inputs} onRestart={startUploadFlow} />;
+    return (
+      <ReportDetailPage
+        report={report}
+        inputs={inputs}
+        onRestart={startUploadFlow}
+        onViewHistory={() => setRoute("history")}
+      />
+    );
   }
 
-  return <HomePage onStart={startUploadFlow} onViewDemo={() => setRoute("report")} />;
+  if (route === "history") {
+    return (
+      <HistoryPage
+        userId={CURRENT_USER_ID}
+        onOpenReport={(nextReport) => {
+          setApiReport(nextReport);
+          setInputs([]);
+          setRoute("report");
+        }}
+        onStart={startUploadFlow}
+        onBack={() => setRoute("home")}
+      />
+    );
+  }
+
+  return (
+    <HomePage
+      onStart={startUploadFlow}
+      onViewDemo={() => setRoute("report")}
+      onViewHistory={() => setRoute("history")}
+    />
+  );
 }

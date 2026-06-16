@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 from app.schemas.feature import InputFeature
@@ -27,3 +29,21 @@ class ReportResponse(BaseModel):
     disclaimer: str
 
     model_config = {"populate_by_name": True}
+
+
+class ReportSummary(BaseModel):
+    report_id: str = Field(alias="reportId")
+    job_id: str | None = Field(default=None, alias="jobId")
+    title: str
+    summary: str
+    input_count: int = Field(alias="inputCount")
+    created_at: datetime = Field(alias="createdAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class ReportHistoryResponse(BaseModel):
+    reports: list[ReportSummary]
+    total: int
+    limit: int
+    offset: int
