@@ -1,4 +1,4 @@
-# AI 审美形成系统：AI Workflow 编排与任务执行文档
+﻿# AI 审美形成系统：AI Workflow 编排与任务执行文档
 
 ## 1. 文档目的
 
@@ -43,6 +43,29 @@ updateUserProfile()  // V2，可异步
 ```
 
 MVP 必须完成到 `collectFeedback()`。`updateUserProfile()` 属于 V2 的轻量画像能力，第一版可以只保存反馈，不立刻更新画像。
+
+当前实现边界：
+
+```text
+当前 V1 / V2-A 实现：
+createAnalysisJob()
+↓
+extract_features
+↓
+generate_embeddings
+↓
+write_vectors
+↓
+cluster_inputs
+↓
+generate_report
+↓
+save_report
+↓
+collect_feedback
+```
+
+当前实现暂不依赖历史报告检索进行分组，不写入报告向量，不更新用户画像。ChromaDB 在当前代码中是向量存储抽象边界；业务事实仍以 PostgreSQL 为准。
 
 后续进阶阶段可以把其中的步骤封装为 Function Calling tools，由 workflow orchestrator 或 Agent 动态选择调用。
 
@@ -323,11 +346,11 @@ POST /api/analysis-jobs
 - latencyMs
 - success
 
-## 10. Step 5：写入 ChromaDB
+## 10. Step 5：写入向量记录 / ChromaDB
 
 ### Step ID
 
-`write_vectors_to_chromadb`
+`write_vectors`
 
 ### 输入来源
 
@@ -336,7 +359,8 @@ POST /api/analysis-jobs
 
 ### 输出去向
 
-- ChromaDB collection：`inputs`
+- PostgreSQL：`embedding_records`
+- ChromaDB collection：`inputs`，当前作为向量库边界，业务数据不依赖它作为事实来源
 
 ### 是否异步
 
@@ -375,13 +399,14 @@ POST /api/analysis-jobs
 ### 输入来源
 
 - 当前 job 的 embedding
-- ChromaDB 相似输入检索结果
-- PostgreSQL 历史报告摘要
+- 当前 job 的 input_features
+- ChromaDB 相似输入检索结果，V3 planned
+- PostgreSQL 历史报告摘要，V2-D / V3 planned
 
 ### 输出去向
 
 - workflow memory
-- PostgreSQL：可保存到 `analysis_results` 或报告相关 JSON 字段
+- PostgreSQL：当前保存到报告相关 JSON 字段
 
 ### 是否异步
 
@@ -467,9 +492,9 @@ POST /api/analysis-jobs
 
 ### 输出去向
 
-- PostgreSQL：`reports`
+- PostgreSQL：`aesthetic_reports`
 - PostgreSQL：`insights`
-- ChromaDB collection：`reports`，可在报告保存后写入
+- ChromaDB collection：`reports`，V3 planned
 
 ### 是否异步
 
@@ -511,9 +536,10 @@ POST /api/analysis-jobs
 
 ### 输出去向
 
-- PostgreSQL：`reports`
+- PostgreSQL：`aesthetic_reports`
+- PostgreSQL：`possible_interpretations`
 - PostgreSQL：`insights`
-- ChromaDB collection：`reports`
+- ChromaDB collection：`reports`，V3 planned
 
 ### 是否异步
 
@@ -569,6 +595,8 @@ POST /api/insights/{insightId}/feedback
 5 秒。
 
 ## 16. Step 11：更新用户画像
+
+当前状态：V2-B / V2-C planned，尚未实现。
 
 ### Step ID
 

@@ -16,6 +16,14 @@
 - 用户画像更新
 - 后续 RAG / Agent / 知识图谱扩展
 
+当前实现边界：
+
+```text
+当前 V1 / V2-A 使用 mock / heuristic AI client 和 Pydantic validator 保持结构稳定。
+backend/app/ai/prompts/、prompt registry、prompt loader、真实 LLM prompt 文件尚未实现。
+本文件中的 prompt contract 是后续接入真实模型前必须遵守的工程契约。
+```
+
 ## 2. 总体原则
 
 所有 prompt 都必须遵守以下原则：
@@ -601,18 +609,28 @@ v1
 
 ### System Goal
 
-根据用户历史输入、报告和反馈，更新长期审美画像。
+根据用户历史报告、底层特征、洞察解释和反馈，生成 profile evidence 和轻量画像条目。
 
-画像只记录稳定偏好、变化趋势和用户明确认可或否定的解释，不记录人格结论。
+画像只记录可追溯的审美倾向，不记录人格结论。V2-B 只生成 evidence-first 的只读轻量画像；V2-C 再处理反馈权重和更新策略。
 
 ### Input Schema
 
 ```json
 {
   "userId": "user_001",
-  "previousProfile": {},
-  "newReport": {},
-  "feedback": []
+  "existingProfile": {
+    "items": []
+  },
+  "reports": [],
+  "features": [],
+  "insights": [],
+  "feedback": [
+    {
+      "insightId": "insight_001",
+      "rating": "very_me",
+      "comment": "这个很像我"
+    }
+  ]
 }
 ```
 
@@ -621,12 +639,28 @@ v1
 ```json
 {
   "userId": "user_001",
-  "stablePreferences": [],
-  "emergingPatterns": [],
-  "rejectedInterpretations": [],
-  "acceptedInterpretations": [],
-  "profileConfidence": 0.65,
-  "updateReason": "",
+  "profileSummary": "系统观察到你近期多次输入中出现低饱和、人物缺席和结构化冷感。",
+  "profileItems": [
+    {
+      "key": "low_saturation",
+      "label": "低饱和倾向",
+      "status": "stable",
+      "weight": 0.72,
+      "confidence": 0.68,
+      "evidenceRefs": ["feature_001", "report_001", "feedback_001"],
+      "reason": "多次报告中重复出现，且有正向反馈支持。"
+    }
+  ],
+  "profileEvidence": [
+    {
+      "profileItemKey": "low_saturation",
+      "evidenceType": "feedback",
+      "evidenceId": "feedback_001",
+      "direction": "positive",
+      "weightDelta": 0.3,
+      "note": "用户选择 very_me。"
+    }
+  ],
   "promptVersion": "profile.update.v1"
 }
 ```
@@ -638,12 +672,16 @@ v1
 - 将短期输入写成长期稳定偏好。
 - 将用户否定的解释继续写入画像。
 - 保存心理诊断式标签。
+- 生成没有 evidenceRefs 的 profile item。
+- 把 ChromaDB 检索结果当成业务记忆事实。
 
 必须：
 
-- 区分 stable 和 emerging。
-- 记录 update reason。
-- 尊重用户反馈。
+- 区分 stable / recent / rejected / uncertain。
+- 先输出 profileEvidence，再聚合 profileItems。
+- 每个 profile item 至少包含一个 evidence ref。
+- 尊重用户反馈，模型推断不能覆盖用户反馈。
+- `not_me` 只能作为负向 evidence，不能进入正向画像。
 
 ## 12. Prompt 输出失败处理
 
