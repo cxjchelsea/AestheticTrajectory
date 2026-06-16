@@ -23,6 +23,7 @@ export interface InputFeature {
   lowLevelFeatures: Record<string, FeatureSignal>;
   sampleEvidence: string[];
   promptVersion: string;
+  modelName: string;
 }
 
 export interface SimilarityGroup {

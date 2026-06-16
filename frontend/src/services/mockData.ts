@@ -30,6 +30,7 @@ function featureFor(input: AestheticInput, index: number): InputFeature {
     inputId: input.id,
     featureType: input.type,
     promptVersion: isText ? "text_features.extract.v1" : "image_features.extract.v1",
+    modelName: "frontend-mock-feature-extractor-v1",
     lowLevelFeatures: {
       saturation: {
         value: index % 2 === 0 ? "low" : "medium-low",

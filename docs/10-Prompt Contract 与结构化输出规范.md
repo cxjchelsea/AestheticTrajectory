@@ -297,7 +297,8 @@ v1
   },
   "sampleEvidence": ["画面中大面积灰色墙面", "人物缺席", "空间元素较少"],
   "uncertainty": [],
-  "promptVersion": "image_features.extract.v1"
+  "promptVersion": "image_features.extract.v1",
+  "modelName": "vision-model-name"
 }
 ```
 
@@ -324,6 +325,7 @@ v1
 - `confidence` 范围必须是 0 到 1。
 - 枚举字段不能输出 schema 外的值。
 - 重要字段的 `evidence` 不能为空。
+- `promptVersion` 和 `modelName` 不能为空。
 
 ## 8. 文本底层特征提取 Prompt Contract
 
@@ -402,7 +404,8 @@ v1
   },
   "sampleEvidence": ["原文片段 1", "原文片段 2"],
   "uncertainty": [],
-  "promptVersion": "text_features.extract.v1"
+  "promptVersion": "text_features.extract.v1",
+  "modelName": "text-model-name"
 }
 ```
 
@@ -418,6 +421,7 @@ v1
 
 - 保留原文 evidence。
 - 区分 `sentimentTone`、`emotionIntensity` 等底层文本特征和高层解释。
+- `promptVersion` 和 `modelName` 不能为空。
 
 ## 9. 动态解释候选 Prompt Contract
 

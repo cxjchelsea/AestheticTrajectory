@@ -3,6 +3,8 @@ from app.schemas.input import AestheticInputResponse
 
 
 class MockFeatureExtractor:
+    model_name = "mock-feature-extractor-v1"
+
     def extract(self, input_record: AestheticInputResponse, index: int) -> InputFeature:
         is_text = input_record.type == "text"
         return InputFeature(
@@ -27,4 +29,5 @@ class MockFeatureExtractor:
             },
             sampleEvidence=[input_record.title or input_record.id, input_record.description or input_record.content_text or ""],
             promptVersion="text_features.extract.v1" if is_text else "image_features.extract.v1",
+            modelName=self.model_name,
         )
