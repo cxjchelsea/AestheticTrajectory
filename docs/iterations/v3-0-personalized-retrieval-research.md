@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-ready_for_review / no_runtime_implementation
+reviewed / pending_user_confirmation / no_runtime_implementation
 ```
 
 创建日期：
@@ -553,7 +553,7 @@ knowledge evidence 只能支持风格概念解释，不能写入 profile item �
 状态：
 
 ```text
-ready_for_review / no_runtime_implementation
+reviewed / pending_user_confirmation / no_runtime_implementation
 ```
 
 范围：
@@ -649,7 +649,7 @@ V3 完成时必须满足：
 
 ## 12. 需要上升到权威设计文档的决策
 
-V3-0 ready_for_review 后，建议将以下长期决策上升到权威设计文档：
+V3-0 reviewed 后，建议将以下长期决策上升到权威设计文档：
 
 - `docs/07-数据结构与系统架构文档.md`：新增 V3 候选数据对象和 evidence source 边界。
 - `docs/11-模块拆分与接口测试文档.md`：新增 retrieval、knowledge RAG、evaluation、observability 模块边界。
@@ -660,9 +660,62 @@ V3-0 ready_for_review 后，建议将以下长期决策上升到权威设计文�
 
 ## 13. 当前结论
 
+## 13. 复核记录
+
+复核日期：
+
 ```text
-V3-0 版本级研究与架构拆分已建立。
+2026-06-17
+```
+
+复核范围：
+
+- `docs/02-版本迭代路线图.md` 中 V3 的目标、能力范围和不做事项。
+- `docs/12-开发任务拆分与里程碑计划.md` 中当前执行版本和 V3-A 入口。
+- `docs/15-迭代执行记录.md` 中 V2 archive gate 后的 V3-0 入口。
+- `docs/archive/v2/` 中 V2 Memory / User Model baseline 的归档边界。
+- `docs/archive/v1/V1-遗留问题.md` 和 `docs/archive/v2/V2-遗留问题.md` 中进入 V3 前的遗留问题状态。
+- `docs/07-数据结构与系统架构文档.md` 中 personalized retrieval / RAG / Evaluation 的长期占位。
+- `docs/11-模块拆分与接口测试文档.md` 中 retrieval、RAG、Evaluation 模块边界。
+- `docs/13-验证与评估文档.md` 中 retrieval relevance、evidence coverage、observability 和降级边界。
+
+遗留问题复核：
+
+```text
+补做 legacy issue audit。
+V1：无 blocking 遗留问题；carry_over 已分配到 V3 / V4 / infra / tech-debt / identity。
+V2：无 blocking / pending_validation 遗留问题；carry_over 已分配到 V3 / V4 / infra / security / frontend polish / identity / tech-debt。
+V3 可以继续复核，但进入 V3-A 前仍需用户确认本文件的子阶段拆分和设计上升目标。
+```
+
+复核结论：
+
+```text
+V3-0 与路线图、V2 归档边界、当前开发入口和既有设计文档保持一致。
+V3-A 作为下一子阶段是合理的。
+V3-0 仍不应直接实现 retrieval / RAG runtime。
+```
+
+设计上升判断：
+
+```text
+暂不直接修改 07 / 11 / 13 的稳定设计正文。
+原因是当前 V3-0 仍处于版本级研究复核阶段，表结构、API path、trace schema 和评估指标还属于候选设计。
+进入 V3-A 前，应先确认本文件的子阶段拆分和设计取舍；V3-A 方案确认后，再把稳定契约上升到 07 / 11 / 13。
+```
+
+当前仍需用户确认：
+
+- 是否接受 V3-A 先做 Personalized History Retrieval。
+- 是否接受外部知识只作为 explanation support，不进入 profile positive evidence。
+- 是否接受 V3-A 不接入完整 RAG / LangSmith / OpenTelemetry runtime。
+- 是否接受 V3 子阶段拆分：V3-A -> V3-B -> V3-C -> V3-D -> V3-E。
+
+## 14. 当前结论
+
+```text
+V3-0 版本级研究与架构拆分已完成内部复核。
 V3 应先从 personalized history retrieval 开始，而不是直接做完整 RAG runtime。
 V3-A 的建议方向是：Personalized History Retrieval。
-进入 V3-A 前，需要确认是否接受本文件的子阶段拆分和设计上升目标。
+进入 V3-A 前，需要用户确认是否接受本文件的子阶段拆分和设计上升目标。
 ```

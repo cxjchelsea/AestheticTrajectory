@@ -16,7 +16,7 @@ The current project has an accepted and archived V2 Memory / User Model baseline
 - Current validation status: backend tests pass, frontend production build passes, PostgreSQL runtime validation has passed, profile API integration is covered, V2 final closure manual validation has passed, and V2 archive gate is complete.
 - Not included yet: real model calls, real image feature extraction, ChromaDB runtime writes, RAG runtime, Agent, MCP, knowledge graph, or long-term profile automation beyond the V2 lightweight baseline.
 
-V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 version-level research and architecture planning is established in `docs/iterations/v3-0-personalized-retrieval-research.md`; the next implementation step should be V3-A after review, not direct full RAG runtime implementation.
+V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 version-level research and architecture planning is internally reviewed in `docs/iterations/v3-0-personalized-retrieval-research.md`; the next implementation step should be V3-A after user confirmation, not direct full RAG runtime implementation.
 
 ## Frontend
 
