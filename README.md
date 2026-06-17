@@ -13,11 +13,11 @@ The current project has an accepted and archived V2 Memory / User Model baseline
 - V2-C feedback governance: feedback updates the current profile snapshot without duplicating evidence.
 - V2-D report comparison: latest two-report comparison API and frontend comparison page.
 - V2-E memory governance validation: evidence coverage, rejected interpretation handling, uncertain feedback handling, and non-diagnostic expression checks.
-- V3-A personalized history retrieval: workflow history retrieval step, `ReportResponse.historyContext`, and report detail history reference UI.
-- Current validation status: backend tests pass (33 passed), frontend production build passes, V2 archive gate is complete, V3-A manual validation passed.
+- V3-B aesthetic knowledge RAG: static knowledge base retrieval, `ReportResponse.knowledgeContext`, and report detail knowledge reference UI.
+- Current validation status: backend tests pass (36 passed), frontend production build passes, V3-A and V3-B manual validation passed.
 - Not included yet: real model calls, real image feature extraction, ChromaDB runtime writes, external knowledge RAG runtime, Agent, MCP, knowledge graph, or long-term profile automation beyond the V2 lightweight baseline.
 
-V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 is accepted in `docs/iterations/v3-0-personalized-retrieval-research.md`. V3-A is accepted in `docs/iterations/v3-a-personalized-history-retrieval.md`. Next step is V3-B aesthetic knowledge RAG.
+V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 is accepted in `docs/iterations/v3-0-personalized-retrieval-research.md`. V3-A and V3-B are accepted. Next step is V3-C evaluation metrics baseline per `docs/iterations/v3-0-personalized-retrieval-research.md`.
 
 ## Frontend
 

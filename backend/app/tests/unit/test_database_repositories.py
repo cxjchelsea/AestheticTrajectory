@@ -90,6 +90,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
             "write_vectors",
             "cluster_inputs",
             "retrieve_personal_history",
+            "retrieve_aesthetic_knowledge",
             "generate_report",
             "save_report",
         }

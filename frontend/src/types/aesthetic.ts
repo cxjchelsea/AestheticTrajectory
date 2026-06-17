@@ -62,6 +62,23 @@ export interface ReportResponse {
   insights: Insight[];
   disclaimer: string;
   historyContext?: PersonalHistoryContext | null;
+  knowledgeContext?: AestheticKnowledgeContext | null;
+}
+
+export interface KnowledgeContextItem {
+  docId: string;
+  title: string;
+  snippet: string;
+  matchedFeatures: string[];
+  sourceRefs: string[];
+  note: string;
+}
+
+export interface AestheticKnowledgeContext {
+  items: KnowledgeContextItem[];
+  summary?: string | null;
+  message?: string | null;
+  disclaimer: string;
 }
 
 export type HistoryContextDirection = "positive" | "negative" | "neutral";

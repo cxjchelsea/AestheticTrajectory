@@ -38,6 +38,7 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
         "write_vectors",
         "cluster_inputs",
         "retrieve_personal_history",
+        "retrieve_aesthetic_knowledge",
         "generate_report",
         "save_report",
     }
@@ -52,6 +53,9 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert report["insights"][0]["evidenceRefs"]
     assert report.get("historyContext") is not None
     assert report["historyContext"]["message"] == "暂无可参考的历史报告。"
+    assert report.get("knowledgeContext") is not None
+    assert report["knowledgeContext"]["items"]
+    assert all(item["sourceRefs"] for item in report["knowledgeContext"]["items"])
 
     history_response = client.get("/api/users/user_anonymous/reports")
     assert history_response.status_code == 200

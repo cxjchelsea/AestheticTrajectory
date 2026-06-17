@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from app.schemas.feature import InputFeature
 from app.schemas.history_context import PersonalHistoryContext
 from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
+from app.schemas.knowledge_context import AestheticKnowledgeContext
 
 
 class Insight(BaseModel):
@@ -29,6 +30,7 @@ class ReportResponse(BaseModel):
     insights: list[Insight]
     disclaimer: str
     history_context: PersonalHistoryContext | None = Field(default=None, alias="historyContext")
+    knowledge_context: AestheticKnowledgeContext | None = Field(default=None, alias="knowledgeContext")
 
     model_config = {"populate_by_name": True}
 

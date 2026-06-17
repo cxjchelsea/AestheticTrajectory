@@ -86,6 +86,7 @@ def _schema_validation(logs) -> list[SchemaValidationRecord]:
         ("generate_embeddings", "EmbeddingRecord"),
         ("cluster_inputs", "SimilarityGroup / PossibleInterpretation / Insight"),
         ("retrieve_personal_history", "PersonalHistoryContext"),
+        ("retrieve_aesthetic_knowledge", "AestheticKnowledgeContext"),
         ("generate_report", "ReportResponse"),
         ("save_report", "PersistenceWrite"),
     ]
@@ -114,11 +115,17 @@ def _schema_validation(logs) -> list[SchemaValidationRecord]:
 
 def _boundary_warnings(logs) -> list[BoundaryWarning]:
     step_ids = {log.step_id for log in logs}
-    retrieval_status = "dev_only" if "retrieve_personal_history" in step_ids else "planned"
-    retrieval_message = (
+    history_status = "dev_only" if "retrieve_personal_history" in step_ids else "planned"
+    history_message = (
         "V3-A personalized history retrieval is enabled for this workflow run."
-        if retrieval_status == "dev_only"
+        if history_status == "dev_only"
         else "Planned for V3 after V2 profile and feedback loops are stable."
+    )
+    knowledge_status = "dev_only" if "retrieve_aesthetic_knowledge" in step_ids else "planned"
+    knowledge_message = (
+        "V3-B aesthetic knowledge RAG is enabled for this workflow run."
+        if knowledge_status == "dev_only"
+        else "Planned for V3-B; external knowledge must remain explanation support only."
     )
     return [
         BoundaryWarning(
@@ -132,9 +139,14 @@ def _boundary_warnings(logs) -> list[BoundaryWarning]:
             developerMessage="Current V2 keeps embedding metadata in application storage; ChromaDB runtime writes are not enabled.",
         ),
         BoundaryWarning(
-            capability="Personalized retrieval / RAG",
-            status=retrieval_status,
-            developerMessage=retrieval_message,
+            capability="Personalized history retrieval",
+            status=history_status,
+            developerMessage=history_message,
+        ),
+        BoundaryWarning(
+            capability="Aesthetic knowledge RAG",
+            status=knowledge_status,
+            developerMessage=knowledge_message,
         ),
         BoundaryWarning(
             capability="Agent / MCP runtime",

@@ -1,6 +1,7 @@
 from app.schemas.feature import InputFeature
 from app.schemas.history_context import PersonalHistoryContext
 from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
+from app.schemas.knowledge_context import AestheticKnowledgeContext
 from app.schemas.report import Insight, ReportResponse
 
 
@@ -11,6 +12,7 @@ def generate_report(
     interpretations: list[PossibleInterpretation],
     insights: list[Insight],
     history_context: PersonalHistoryContext | None = None,
+    knowledge_context: AestheticKnowledgeContext | None = None,
 ) -> ReportResponse:
     scoped_interpretations = [_with_report_scoped_interpretation_id(report_id, item) for item in interpretations]
     scoped_insights = [_with_report_scoped_insight_id(report_id, item) for item in insights]
@@ -24,6 +26,7 @@ def generate_report(
         insights=scoped_insights,
         disclaimer="这是一份基于当前输入的审美观察，不是人格诊断、心理评估或长期画像。",
         historyContext=history_context,
+        knowledgeContext=knowledge_context,
     )
 
 

@@ -136,6 +136,29 @@ export function ReportDetailPage({
         </ReportSection>
       ) : null}
 
+      {report.knowledgeContext ? (
+        <ReportSection title="知识参考">
+          {report.knowledgeContext.summary ? <p>{report.knowledgeContext.summary}</p> : null}
+          {report.knowledgeContext.message && report.knowledgeContext.items.length === 0 ? (
+            <p className="muted">{report.knowledgeContext.message}</p>
+          ) : null}
+          <div className="history-context-list">
+            {report.knowledgeContext.items.map((item) => (
+              <article className="wide-item" key={item.docId}>
+                <h3>{item.title}</h3>
+                <p>{item.snippet}</p>
+                <p>{item.note}</p>
+                <small>
+                  {item.matchedFeatures.length > 0 ? item.matchedFeatures.join(" / ") : "无特征匹配"}
+                </small>
+                <small>来源：{item.sourceRefs.join(", ")}</small>
+              </article>
+            ))}
+          </div>
+          <p className="disclaimer">{report.knowledgeContext.disclaimer}</p>
+        </ReportSection>
+      ) : null}
+
       <ReportSection title="重点洞察">
         {report.insights.map((insight) => (
           <div key={insight.insightId} className="insight-block">

@@ -14,6 +14,7 @@ from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
 from app.workflows.steps.generate_report import generate_report
+from app.workflows.steps.retrieve_aesthetic_knowledge import retrieve_aesthetic_knowledge
 from app.workflows.steps.retrieve_personal_history import retrieve_personal_history
 from app.workflows.steps.write_vectors import write_vectors
 
@@ -68,6 +69,12 @@ def run_mock_aesthetic_analysis(
             persistence.feedback_repository,
         ),
     )
+    knowledge_context = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "retrieve_aesthetic_knowledge",
+        lambda: retrieve_aesthetic_knowledge(feature_result),
+    )
     report = record_step(
         persistence.analysis_log_repository,
         job.id,
@@ -79,6 +86,7 @@ def run_mock_aesthetic_analysis(
             interpretations,
             insights,
             history_context,
+            knowledge_context,
         ),
     )
     record_step(
