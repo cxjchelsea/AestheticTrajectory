@@ -122,3 +122,63 @@ export interface ProfileResponse {
   profile: UserProfile | null;
   message?: string | null;
 }
+
+export type AnalysisLogStatus = "running" | "success" | "failed" | "skipped";
+
+export interface AnalysisLogRecord {
+  id: string;
+  jobId: string;
+  stepId: string;
+  status: AnalysisLogStatus;
+  modelName?: string | null;
+  promptVersion?: string | null;
+  latencyMs?: number | null;
+  errorType?: string | null;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  createdAt: string;
+}
+
+export interface FallbackEvent {
+  id: string;
+  jobId: string;
+  stepId: string;
+  fallbackType: string;
+  originalError: string;
+  fallbackAction: string;
+  severity: "info" | "warning" | "error";
+  userVisible: boolean;
+  developerMessage: string;
+  createdAt: string;
+}
+
+export interface MockUsageRecord {
+  component: string;
+  status: "enabled" | "disabled";
+  devOnly: boolean;
+  developerMessage: string;
+}
+
+export interface SchemaValidationRecord {
+  stepId: string;
+  schemaName: string;
+  status: "passed" | "failed" | "not_recorded";
+  developerMessage: string;
+}
+
+export interface BoundaryWarning {
+  capability: string;
+  status: "not_used" | "planned" | "dev_only";
+  developerMessage: string;
+}
+
+export interface AnalysisJobDebugResponse {
+  jobId: string;
+  status: string;
+  workflowTrace: AnalysisLogRecord[];
+  fallbackEvents: FallbackEvent[];
+  mockUsage: MockUsageRecord[];
+  schemaValidation: SchemaValidationRecord[];
+  boundaryWarnings: BoundaryWarning[];
+}

@@ -14,12 +14,14 @@ export function App() {
   const [route, setRoute] = useState<AppRoute>("home");
   const [inputs, setInputs] = useState<AestheticInput[]>([]);
   const [apiReport, setApiReport] = useState<ReportResponse | null>(null);
+  const [debugJobId, setDebugJobId] = useState<string | null>(null);
 
   const fallbackReport = useMemo(() => mockReport(inputs), [inputs]);
   const report = apiReport ?? fallbackReport;
 
   function startUploadFlow() {
     setApiReport(null);
+    setDebugJobId(null);
     setRoute("upload");
   }
 
@@ -32,8 +34,9 @@ export function App() {
       <AnalysisJobPage
         inputs={inputs}
         fallbackReport={fallbackReport}
-        onComplete={(nextReport) => {
+        onComplete={(nextReport, jobId) => {
           setApiReport(nextReport);
+          setDebugJobId(jobId ?? null);
           setRoute("report");
         }}
         onBack={() => setRoute("upload")}
@@ -46,6 +49,7 @@ export function App() {
       <ReportDetailPage
         report={report}
         inputs={inputs}
+        debugJobId={debugJobId}
         onRestart={startUploadFlow}
         onViewHistory={() => setRoute("history")}
       />
@@ -56,8 +60,9 @@ export function App() {
     return (
       <HistoryPage
         userId={CURRENT_USER_ID}
-        onOpenReport={(nextReport) => {
+        onOpenReport={(nextReport, jobId) => {
           setApiReport(nextReport);
+          setDebugJobId(jobId ?? null);
           setInputs([]);
           setRoute("report");
         }}

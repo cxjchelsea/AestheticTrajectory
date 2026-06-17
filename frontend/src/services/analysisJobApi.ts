@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient";
+import type { AnalysisJobDebugResponse } from "../types/aesthetic";
 
 export interface AnalysisJobResponse {
   id: string;
@@ -16,4 +17,8 @@ export function createAnalysisJob(inputIds: string[]) {
 
 export function getAnalysisJob(jobId: string) {
   return apiClient<AnalysisJobResponse>(`/api/analysis-jobs/${jobId}`);
+}
+
+export function getAnalysisJobDebug(jobId: string) {
+  return apiClient<AnalysisJobDebugResponse>(`/api/analysis-jobs/${jobId}/debug`);
 }

@@ -127,6 +127,17 @@ Every implementation iteration must create or update one file under `docs/iterat
 - For Agent or LLM work, require structured inputs, output schema, failure handling, and validation tests.
 - After implementation, run the appropriate tests and update the iteration record with commands, results, remaining risks, and next step.
 
+## AI Governance And Debuggability
+
+- Development defaults to fail fast. Do not add fallback, default objects, empty arrays, compatibility branches, or skipped validation just to make a task continue.
+- A fallback is allowed only when an authoritative design doc explicitly permits degradation. It must state the trigger, original error, fallback action, user-visible impact, developer message, and test coverage.
+- Core business facts must fail rather than degrade: missing inputs, missing reports, invalid feedback targets, schema validation failures, and persistence failures.
+- Non-core enhancements may degrade only when the degraded result remains truthful, such as unavailable retrieval, optional history context, or dev-only mock runtime.
+- Mock, heuristic, placeholder, and dev-only behavior must be visibly marked and must not be described as real model capability.
+- Do not modify tests first when tests fail. Classify whether the failure is implementation, test expectation, requirement drift, or fixture data before changing assertions.
+- Do not introduce an interface, factory, registry, configuration switch, or runtime for a future version unless the current iteration acceptance criteria require it.
+- Future-version capabilities may be documented or represented as boundary warnings, but must not be implemented as runtime code before their version gate.
+
 ## Full Template
 
 For the complete fill-in template, examples, and project-level sections, read `workflow-template.md`.

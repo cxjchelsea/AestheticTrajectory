@@ -319,6 +319,61 @@ textarea {
   margin-bottom: 14px;
 }
 
+.debug-panel {
+  border: 1px solid #d9d1c2;
+  border-radius: 8px;
+  background: #fbf8f1;
+  padding: 16px;
+}
+
+.debug-panel summary {
+  cursor: pointer;
+  color: #1d4b45;
+  font-weight: 800;
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.debug-grid section {
+  border: 1px solid #e4dbcf;
+  border-radius: 8px;
+  background: #fffdf8;
+  padding: 14px;
+}
+
+.debug-grid h3 {
+  margin: 0 0 10px;
+}
+
+.debug-grid ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.debug-grid li {
+  display: grid;
+  gap: 4px;
+}
+
+.debug-grid span {
+  color: #736043;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.debug-grid small,
+.debug-warning {
+  color: #676059;
+}
+
 .history-card {
   display: flex;
   gap: 18px;

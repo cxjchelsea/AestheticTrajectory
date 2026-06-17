@@ -1,19 +1,51 @@
+import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { FeedbackPanel } from "../features/report/FeedbackPanel";
 import { InsightCard } from "../features/report/InsightCard";
 import { ReportSection } from "../features/report/ReportSection";
+import { getAnalysisJobDebug } from "../services/analysisJobApi";
 import { starterInputs } from "../services/mockData";
-import type { AestheticInput, ReportResponse } from "../types/aesthetic";
+import type { AestheticInput, AnalysisJobDebugResponse, ReportResponse } from "../types/aesthetic";
 
 interface ReportDetailPageProps {
   report: ReportResponse;
   inputs: AestheticInput[];
+  debugJobId?: string | null;
   onRestart: () => void;
   onViewHistory: () => void;
 }
 
-export function ReportDetailPage({ report, inputs, onRestart, onViewHistory }: ReportDetailPageProps) {
+export function ReportDetailPage({ report, inputs, debugJobId, onRestart, onViewHistory }: ReportDetailPageProps) {
   const evidenceInputs = inputs.length >= 3 ? inputs : starterInputs;
+  const [debugPayload, setDebugPayload] = useState<AnalysisJobDebugResponse | null>(null);
+  const [debugError, setDebugError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !debugJobId) {
+      setDebugPayload(null);
+      setDebugError(null);
+      return;
+    }
+
+    let cancelled = false;
+    async function loadDebugPayload() {
+      try {
+        const payload = await getAnalysisJobDebug(debugJobId as string);
+        if (cancelled) return;
+        setDebugPayload(payload);
+        setDebugError(null);
+      } catch (error) {
+        if (cancelled) return;
+        setDebugPayload(null);
+        setDebugError(error instanceof Error ? error.message : "Debug payload request failed");
+      }
+    }
+
+    loadDebugPayload();
+    return () => {
+      cancelled = true;
+    };
+  }, [debugJobId]);
 
   return (
     <main className="page report-page">
@@ -76,7 +108,99 @@ export function ReportDetailPage({ report, inputs, onRestart, onViewHistory }: R
         ))}
       </ReportSection>
 
+      {import.meta.env.DEV && debugJobId ? (
+        <DeveloperDebugPanel debug={debugPayload} errorMessage={debugError} />
+      ) : null}
+
       <p className="disclaimer">{report.disclaimer}</p>
     </main>
+  );
+}
+
+function DeveloperDebugPanel({
+  debug,
+  errorMessage
+}: {
+  debug: AnalysisJobDebugResponse | null;
+  errorMessage: string | null;
+}) {
+  return (
+    <details className="debug-panel">
+      <summary>Developer Debug</summary>
+      {errorMessage ? <p className="debug-warning">Debug payload unavailable: {errorMessage}</p> : null}
+      {!debug && !errorMessage ? <p className="muted">正在读取 workflow debug trace...</p> : null}
+      {debug ? (
+        <div className="debug-grid">
+          <section>
+            <h3>Workflow Trace</h3>
+            <ul>
+              {debug.workflowTrace.map((step) => (
+                <li key={step.id}>
+                  <strong>{step.stepId}</strong>
+                  <span>{step.status}</span>
+                  <small>{step.latencyMs ?? 0}ms</small>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h3>Fallback Events</h3>
+            {debug.fallbackEvents.length > 0 ? (
+              <ul>
+                {debug.fallbackEvents.map((event) => (
+                  <li key={event.id}>
+                    <strong>{event.fallbackType}</strong>
+                    <span>{event.fallbackAction}</span>
+                    <small>{event.developerMessage}</small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">暂无显性降级事件。</p>
+            )}
+          </section>
+
+          <section>
+            <h3>Mock Usage</h3>
+            <ul>
+              {debug.mockUsage.map((item) => (
+                <li key={item.component}>
+                  <strong>{item.component}</strong>
+                  <span>{item.status}{item.devOnly ? " · dev-only" : ""}</span>
+                  <small>{item.developerMessage}</small>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h3>Schema Validation</h3>
+            <ul>
+              {debug.schemaValidation.map((item) => (
+                <li key={`${item.stepId}-${item.schemaName}`}>
+                  <strong>{item.schemaName}</strong>
+                  <span>{item.status}</span>
+                  <small>{item.developerMessage}</small>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h3>Boundary Warnings</h3>
+            <ul>
+              {debug.boundaryWarnings.map((warning) => (
+                <li key={warning.capability}>
+                  <strong>{warning.capability}</strong>
+                  <span>{warning.status}</span>
+                  <small>{warning.developerMessage}</small>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      ) : null}
+    </details>
   );
 }

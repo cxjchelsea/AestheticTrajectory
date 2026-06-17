@@ -5,7 +5,7 @@ import type { ReportHistoryResponse, ReportResponse } from "../types/aesthetic";
 
 interface HistoryPageProps {
   userId: string;
-  onOpenReport: (report: ReportResponse) => void;
+  onOpenReport: (report: ReportResponse, jobId?: string | null) => void;
   onStart: () => void;
   onViewProfile: () => void;
   onBack: () => void;
@@ -40,11 +40,11 @@ export function HistoryPage({ userId, onOpenReport, onStart, onViewProfile, onBa
     };
   }, [userId]);
 
-  async function openReport(reportId: string) {
+  async function openReport(reportId: string, jobId?: string | null) {
     try {
       setOpeningReportId(reportId);
       const report = await getReport(reportId);
-      onOpenReport(report);
+      onOpenReport(report, jobId);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "API request failed");
       setStatus("error");
@@ -98,7 +98,7 @@ export function HistoryPage({ userId, onOpenReport, onStart, onViewProfile, onBa
               </div>
               <Button
                 variant="secondary"
-                onClick={() => openReport(report.reportId)}
+                onClick={() => openReport(report.reportId, report.jobId)}
                 disabled={openingReportId === report.reportId}
               >
                 {openingReportId === report.reportId ? "打开中..." : "查看详情"}

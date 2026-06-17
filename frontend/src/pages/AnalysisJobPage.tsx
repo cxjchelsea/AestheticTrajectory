@@ -10,7 +10,7 @@ import type { AestheticInput, ReportResponse } from "../types/aesthetic";
 interface AnalysisJobPageProps {
   inputs: AestheticInput[];
   fallbackReport: ReportResponse;
-  onComplete: (report: ReportResponse) => void;
+  onComplete: (report: ReportResponse, jobId?: string) => void;
   onBack: () => void;
 }
 
@@ -46,7 +46,7 @@ export function AnalysisJobPage({ inputs, fallbackReport, onComplete, onBack }: 
         if (cancelled) return;
         setActiveStep(4);
         setStatusLabel("分析完成");
-        window.setTimeout(() => onComplete(report), 350);
+        window.setTimeout(() => onComplete(report, job.id), 350);
       } catch (error) {
         if (cancelled) return;
         setFallbackReason(error instanceof Error ? error.message : "API request failed");

@@ -28,6 +28,22 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert job["status"] == "completed"
     assert job["reportId"] is not None
 
+    debug_response = client.get(f"/api/analysis-jobs/{job['id']}/debug")
+    assert debug_response.status_code == 200
+    debug = debug_response.json()
+    assert debug["jobId"] == job["id"]
+    assert {step["stepId"] for step in debug["workflowTrace"]} >= {
+        "extract_features",
+        "generate_embeddings",
+        "write_vectors",
+        "cluster_inputs",
+        "generate_report",
+        "save_report",
+    }
+    assert debug["mockUsage"]
+    assert debug["schemaValidation"]
+    assert debug["boundaryWarnings"]
+
     report_response = client.get(f"/api/reports/{job['reportId']}")
     assert report_response.status_code == 200
     report = report_response.json()
