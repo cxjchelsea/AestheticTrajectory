@@ -72,6 +72,8 @@ The version-level task sheet must record:
 
 After a version-level gate is accepted, promote durable decisions into the authoritative design docs before starting implementation sub-stages. Do not leave architecture, memory rules, data model decisions, module contracts, validation metrics, or governance rules only in `docs/iterations/`.
 
+Do not mechanically update authoritative design docs in every iteration. At the start and end of each iteration, explicitly decide whether the iteration affects durable design. Only update `docs/04` to `docs/11` or other authoritative docs when the work changes long-lived architecture, data models, API contracts, workflow, prompt contracts, module boundaries, validation metrics, governance rules, or implementation-vs-design alignment. If it does not, record "No authoritative design doc update required" in the iteration sheet.
+
 Design promotion targets:
 
 - Product / Agent direction changes: `docs/01-产品概念说明书.md` or `docs/02-版本迭代路线图.md`
