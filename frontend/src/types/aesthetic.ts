@@ -1,4 +1,4 @@
-export type AppRoute = "home" | "upload" | "analysis" | "report" | "history";
+export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile";
 
 export type InputType = "image" | "text";
 
@@ -80,3 +80,45 @@ export interface ReportHistoryResponse {
 }
 
 export type FeedbackRating = "not_me" | "unsure" | "somewhat_me" | "very_me";
+
+export type ProfileItemStatus = "stable" | "recent" | "rejected" | "uncertain" | "inactive" | "hidden" | "deleted";
+
+export type ProfileEvidenceType = "feature" | "report" | "interpretation" | "insight" | "feedback";
+
+export type ProfileEvidenceDirection = "positive" | "negative" | "uncertain" | "conflict";
+
+export interface ProfileEvidence {
+  id: string;
+  evidenceType: ProfileEvidenceType;
+  evidenceId: string;
+  direction: ProfileEvidenceDirection;
+  weightDelta: number;
+  note: string;
+  createdAt: string;
+}
+
+export interface ProfileItem {
+  id: string;
+  key: string;
+  label: string;
+  status: ProfileItemStatus;
+  weight: number;
+  confidence: number;
+  sourceCount: number;
+  lastSeenAt: string;
+  evidence: ProfileEvidence[];
+}
+
+export interface UserProfile {
+  id: string;
+  summary: string;
+  version: string;
+  items: ProfileItem[];
+  updatedAt: string;
+}
+
+export interface ProfileResponse {
+  userId: string;
+  profile: UserProfile | null;
+  message?: string | null;
+}

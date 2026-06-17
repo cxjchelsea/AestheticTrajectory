@@ -8,7 +8,10 @@ from app.models.persistence import (
     InsightFeedbackModel,
     InsightModel,
     PossibleInterpretationModel,
+    ProfileEvidenceModel,
+    ProfileItemModel,
     UserModel,
+    UserProfileModel,
 )
 
 __all__ = [
@@ -21,6 +24,9 @@ __all__ = [
     "InsightFeedbackModel",
     "InsightModel",
     "PossibleInterpretationModel",
+    "ProfileEvidenceModel",
+    "ProfileItemModel",
     "UserModel",
+    "UserProfileModel",
 ]
 

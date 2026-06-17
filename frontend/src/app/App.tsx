@@ -4,6 +4,7 @@ import { UploadPage } from "../pages/UploadPage";
 import { AnalysisJobPage } from "../pages/AnalysisJobPage";
 import { ReportDetailPage } from "../pages/ReportDetailPage";
 import { HistoryPage } from "../pages/HistoryPage";
+import { ProfilePage } from "../pages/ProfilePage";
 import { mockReport } from "../services/mockData";
 import type { AestheticInput, AppRoute, ReportResponse } from "../types/aesthetic";
 
@@ -61,7 +62,19 @@ export function App() {
           setRoute("report");
         }}
         onStart={startUploadFlow}
+        onViewProfile={() => setRoute("profile")}
         onBack={() => setRoute("home")}
+      />
+    );
+  }
+
+  if (route === "profile") {
+    return (
+      <ProfilePage
+        userId={CURRENT_USER_ID}
+        onBack={() => setRoute("home")}
+        onStart={startUploadFlow}
+        onViewHistory={() => setRoute("history")}
       />
     );
   }
@@ -71,6 +84,7 @@ export function App() {
       onStart={startUploadFlow}
       onViewDemo={() => setRoute("report")}
       onViewHistory={() => setRoute("history")}
+      onViewProfile={() => setRoute("profile")}
     />
   );
 }

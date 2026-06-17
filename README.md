@@ -2,17 +2,18 @@
 
 AI aesthetic analysis product for exploring long-term personal preference modeling.
 
-The current project has a V2-A report history baseline: it validates the V1 analysis flow plus historical report listing and detail review.
+The current project has an accepted V2-B lightweight profile implementation: it adds evidence-backed user profile data, a read-only profile API, and a frontend profile page on top of the V1 / V2-A baseline.
 
 ## Scope
 
 - V0 frontend prototype: home, upload, analysis waiting, and report pages.
 - V1 stable baseline: FastAPI routes, Pydantic schemas, memory/database repositories, mock AI workflow, report API, feedback API, PostgreSQL persistence, and `analysis_logs`.
 - V2-A report history: historical report list API, frontend history page, empty state, and report detail review.
-- Current validation status: backend tests pass, frontend production build passes, PostgreSQL runtime validation has passed, and history API integration is covered.
-- Not included yet: real model calls, real image feature extraction, lightweight profile, report comparison, ChromaDB runtime writes, RAG, Agent, MCP, knowledge graph, or long-term profile.
+- V2-B profile evidence: `user_profiles`, `profile_items`, `profile_evidence`, read-only profile API, and profile evidence UI.
+- Current validation status: backend tests pass, frontend production build passes, SQLite migration validation has passed, PostgreSQL runtime validation has passed, profile API integration is covered, and V2-B frontend manual acceptance has passed.
+- Not included yet: real model calls, real image feature extraction, report comparison, ChromaDB runtime writes, RAG, Agent, MCP, knowledge graph, or long-term profile automation.
 
-V1 validation is archived in `docs/archive/v1/`. V2-A is accepted and archived in `docs/iterations/v2-a-report-history.md`; V2-0 Memory / User Model research is accepted in `docs/iterations/v2-0-memory-user-model-research.md`. The next development step is V2-B lightweight profile data model and profile evidence planning.
+V1 validation is archived in `docs/archive/v1/`. V2-A is accepted and archived in `docs/iterations/v2-a-report-history.md`; V2-0 Memory / User Model research is accepted in `docs/iterations/v2-0-memory-user-model-research.md`; V2-B is accepted in `docs/iterations/v2-b-profile-evidence.md`. The next development step is V2-C planning.
 
 ## Frontend
 
@@ -44,6 +45,8 @@ The backend exposes:
 - `POST /api/analysis-jobs`
 - `GET /api/analysis-jobs/{job_id}`
 - `GET /api/reports/{report_id}`
+- `GET /api/users/{user_id}/reports`
+- `GET /api/users/{user_id}/profile`
 - `POST /api/insights/{insight_id}/feedback`
 
 Test check:

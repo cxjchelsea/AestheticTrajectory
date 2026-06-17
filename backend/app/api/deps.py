@@ -11,16 +11,19 @@ from app.repositories.database_repositories import (
     DatabaseFeatureRepository,
     DatabaseFeedbackRepository,
     DatabaseInputRepository,
+    DatabaseProfileRepository,
     DatabaseReportRepository,
 )
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
 from app.repositories.memory_store import store
+from app.repositories.profile_repository import ProfileRepository
 from app.repositories.report_repository import ReportRepository
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.services.analysis_job_service import AnalysisJobService
 from app.services.feedback_service import FeedbackService
 from app.services.input_service import InputService
+from app.services.profile_service import ProfileService
 from app.services.report_service import ReportService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
 
@@ -61,3 +64,9 @@ def get_feedback_service(session: Session = Depends(get_session)) -> FeedbackSer
     if settings.repository_backend == "database":
         return FeedbackService(DatabaseFeedbackRepository(session))
     return FeedbackService(FeedbackRepository(store))
+
+
+def get_profile_service(session: Session = Depends(get_session)) -> ProfileService:
+    if settings.repository_backend == "database":
+        return ProfileService(DatabaseProfileRepository(session))
+    return ProfileService(ProfileRepository(store))

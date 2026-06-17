@@ -4,9 +4,10 @@ interface HomePageProps {
   onStart: () => void;
   onViewDemo: () => void;
   onViewHistory: () => void;
+  onViewProfile: () => void;
 }
 
-export function HomePage({ onStart, onViewDemo, onViewHistory }: HomePageProps) {
+export function HomePage({ onStart, onViewDemo, onViewHistory, onViewProfile }: HomePageProps) {
   return (
     <main className="page home-page">
       <section className="hero">
@@ -18,6 +19,7 @@ export function HomePage({ onStart, onViewDemo, onViewHistory }: HomePageProps) 
             <Button onClick={onStart}>开始上传</Button>
             <Button variant="secondary" onClick={onViewDemo}>查看示例报告</Button>
             <Button variant="secondary" onClick={onViewHistory}>查看历史报告</Button>
+            <Button variant="secondary" onClick={onViewProfile}>查看轻量画像</Button>
           </div>
         </div>
         <div className="hero-visual" aria-hidden="true">

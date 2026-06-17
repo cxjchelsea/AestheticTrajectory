@@ -135,6 +135,9 @@ input {
 .insight-card,
 .feedback-panel,
 .history-card,
+.profile-summary,
+.profile-card,
+.evidence-chip,
 .empty-state {
   border: 1px solid #ddd3c5;
   border-radius: 8px;
@@ -156,7 +159,10 @@ input {
 .report-page,
 .interpretation-list,
 .history-page,
-.history-list {
+.history-list,
+.profile-page,
+.profile-list,
+.evidence-stack {
   display: grid;
   gap: 14px;
 }
@@ -329,6 +335,86 @@ textarea {
   color: #676059;
 }
 
+.profile-summary h2,
+.profile-card h2 {
+  margin: 0;
+}
+
+.section-heading {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.profile-card {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-card-header {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.feedback-callout {
+  margin: 0;
+  border-left: 4px solid #1d4b45;
+  padding: 8px 10px;
+  color: #1d4b45;
+  background: #eef4ef;
+  font-weight: 700;
+}
+
+.evidence-heading {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid #e4dbcf;
+  padding-top: 12px;
+}
+
+.evidence-heading h3 {
+  margin: 0;
+}
+
+.evidence-heading span {
+  color: #736043;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.evidence-chip {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: #fbf8f1;
+}
+
+.evidence-chip-header {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.evidence-chip-header span {
+  color: #736043;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.evidence-chip p {
+  margin: 0;
+}
+
 .empty-state {
   display: grid;
   gap: 12px;
@@ -367,7 +453,8 @@ textarea {
   }
 
   .report-header,
-  .history-card {
+  .history-card,
+  .profile-card-header {
     display: flex;
     flex-direction: column;
   }

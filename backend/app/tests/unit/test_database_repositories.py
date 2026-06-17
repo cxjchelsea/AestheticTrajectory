@@ -11,12 +11,14 @@ from app.repositories.database_repositories import (
     DatabaseFeatureRepository,
     DatabaseFeedbackRepository,
     DatabaseInputRepository,
+    DatabaseProfileRepository,
     DatabaseReportRepository,
 )
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.schemas.analysis_job import AnalysisJobResponse
 from app.schemas.common import utc_now
 from app.schemas.feedback import CreateInsightFeedbackRequest
+from app.schemas.feedback import InsightFeedbackResponse
 from app.schemas.input import AestheticInputResponse
 from app.services.feedback_service import FeedbackService
 from app.workflows.aesthetic_analysis_v1 import run_mock_aesthetic_analysis
@@ -112,6 +114,35 @@ def test_database_report_repository_lists_reports_by_user() -> None:
     assert history.total == 2
     assert [report.report_id for report in history.reports] == [second_report_id, first_report_id]
     assert all(report.input_count == 3 for report in history.reports)
+
+
+def test_database_profile_repository_builds_evidence_backed_profile() -> None:
+    session_factory = _session_factory()
+    report_id = _persist_report(session_factory, "user_profile", "job_profile", "profile")
+
+    with session_factory() as session:
+        report = DatabaseReportRepository(session).get(report_id)
+        assert report is not None
+        feedback = InsightFeedbackResponse(
+            id="feedback_negative",
+            userId="user_profile",
+            insightId=report.insights[0].insight_id,
+            interpretationId=None,
+            rating="not_me",
+            comment="不符合我",
+            createdAt=utc_now(),
+        )
+        DatabaseFeedbackRepository(session).save(feedback)
+        profile = DatabaseProfileRepository(session).get_or_build("user_profile")
+        session.commit()
+
+    assert profile.profile is not None
+    assert profile.profile.items
+    assert all(item.evidence for item in profile.profile.items)
+    rejected_items = [item for item in profile.profile.items if item.status == "rejected"]
+    assert rejected_items
+    assert rejected_items[0].weight < 0
+    assert rejected_items[0].evidence[0].direction == "negative"
 
 
 def _session_factory():

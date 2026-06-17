@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -13,6 +13,9 @@ from app.models import (
     InsightFeedbackModel,
     InsightModel,
     PossibleInterpretationModel,
+    ProfileEvidenceModel,
+    ProfileItemModel,
+    UserProfileModel,
     UserModel,
 )
 from app.schemas.analysis_job import AnalysisJobResponse
@@ -22,7 +25,9 @@ from app.schemas.embedding import EmbeddingRecord
 from app.schemas.feature import InputFeature
 from app.schemas.feedback import InsightFeedbackResponse
 from app.schemas.input import AestheticInputResponse
+from app.schemas.profile import ProfileResponse
 from app.schemas.report import ReportHistoryResponse, ReportResponse, ReportSummary
+from app.services.profile_builder import build_profile_from_sources
 
 
 class DatabaseInputRepository:
@@ -259,7 +264,108 @@ class DatabaseFeedbackRepository:
                 created_at=feedback.created_at,
             )
         )
+        self.session.flush()
         return feedback
+
+
+class DatabaseProfileRepository:
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def get_or_build(self, user_id: str) -> ProfileResponse:
+        reports = [
+            ReportResponse.model_validate(row.report_json)
+            for row in self.session.scalars(
+                select(AestheticReportModel)
+                .where(AestheticReportModel.user_id == user_id)
+                .order_by(AestheticReportModel.created_at.asc(), AestheticReportModel.id.asc())
+            ).all()
+        ]
+        feedback = [
+            InsightFeedbackResponse(
+                id=row.id,
+                userId=row.user_id,
+                insightId=row.insight_id,
+                interpretationId=row.interpretation_id,
+                rating=row.rating,
+                comment=row.comment,
+                createdAt=row.created_at,
+            )
+            for row in self.session.scalars(
+                select(InsightFeedbackModel)
+                .where(InsightFeedbackModel.user_id == user_id)
+                .order_by(InsightFeedbackModel.created_at.asc(), InsightFeedbackModel.id.asc())
+            ).all()
+        ]
+        profile = build_profile_from_sources(user_id, reports, feedback)
+        self._replace_profile(user_id, profile)
+        return profile
+
+    def _replace_profile(self, user_id: str, response: ProfileResponse) -> None:
+        existing_profile_ids = [
+            row.id for row in self.session.scalars(select(UserProfileModel).where(UserProfileModel.user_id == user_id)).all()
+        ]
+        if existing_profile_ids:
+            existing_item_ids = [
+                row.id
+                for row in self.session.scalars(
+                    select(ProfileItemModel).where(ProfileItemModel.profile_id.in_(existing_profile_ids))
+                ).all()
+            ]
+            if existing_item_ids:
+                self.session.execute(delete(ProfileEvidenceModel).where(ProfileEvidenceModel.profile_item_id.in_(existing_item_ids)))
+            self.session.execute(delete(ProfileItemModel).where(ProfileItemModel.profile_id.in_(existing_profile_ids)))
+            self.session.execute(delete(UserProfileModel).where(UserProfileModel.id.in_(existing_profile_ids)))
+
+        if response.profile is None:
+            self.session.flush()
+            return
+
+        now = response.profile.updated_at
+        self.session.add(
+            UserProfileModel(
+                id=response.profile.id,
+                user_id=user_id,
+                summary=response.profile.summary,
+                version=response.profile.version,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        self.session.flush()
+        for item in response.profile.items:
+            self.session.add(
+                ProfileItemModel(
+                    id=item.id,
+                    profile_id=response.profile.id,
+                    key=item.key,
+                    label=item.label,
+                    status=item.status,
+                    weight=item.weight,
+                    confidence=item.confidence,
+                    source_count=item.source_count,
+                    last_seen_at=item.last_seen_at,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+        self.session.flush()
+
+        for item in response.profile.items:
+            for evidence in item.evidence:
+                self.session.add(
+                    ProfileEvidenceModel(
+                        id=evidence.id,
+                        profile_item_id=item.id,
+                        evidence_type=evidence.evidence_type,
+                        evidence_id=evidence.evidence_id,
+                        direction=evidence.direction,
+                        weight_delta=evidence.weight_delta,
+                        note=evidence.note,
+                        created_at=evidence.created_at,
+                    )
+                )
+        self.session.flush()
 
 
 class DatabaseAnalysisLogRepository:

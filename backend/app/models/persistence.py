@@ -134,6 +134,46 @@ class InsightFeedbackModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class UserProfileModel(Base):
+    __tablename__ = "user_profiles"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    summary: Mapped[str] = mapped_column(Text)
+    version: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProfileItemModel(Base):
+    __tablename__ = "profile_items"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    profile_id: Mapped[str] = mapped_column(String(64), ForeignKey("user_profiles.id"), index=True)
+    key: Mapped[str] = mapped_column(String(128), index=True)
+    label: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    weight: Mapped[float] = mapped_column(Float)
+    confidence: Mapped[float] = mapped_column(Float)
+    source_count: Mapped[int] = mapped_column(Integer)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProfileEvidenceModel(Base):
+    __tablename__ = "profile_evidence"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    profile_item_id: Mapped[str] = mapped_column(String(64), ForeignKey("profile_items.id"), index=True)
+    evidence_type: Mapped[str] = mapped_column(String(32), index=True)
+    evidence_id: Mapped[str] = mapped_column(String(64), index=True)
+    direction: Mapped[str] = mapped_column(String(32), index=True)
+    weight_delta: Mapped[float] = mapped_column(Float)
+    note: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class AnalysisLogModel(Base):
     __tablename__ = "analysis_logs"
 

@@ -6,6 +6,7 @@ from app.schemas.embedding import EmbeddingRecord
 from app.schemas.feedback import InsightFeedbackResponse
 from app.schemas.feature import InputFeature
 from app.schemas.input import AestheticInputResponse
+from app.schemas.profile import ProfileResponse
 from app.schemas.report import ReportResponse
 
 
@@ -19,6 +20,7 @@ class MemoryStore:
     report_metadata: dict[str, dict[str, object]] = field(default_factory=dict)
     feedback: dict[str, InsightFeedbackResponse] = field(default_factory=dict)
     analysis_logs: dict[str, AnalysisLogRecord] = field(default_factory=dict)
+    profiles: dict[str, ProfileResponse] = field(default_factory=dict)
 
 
 store = MemoryStore()
