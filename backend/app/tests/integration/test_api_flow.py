@@ -37,6 +37,7 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
         "generate_embeddings",
         "write_vectors",
         "cluster_inputs",
+        "retrieve_personal_history",
         "generate_report",
         "save_report",
     }
@@ -49,6 +50,8 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     report = report_response.json()
     assert report["insights"]
     assert report["insights"][0]["evidenceRefs"]
+    assert report.get("historyContext") is not None
+    assert report["historyContext"]["message"] == "暂无可参考的历史报告。"
 
     history_response = client.get("/api/users/user_anonymous/reports")
     assert history_response.status_code == 200
@@ -74,6 +77,14 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert second_job_response.status_code == 200
     second_job = second_job_response.json()
     assert second_job["reportId"] is not None
+
+    second_report_response = client.get(f"/api/reports/{second_job['reportId']}")
+    assert second_report_response.status_code == 200
+    second_report = second_report_response.json()
+    assert second_report["historyContext"] is not None
+    assert second_report["historyContext"]["items"]
+    assert any(item["sourceType"] == "report" for item in second_report["historyContext"]["items"])
+    assert all(item["sourceRefs"] for item in second_report["historyContext"]["items"])
 
     comparison_response = client.get("/api/users/user_anonymous/reports/comparison/latest")
     assert comparison_response.status_code == 200

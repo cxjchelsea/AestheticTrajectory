@@ -52,7 +52,7 @@ class AnalysisJobService:
             fallbackEvents=[],
             mockUsage=_mock_usage(),
             schemaValidation=_schema_validation(logs),
-            boundaryWarnings=_boundary_warnings(),
+            boundaryWarnings=_boundary_warnings(logs),
         )
 
 
@@ -85,6 +85,7 @@ def _schema_validation(logs) -> list[SchemaValidationRecord]:
         ("extract_features", "InputFeature"),
         ("generate_embeddings", "EmbeddingRecord"),
         ("cluster_inputs", "SimilarityGroup / PossibleInterpretation / Insight"),
+        ("retrieve_personal_history", "PersonalHistoryContext"),
         ("generate_report", "ReportResponse"),
         ("save_report", "PersistenceWrite"),
     ]
@@ -111,7 +112,14 @@ def _schema_validation(logs) -> list[SchemaValidationRecord]:
     return records
 
 
-def _boundary_warnings() -> list[BoundaryWarning]:
+def _boundary_warnings(logs) -> list[BoundaryWarning]:
+    step_ids = {log.step_id for log in logs}
+    retrieval_status = "dev_only" if "retrieve_personal_history" in step_ids else "planned"
+    retrieval_message = (
+        "V3-A personalized history retrieval is enabled for this workflow run."
+        if retrieval_status == "dev_only"
+        else "Planned for V3 after V2 profile and feedback loops are stable."
+    )
     return [
         BoundaryWarning(
             capability="Real vision / LLM runtime",
@@ -125,8 +133,8 @@ def _boundary_warnings() -> list[BoundaryWarning]:
         ),
         BoundaryWarning(
             capability="Personalized retrieval / RAG",
-            status="planned",
-            developerMessage="Planned for V3 after V2 profile and feedback loops are stable.",
+            status=retrieval_status,
+            developerMessage=retrieval_message,
         ),
         BoundaryWarning(
             capability="Agent / MCP runtime",

@@ -113,6 +113,29 @@ export function ReportDetailPage({
         </div>
       </ReportSection>
 
+      {report.historyContext ? (
+        <ReportSection title="历史参考">
+          {report.historyContext.summary ? <p>{report.historyContext.summary}</p> : null}
+          {report.historyContext.message && report.historyContext.items.length === 0 ? (
+            <p className="muted">{report.historyContext.message}</p>
+          ) : null}
+          <div className="history-context-list">
+            {report.historyContext.items.map((item) => (
+              <article className="wide-item" key={`${item.sourceType}-${item.sourceId}-${item.direction}`}>
+                <h3>{item.label}</h3>
+                <p>{item.note}</p>
+                <small>
+                  {item.sourceType} · {item.direction}
+                  {item.matchedFeatures.length > 0 ? ` · ${item.matchedFeatures.join(" / ")}` : ""}
+                </small>
+                <small>来源：{item.sourceRefs.join(", ")}</small>
+              </article>
+            ))}
+          </div>
+          <p className="disclaimer">{report.historyContext.disclaimer}</p>
+        </ReportSection>
+      ) : null}
+
       <ReportSection title="重点洞察">
         {report.insights.map((insight) => (
           <div key={insight.insightId} className="insight-block">

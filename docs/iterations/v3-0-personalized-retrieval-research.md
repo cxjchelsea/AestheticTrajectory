@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-reviewed / pending_user_confirmation / no_runtime_implementation
+accepted / no_runtime_implementation
 ```
 
 创建日期：
@@ -553,7 +553,7 @@ knowledge evidence 只能支持风格概念解释，不能写入 profile item �
 状态：
 
 ```text
-reviewed / pending_user_confirmation / no_runtime_implementation
+accepted / no_runtime_implementation
 ```
 
 范围：
@@ -714,8 +714,8 @@ V3-0 仍不应直接实现 retrieval / RAG runtime。
 ## 14. 当前结论
 
 ```text
-V3-0 版本级研究与架构拆分已完成内部复核。
+V3-0 版本级研究与架构拆分已获用户确认并接受。
 V3 应先从 personalized history retrieval 开始，而不是直接做完整 RAG runtime。
 V3-A 的建议方向是：Personalized History Retrieval。
-进入 V3-A 前，需要用户确认是否接受本文件的子阶段拆分和设计上升目标。
+V3-A 实现见 docs/iterations/v3-a-personalized-history-retrieval.md。
 ```

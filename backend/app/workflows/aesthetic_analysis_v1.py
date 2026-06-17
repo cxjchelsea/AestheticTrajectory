@@ -1,6 +1,7 @@
 from app.repositories.analysis_log_repository import AnalysisLogRepository
 from app.repositories.embedding_record_repository import EmbeddingRecordRepository
 from app.repositories.feature_repository import FeatureRepository
+from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.memory_store import MemoryStore
 from app.repositories.report_repository import ReportRepository
 from app.repositories.workflow_persistence import WorkflowPersistence
@@ -13,6 +14,7 @@ from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
 from app.workflows.steps.generate_report import generate_report
+from app.workflows.steps.retrieve_personal_history import retrieve_personal_history
 from app.workflows.steps.write_vectors import write_vectors
 
 
@@ -53,11 +55,31 @@ def run_mock_aesthetic_analysis(
             embeddings,
         ),
     )
+    report_id = new_id("report")
+    history_context = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "retrieve_personal_history",
+        lambda: retrieve_personal_history(
+            job.user_id,
+            report_id,
+            feature_result,
+            persistence.report_repository,
+            persistence.feedback_repository,
+        ),
+    )
     report = record_step(
         persistence.analysis_log_repository,
         job.id,
         "generate_report",
-        lambda: generate_report(new_id("report"), feature_result, groups, interpretations, insights),
+        lambda: generate_report(
+            report_id,
+            feature_result,
+            groups,
+            interpretations,
+            insights,
+            history_context,
+        ),
     )
     record_step(
         persistence.analysis_log_repository,
@@ -85,4 +107,5 @@ def memory_workflow_persistence(store: MemoryStore) -> WorkflowPersistence:
         embedding_record_repository=EmbeddingRecordRepository(store),
         report_repository=ReportRepository(store),
         analysis_log_repository=AnalysisLogRepository(store),
+        feedback_repository=FeedbackRepository(store),
     )

@@ -61,6 +61,26 @@ export interface ReportResponse {
   possibleInterpretations: PossibleInterpretation[];
   insights: Insight[];
   disclaimer: string;
+  historyContext?: PersonalHistoryContext | null;
+}
+
+export type HistoryContextDirection = "positive" | "negative" | "neutral";
+
+export interface HistoryContextItem {
+  sourceType: "report" | "feedback" | "profile";
+  sourceId: string;
+  sourceRefs: string[];
+  direction: HistoryContextDirection;
+  matchedFeatures: string[];
+  label: string;
+  note: string;
+}
+
+export interface PersonalHistoryContext {
+  items: HistoryContextItem[];
+  summary?: string | null;
+  message?: string | null;
+  disclaimer: string;
 }
 
 export interface ReportSummary {

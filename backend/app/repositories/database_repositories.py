@@ -270,6 +270,23 @@ class DatabaseFeedbackRepository:
     def insight_exists(self, insight_id: str) -> bool:
         return self.session.get(InsightModel, insight_id) is not None
 
+    def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
+        rows = self.session.scalars(
+            select(InsightFeedbackModel).where(InsightFeedbackModel.user_id == user_id)
+        ).all()
+        return [
+            InsightFeedbackResponse(
+                id=row.id,
+                userId=row.user_id,
+                insightId=row.insight_id,
+                interpretationId=row.interpretation_id,
+                rating=row.rating,
+                comment=row.comment,
+                createdAt=row.created_at,
+            )
+            for row in rows
+        ]
+
     def get_for_target(self, user_id: str, insight_id: str) -> InsightFeedbackResponse | None:
         row = self.session.scalars(
             select(InsightFeedbackModel)

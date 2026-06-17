@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.schemas.feature import InputFeature
+from app.schemas.history_context import PersonalHistoryContext
 from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
 
 
@@ -27,6 +28,7 @@ class ReportResponse(BaseModel):
     possible_interpretations: list[PossibleInterpretation] = Field(alias="possibleInterpretations")
     insights: list[Insight]
     disclaimer: str
+    history_context: PersonalHistoryContext | None = Field(default=None, alias="historyContext")
 
     model_config = {"populate_by_name": True}
 

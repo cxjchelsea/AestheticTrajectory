@@ -13,6 +13,9 @@ class FeedbackRepository:
             for insight in report.insights
         )
 
+    def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
+        return [feedback for feedback in self.store.feedback.values() if feedback.user_id == user_id]
+
     def get_for_target(self, user_id: str, insight_id: str) -> InsightFeedbackResponse | None:
         matches = [
             feedback

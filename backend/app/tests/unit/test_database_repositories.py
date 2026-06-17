@@ -66,6 +66,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
                 embedding_record_repository=DatabaseEmbeddingRecordRepository(session),
                 report_repository=DatabaseReportRepository(session),
                 analysis_log_repository=DatabaseAnalysisLogRepository(session),
+                feedback_repository=DatabaseFeedbackRepository(session),
             ),
         )
         DatabaseAnalysisJobRepository(session).save(result)
@@ -88,6 +89,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
             "generate_embeddings",
             "write_vectors",
             "cluster_inputs",
+            "retrieve_personal_history",
             "generate_report",
             "save_report",
         }
@@ -244,6 +246,7 @@ def _persist_report(session_factory, user_id: str, job_id: str, input_prefix: st
                 embedding_record_repository=DatabaseEmbeddingRecordRepository(session),
                 report_repository=DatabaseReportRepository(session),
                 analysis_log_repository=DatabaseAnalysisLogRepository(session),
+                feedback_repository=DatabaseFeedbackRepository(session),
             ),
         )
         DatabaseAnalysisJobRepository(session).save(result)

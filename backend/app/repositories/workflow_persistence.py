@@ -7,3 +7,4 @@ class WorkflowPersistence:
     embedding_record_repository: object
     report_repository: object
     analysis_log_repository: object
+    feedback_repository: object

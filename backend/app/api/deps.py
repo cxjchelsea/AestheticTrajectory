@@ -41,6 +41,7 @@ def get_analysis_job_service(session: Session = Depends(get_session)) -> Analysi
             embedding_record_repository=DatabaseEmbeddingRecordRepository(session),
             report_repository=DatabaseReportRepository(session),
             analysis_log_repository=DatabaseAnalysisLogRepository(session),
+            feedback_repository=DatabaseFeedbackRepository(session),
         )
         return AnalysisJobService(
             DatabaseAnalysisJobRepository(session),
