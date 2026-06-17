@@ -65,6 +65,27 @@ def test_generate_report_summary_uses_observable_features_without_diagnostic_lan
     assert "灵魂" not in report.summary
 
 
+def test_generate_report_scopes_mock_interpretation_and_insight_ids_by_report() -> None:
+    features = [_feature("input_001"), _feature("input_002"), _feature("input_003")]
+    groups = [
+        SimilarityGroup(
+            groupId="group_similarity_001",
+            name="低密度相似组",
+            inputIds=["input_001", "input_002"],
+            commonFeatures=["density:low", "saturation:low"],
+            uncertainty="样本数量较少。",
+        )
+    ]
+    generator = MockInterpretationGenerator()
+    interpretations = generator.interpret(groups, features, ["input_001", "input_002", "input_003"])
+    insights = generator.insights(groups, features, ["input_001", "input_002", "input_003"])
+
+    report = generate_report("report_001", features, groups, interpretations, insights)
+
+    assert report.possible_interpretations[0].id == "report_001_interpretation_mock_001"
+    assert report.insights[0].insight_id == "report_001_insight_mock_001"
+
+
 def _feature(input_id: str) -> InputFeature:
     return InputFeature(
         inputId=input_id,

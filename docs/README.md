@@ -36,6 +36,7 @@ archive 历史归档
 - V1：真实输入、底层特征抽象、embedding 抽象、相似性分组、报告、反馈、PostgreSQL 持久化、analysis logs。
 - V2-A：历史报告列表与详情回看。
 - V2-B：轻量画像数据模型与 profile evidence 已完成代码实现、自动测试、PostgreSQL runtime 验收和前端手动验收。
+- V2-C：反馈权重、否定解释和记忆更新已完成自动验证，等待前端人工验收。
 
 不要在第一版提前实现：
 
@@ -61,4 +62,4 @@ archive 历史归档
 - V2-A 已验收归档：`iterations/v2-a-report-history.md`
 - V2-0 已验收归档：`iterations/v2-0-memory-user-model-research.md`
 - V2-B 已验收通过：`iterations/v2-b-profile-evidence.md`
-- 下一步：V2-C 规划，详见 `12-开发任务拆分与里程碑计划.md`
+- 当前：V2-C 前端人工验收，详见 `iterations/v2-c-feedback-weight-memory-update.md`

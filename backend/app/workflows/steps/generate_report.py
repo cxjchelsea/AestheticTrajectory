@@ -10,16 +10,30 @@ def generate_report(
     interpretations: list[PossibleInterpretation],
     insights: list[Insight],
 ) -> ReportResponse:
+    scoped_interpretations = [_with_report_scoped_interpretation_id(report_id, item) for item in interpretations]
+    scoped_insights = [_with_report_scoped_insight_id(report_id, item) for item in insights]
     return ReportResponse(
         reportId=report_id,
         title="近期审美观察报告",
-        summary=_build_summary(features, groups, interpretations),
+        summary=_build_summary(features, groups, scoped_interpretations),
         lowLevelFeatures=features,
         similarityGroups=groups,
-        possibleInterpretations=interpretations,
-        insights=insights,
+        possibleInterpretations=scoped_interpretations,
+        insights=scoped_insights,
         disclaimer="这是一份基于当前输入的审美观察，不是人格诊断、心理评估或长期画像。",
     )
+
+
+def _with_report_scoped_interpretation_id(report_id: str, item: PossibleInterpretation) -> PossibleInterpretation:
+    if item.id.startswith(f"{report_id}_"):
+        return item
+    return item.model_copy(update={"id": f"{report_id}_{item.id}"})
+
+
+def _with_report_scoped_insight_id(report_id: str, item: Insight) -> Insight:
+    if item.insight_id.startswith(f"{report_id}_"):
+        return item
+    return item.model_copy(update={"insight_id": f"{report_id}_{item.insight_id}"})
 
 
 def _build_summary(

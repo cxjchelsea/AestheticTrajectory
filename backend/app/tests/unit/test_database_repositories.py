@@ -145,6 +145,41 @@ def test_database_profile_repository_builds_evidence_backed_profile() -> None:
     assert rejected_items[0].evidence[0].direction == "negative"
 
 
+def test_database_feedback_repository_updates_existing_target_feedback() -> None:
+    session_factory = _session_factory()
+    report_id = _persist_report(session_factory, "user_anonymous", "job_feedback_update", "feedback_update")
+
+    with session_factory() as session:
+        report = DatabaseReportRepository(session).get(report_id)
+        assert report is not None
+        service = FeedbackService(DatabaseFeedbackRepository(session))
+
+        first_feedback = service.create_feedback(
+            report.insights[0].insight_id,
+            CreateInsightFeedbackRequest(rating="somewhat_me", comment="first"),
+        )
+        second_feedback = service.create_feedback(
+            report.insights[0].insight_id,
+            CreateInsightFeedbackRequest(rating="not_me", comment="updated"),
+        )
+        current_feedback = service.get_feedback(report.insights[0].insight_id)
+        profile = DatabaseProfileRepository(session).get_or_build("user_anonymous")
+        session.commit()
+
+    assert second_feedback.id == first_feedback.id
+    assert current_feedback is not None
+    assert current_feedback.rating == "not_me"
+    assert profile.profile is not None
+    feedback_evidence = [
+        evidence
+        for item in profile.profile.items
+        for evidence in item.evidence
+        if evidence.evidence_type == "feedback"
+    ]
+    assert len(feedback_evidence) == 1
+    assert feedback_evidence[0].direction == "negative"
+
+
 def _session_factory():
     engine = create_engine(
         "sqlite+pysqlite://",

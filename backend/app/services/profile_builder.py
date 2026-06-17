@@ -54,7 +54,11 @@ def build_profile_from_sources(
                 )
 
         for insight in report.insights:
-            related_feedback = [item for item in feedback if item.insight_id == insight.insight_id]
+            related_feedback = [
+                item
+                for item in feedback
+                if item.insight_id == insight.insight_id and item.id not in processed_feedback_ids
+            ]
             for item in related_feedback:
                 processed_feedback_ids.add(item.id)
                 key = _profile_key("insight", insight.title)
@@ -116,17 +120,19 @@ def _to_profile_item(item_id: str, draft: ItemDraft) -> ProfileItem:
     positive_count = sum(1 for evidence in draft.evidence if evidence.direction == "positive")
     negative_count = sum(1 for evidence in draft.evidence if evidence.direction == "negative")
     uncertain_count = sum(1 for evidence in draft.evidence if evidence.direction == "uncertain")
+    weight = max(-1.0, min(1.0, sum(evidence.weight_delta for evidence in draft.evidence)))
 
-    if negative_count and not positive_count:
+    if negative_count and weight <= 0:
         status = "rejected"
     elif uncertain_count and not positive_count:
         status = "uncertain"
+    elif negative_count and positive_count:
+        status = "recent" if weight > 0 else "uncertain"
     elif positive_count >= 2 or any(evidence.weight_delta >= 0.4 for evidence in draft.evidence):
         status = "stable"
     else:
         status = "recent"
 
-    weight = max(-1.0, min(1.0, sum(evidence.weight_delta for evidence in draft.evidence)))
     confidence = max(0.1, min(0.95, abs(weight) + min(len(draft.evidence), 3) * 0.1))
     return ProfileItem(
         id=item_id,
@@ -172,7 +178,7 @@ def _label(name: str, value: str) -> str:
 
 
 def _summary(items: list[ProfileItem]) -> str:
-    positive_items = [item.label for item in items if item.status in {"stable", "recent"}]
+    positive_items = [item.label for item in items if item.status in {"stable", "recent"} and item.weight > 0]
     if not positive_items:
         return "系统目前主要记录了被否定或不确定的审美解释，尚未形成正向轻量画像。"
     labels = "、".join(positive_items[:3])

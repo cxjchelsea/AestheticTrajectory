@@ -72,11 +72,33 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     feedback = feedback_response.json()
     assert feedback["insightId"] == report["insights"][0]["insightId"]
 
+    current_feedback_response = client.get(f"/api/insights/{report['insights'][0]['insightId']}/feedback")
+    assert current_feedback_response.status_code == 200
+    assert current_feedback_response.json()["rating"] == "somewhat_me"
+
+    revised_feedback_response = client.post(
+        f"/api/insights/{report['insights'][0]['insightId']}/feedback",
+        json={"rating": "not_me", "comment": "revised validation test"},
+    )
+    assert revised_feedback_response.status_code == 200
+    revised_feedback = revised_feedback_response.json()
+    assert revised_feedback["id"] == feedback["id"]
+    assert revised_feedback["rating"] == "not_me"
+
     updated_profile_response = client.get("/api/users/user_anonymous/profile")
     assert updated_profile_response.status_code == 200
     updated_profile = updated_profile_response.json()["profile"]
-    assert any(
-        evidence["evidenceType"] == "feedback"
+    feedback_evidence = [
+        evidence
         for item in updated_profile["items"]
         for evidence in item["evidence"]
+        if evidence["evidenceType"] == "feedback" and evidence["evidenceId"] == revised_feedback["id"]
+    ]
+    assert len(feedback_evidence) == 1
+    assert feedback_evidence[0]["direction"] == "negative"
+
+    missing_feedback_response = client.post(
+        "/api/insights/insight_missing/feedback",
+        json={"rating": "not_me", "comment": "should fail"},
     )
+    assert missing_feedback_response.status_code == 404

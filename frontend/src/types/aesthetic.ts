@@ -81,6 +81,16 @@ export interface ReportHistoryResponse {
 
 export type FeedbackRating = "not_me" | "unsure" | "somewhat_me" | "very_me";
 
+export interface InsightFeedbackResponse {
+  id: string;
+  userId: string;
+  insightId: string;
+  interpretationId?: string | null;
+  rating: FeedbackRating;
+  comment?: string | null;
+  createdAt: string;
+}
+
 export type ProfileItemStatus = "stable" | "recent" | "rejected" | "uncertain" | "inactive" | "hidden" | "deleted";
 
 export type ProfileEvidenceType = "feature" | "report" | "interpretation" | "insight" | "feedback";

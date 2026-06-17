@@ -44,6 +44,10 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory }: ProfileP
     (sum, item) => sum + item.evidence.filter((evidence) => evidence.evidenceType === "feedback").length,
     0
   ) ?? 0;
+  const positiveItems = profile?.items.filter((item) => item.status === "stable" || item.status === "recent") ?? [];
+  const correctionItems = profile?.items.filter(
+    (item) => item.status === "rejected" || item.status === "uncertain"
+  ) ?? [];
 
   return (
     <main className="page profile-page">
@@ -82,7 +86,7 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory }: ProfileP
         <>
           <section className="profile-summary">
             <p className="eyebrow">画像摘要 · {profile.version}</p>
-            <h2>{humanizeSummary(profile.summary, profile.items)}</h2>
+            <h2>{humanizeSummary(profile.summary, positiveItems)}</h2>
             <p className="muted">
               已汇总 {profile.items.length} 个倾向条目、{totalEvidence} 条支撑证据，其中 {feedbackEvidence} 条来自你的反馈。
               该画像只描述输入中出现的审美倾向，不做人格、心理或能力判断。
@@ -90,50 +94,76 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory }: ProfileP
             <small className="muted">最近更新 {new Date(profile.updatedAt).toLocaleString()}</small>
           </section>
 
+          {correctionItems.length > 0 ? (
+            <section className="profile-list" aria-label="已否定或待确认的解释">
+              <div className="section-heading">
+                <p className="eyebrow">Feedback Corrections</p>
+                <h2>你已否定或待确认的解释</h2>
+                <p className="muted">这些记录不会进入正向画像摘要，但会用于提醒系统后续不要继续强化不符合你的解释。</p>
+              </div>
+              {correctionItems.map((item) => (
+                <ProfileItemCard item={item} key={item.id} correction />
+              ))}
+            </section>
+          ) : null}
+
           <section className="profile-list" aria-label="画像条目列表">
             <div className="section-heading">
               <p className="eyebrow">Profile Items</p>
               <h2>倾向条目</h2>
-              <p className="muted">每个条目都保留可追溯证据；页面优先展示最近的 4 条，避免把内部记录一次性铺满。</p>
+              <p className="muted">这里只展示系统当前认为可以作为正向画像的倾向；被你否定或仍不确定的解释会单独放在下方。</p>
             </div>
-            {profile.items.map((item) => (
-              <article className="profile-card" key={item.id}>
-                <div className="profile-card-header">
-                  <div>
-                    <p className="eyebrow">{statusLabel(item.status)}</p>
-                    <h2>{humanizeProfileLabel(item.label)}</h2>
-                  </div>
-                  <small>{item.sourceCount} 条证据 · 可信度 {Math.round(item.confidence * 100)}%</small>
-                </div>
-                <p className="muted">倾向强度 {formatWeight(item.weight)} · 最近出现 {new Date(item.lastSeenAt).toLocaleString()}</p>
-                {item.evidence.some((evidence) => evidence.evidenceType === "feedback") ? (
-                  <p className="feedback-callout">包含来自你反馈的证据。</p>
-                ) : null}
-                <div className="evidence-heading">
-                  <h3>支撑证据</h3>
-                  <span>Evidence refs</span>
-                </div>
-                <div className="evidence-stack">
-                  {item.evidence.slice(0, 4).map((evidence) => (
-                    <div className="evidence-chip" key={evidence.id}>
-                      <div className="evidence-chip-header">
-                        <strong>{directionLabel(evidence.direction)}</strong>
-                        <span>{evidenceTypeLabel(evidence.evidenceType)}</span>
-                      </div>
-                      <p>{humanizeEvidenceNote(evidence)}</p>
-                      <small className="muted">证据引用：{shortEvidenceRef(evidence)}</small>
-                    </div>
-                  ))}
-                  {item.evidence.length > 4 ? (
-                    <p className="muted">另有 {item.evidence.length - 4} 条证据已折叠。</p>
-                  ) : null}
-                </div>
-              </article>
-            ))}
+            {positiveItems.length > 0 ? positiveItems.map((item) => (
+              <ProfileItemCard item={item} key={item.id} />
+            )) : (
+              <section className="empty-state">
+                <h2>暂时没有正向画像条目</h2>
+                <p>系统目前只记录到被否定或仍不确定的解释，还不会把它们写成你的审美倾向。</p>
+              </section>
+            )}
           </section>
         </>
       ) : null}
     </main>
+  );
+}
+
+function ProfileItemCard({ item, correction = false }: { item: ProfileItem; correction?: boolean }) {
+  return (
+    <article className={correction ? "profile-card profile-card-correction" : "profile-card"}>
+      <div className="profile-card-header">
+        <div>
+          <p className="eyebrow">{statusLabel(item.status)}</p>
+          <h2>{humanizeProfileLabel(item.label)}</h2>
+        </div>
+        <small>{item.sourceCount} 条证据 · 可信度 {Math.round(item.confidence * 100)}%</small>
+      </div>
+      <p className="muted">倾向强度 {formatWeight(item.weight)} · 最近出现 {new Date(item.lastSeenAt).toLocaleString()}</p>
+      {item.evidence.some((evidence) => evidence.evidenceType === "feedback") ? (
+        <p className={correction ? "feedback-callout feedback-callout-correction" : "feedback-callout"}>
+          {correction ? "这条解释已被你的反馈修正，不会作为正向画像强化。" : "包含来自你反馈的证据。"}
+        </p>
+      ) : null}
+      <div className="evidence-heading">
+        <h3>{correction ? "修正证据" : "支撑证据"}</h3>
+        <span>Evidence refs</span>
+      </div>
+      <div className="evidence-stack">
+        {item.evidence.slice(0, 4).map((evidence) => (
+          <div className="evidence-chip" key={evidence.id}>
+            <div className="evidence-chip-header">
+              <strong>{directionLabel(evidence.direction)}</strong>
+              <span>{evidenceTypeLabel(evidence.evidenceType)}</span>
+            </div>
+            <p>{humanizeEvidenceNote(evidence)}</p>
+            <small className="muted">证据引用：{shortEvidenceRef(evidence)}</small>
+          </div>
+        ))}
+        {item.evidence.length > 4 ? (
+          <p className="muted">另有 {item.evidence.length - 4} 条证据已折叠。</p>
+        ) : null}
+      </div>
+    </article>
   );
 }
 

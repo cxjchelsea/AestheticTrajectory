@@ -252,7 +252,40 @@ class DatabaseFeedbackRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def insight_exists(self, insight_id: str) -> bool:
+        return self.session.get(InsightModel, insight_id) is not None
+
+    def get_for_target(self, user_id: str, insight_id: str) -> InsightFeedbackResponse | None:
+        row = self.session.scalars(
+            select(InsightFeedbackModel)
+            .where(
+                InsightFeedbackModel.user_id == user_id,
+                InsightFeedbackModel.insight_id == insight_id,
+            )
+            .order_by(InsightFeedbackModel.created_at.desc(), InsightFeedbackModel.id.desc())
+        ).first()
+        if row is None:
+            return None
+        return InsightFeedbackResponse(
+            id=row.id,
+            userId=row.user_id,
+            insightId=row.insight_id,
+            interpretationId=row.interpretation_id,
+            rating=row.rating,
+            comment=row.comment,
+            createdAt=row.created_at,
+        )
+
     def save(self, feedback: InsightFeedbackResponse) -> InsightFeedbackResponse:
+        existing = self.session.scalars(
+            select(InsightFeedbackModel).where(
+                InsightFeedbackModel.user_id == feedback.user_id,
+                InsightFeedbackModel.insight_id == feedback.insight_id,
+            )
+        ).all()
+        for row in existing:
+            if row.id != feedback.id:
+                self.session.delete(row)
         self.session.merge(
             InsightFeedbackModel(
                 id=feedback.id,

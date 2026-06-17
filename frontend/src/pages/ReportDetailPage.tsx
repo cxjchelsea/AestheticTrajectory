@@ -11,11 +11,21 @@ interface ReportDetailPageProps {
   report: ReportResponse;
   inputs: AestheticInput[];
   debugJobId?: string | null;
+  onHome: () => void;
   onRestart: () => void;
   onViewHistory: () => void;
+  onViewProfile: () => void;
 }
 
-export function ReportDetailPage({ report, inputs, debugJobId, onRestart, onViewHistory }: ReportDetailPageProps) {
+export function ReportDetailPage({
+  report,
+  inputs,
+  debugJobId,
+  onHome,
+  onRestart,
+  onViewHistory,
+  onViewProfile
+}: ReportDetailPageProps) {
   const evidenceInputs = inputs.length >= 3 ? inputs : starterInputs;
   const [debugPayload, setDebugPayload] = useState<AnalysisJobDebugResponse | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
@@ -56,7 +66,9 @@ export function ReportDetailPage({ report, inputs, debugJobId, onRestart, onView
           <p>{report.summary}</p>
         </div>
         <div className="hero-actions">
+          <Button variant="secondary" onClick={onHome}>返回首页</Button>
           <Button variant="secondary" onClick={onViewHistory}>历史报告</Button>
+          <Button variant="secondary" onClick={onViewProfile}>轻量画像</Button>
           <Button variant="secondary" onClick={onRestart}>重新上传</Button>
         </div>
       </div>

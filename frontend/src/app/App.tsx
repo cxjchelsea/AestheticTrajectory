@@ -50,8 +50,10 @@ export function App() {
         report={report}
         inputs={inputs}
         debugJobId={debugJobId}
+        onHome={() => setRoute("home")}
         onRestart={startUploadFlow}
         onViewHistory={() => setRoute("history")}
+        onViewProfile={() => setRoute("profile")}
       />
     );
   }

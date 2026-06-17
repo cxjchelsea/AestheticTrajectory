@@ -411,6 +411,10 @@ textarea {
   gap: 14px;
 }
 
+.profile-card-correction {
+  background: #fbf8f1;
+}
+
 .profile-card-header {
   display: flex;
   gap: 18px;
@@ -425,6 +429,12 @@ textarea {
   color: #1d4b45;
   background: #eef4ef;
   font-weight: 700;
+}
+
+.feedback-callout-correction {
+  border-left-color: #8b5351;
+  color: #6f342f;
+  background: #f7ece8;
 }
 
 .evidence-heading {

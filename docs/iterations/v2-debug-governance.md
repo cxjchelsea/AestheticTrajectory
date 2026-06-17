@@ -8,7 +8,7 @@
 - 失败处理与降级策略：允许必要降级，但必须显性化、可追踪、可测试。
 - Developer Debug Panel v0：让开发者看到 workflow trace、fallback、mock、schema validation 和边界状态。
 
-本轮是横向基础设施，不改变 V2-C 的反馈权重和报告对比业务目标。
+本轮是横向基础设施，不改变 V2-C 的反馈权重、否定解释和记忆更新业务目标。
 
 ## 2. 边界
 
