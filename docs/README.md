@@ -71,4 +71,5 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - V2-C 已完成：`iterations/v2-c-feedback-weight-memory-update.md`
 - V2-D 已完成：`iterations/v2-d-report-comparison.md`
 - V2-E 已完成：`iterations/v2-e-memory-governance-validation.md`
-- 当前：V3-0 版本级研究与架构拆分，不能直接进入 V3 runtime 实现。
+- 当前：V3-0 版本级研究与架构拆分已建立，等待复核后进入 V3-A Personalized History Retrieval，不能直接进入完整 V3 RAG runtime。
+- V3-0：`iterations/v3-0-personalized-retrieval-research.md`
