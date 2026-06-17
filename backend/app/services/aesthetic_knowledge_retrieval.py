@@ -5,11 +5,13 @@ from app.schemas.knowledge_context import AestheticKnowledgeContext, KnowledgeCo
 DISCLAIMER = (
     "以下知识参考来自项目审美知识库，只用于解释风格概念，不代表用户偏好证据。"
 )
+MIN_FEATURE_OVERLAP = 1
+DEFAULT_TOP_K = 3
 
 
 def build_aesthetic_knowledge_context(
     current_features: list[InputFeature],
-    top_k: int = 3,
+    top_k: int = DEFAULT_TOP_K,
 ) -> AestheticKnowledgeContext:
     feature_keys = _feature_keys(current_features)
     if not feature_keys:
@@ -20,15 +22,14 @@ def build_aesthetic_knowledge_context(
 
     ranked = sorted(
         (
-            (_overlap_score(chunk, feature_keys), chunk)
+            (_overlap_score(chunk, feature_keys), chunk.doc_id, chunk)
             for chunk in AESTHETIC_KNOWLEDGE_CHUNKS
         ),
-        key=lambda item: item[0],
-        reverse=True,
+        key=lambda item: (-item[0], item[1]),
     )
     items: list[KnowledgeContextItem] = []
-    for score, chunk in ranked:
-        if score <= 0:
+    for score, _doc_id, chunk in ranked:
+        if score < MIN_FEATURE_OVERLAP:
             continue
         matched = sorted(feature_keys & chunk.feature_tags)
         items.append(_to_item(chunk, matched))

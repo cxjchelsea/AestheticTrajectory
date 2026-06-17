@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-research_realigned / pending_manual_validation
+accepted / manual_validation_passed
 ```
 
 创建日期：
@@ -399,7 +399,7 @@ extract_features
 ## 10. 人工验收
 
 ```text
-待用户重新验收（调研重对齐后）：
+2026-06-17（调研重对齐后，用户人工验收通过）：
 - 完成两次特征重叠的分析后，第二份报告详情页出现“历史参考”。
 - 历史 feedback 不会在无特征重叠时出现。
 - overlap 更高的历史 report 优先展示。
@@ -411,5 +411,5 @@ extract_features
 ## 11. 下一步
 
 ```text
-用户完成 V3-A 重验收后，按同样流程重跑 V3-B（先调研、再方案、再实现）。
+V3-A 重验收已通过；V3-B 按同样流程重跑中。
 ```

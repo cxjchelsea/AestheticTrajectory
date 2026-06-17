@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-accepted / manual_validation_passed
+research_realigned / pending_manual_validation
 ```
 
 创建日期：
@@ -37,32 +37,38 @@ workflow 基于当前特征检索项目内置审美知识库
 - 不接入 ChromaDB runtime、LangSmith、OpenTelemetry。
 - 不把知识库内容写入用户画像。
 
-## 3. 外部调研与方案选择（补记）
+引用 V3-A 已落地边界：
 
-本节为流程补记，原应在实现 V3-B 前完成；记录内容与已验收实现一致。
+- retrieval 先做 relevance filter，再 ranking。
+- supplementary context 与 insight evidenceRefs 永久分区。
+
+## 3. 外部调研与方案选择
+
+本节在实现 V3-B 前完成；2026-06-17 流程重跑后，调研结论已回写实现。
 
 调研层级：
 
 ```text
 版本级：引用 docs/iterations/v3-0-personalized-retrieval-research.md §6.2、§6.3
 能力级：aesthetic knowledge RAG、explanation support vs preference evidence
-实现级：静态 knowledge chunks、feature tag 匹配、workflow 挂载、前端 citation 展示
+实现级：静态 knowledge chunks、feature tag 匹配、abstention、overlap ranking、workflow 挂载、前端 citation
 ```
 
 ### 3.1 调研问题
 
-- V3-B 的最小知识库应做成向量 RAG，还是 curated static chunks + metadata/tag 匹配？
-- 审美知识 reference 应如何与 insight evidence、history context 三分离？
-- 无匹配知识时，系统应 abstain 还是让 LLM 自由发挥？
+- 小型 curated corpus 是否应优先 metadata/tag 匹配，而不是 embedding + vector DB？
+- 知识 reference 应如何与 insight evidence、history context 三分离？
+- 小型知识库是否应更 aggressive 地 abstain，避免弱相关 chunk 被当作解释依据？
+- 多条 chunk 候选时，应按什么规则 ranking？
 - knowledge context 是否允许进入 profile positive evidence？
-- workflow 中 knowledge retrieval 与 history retrieval 的边界应如何在 debug 层显式标记？
+- workflow / debug 层应如何区分 history retrieval 与 aesthetic knowledge RAG？
 
 ### 3.2 外部调研记录
 
 当前状态：
 
 ```text
-completed（补记）
+completed
 ```
 
 #### 记录 1：RAG 的正确定位是 explanation support
@@ -76,7 +82,7 @@ completed（补记）
 调研问题：
 
 - 外部知识库应提供什么类型的信息？
-- 为什么 knowledge evidence 不能替代 user preference evidence？
+- citation 是否是 V3-B 的必需项？
 
 核心做法：
 
@@ -101,128 +107,159 @@ completed（补记）
 V3-B 定位为 explanation support RAG；knowledgeContext 独立 schema，带来源 citation，且不进入 profile positive evidence。
 ```
 
-#### 记录 2：小型 curated knowledge base 的非向量 MVP
+#### 记录 2：小型 corpus 应优先 abstention，而不是硬答
 
-来源名称：KB-API — self-hosted markdown knowledge API with BM25
+来源名称：How to Build RAG When Your Corpus Is Under 100 Documents
 
-来源类型：开源实现 / 小型知识库检索实践
+来源类型：工程实践 / small corpus RAG
 
-链接或出处：`https://github.com/teamerisingstars/KB-API`
+链接或出处：`https://wiki.charleschen.ai/ai/processed/wiki/llm-core/rag/queries/getting-started/how-to-build-rag-for-a-small-corpus`
 
 调研问题：
 
-- 在 chunk 数量很少时，是否值得先上 embedding + vector DB？
-- 如何实现 honest “no answer” 路径？
+- chunk 很少时，是否仍应返回弱相关结果？
+- 如何测试 abstention？
 
 核心做法：
 
-- 小型 `.md` / curated corpus 可用 BM25、metadata filter 或 tag overlap 做 deterministic retrieval。
-- 当 confidence 低于阈值时返回 `null`，不合成内容。
-- answer 字段应是匹配段落本身，而不是 LLM 自由 paraphrase。
+- 小型 corpus 覆盖率有限，应设置更 aggressive 的 retrieval threshold。
+- 最佳匹配低于阈值时应明确 abstain，而不是用 tangentially relevant chunk 硬答。
+- 必须单独测试 out-of-scope query 的 abstention。
 
 对 V3-B 的启发：
 
-- V3-B 目标是验证 knowledge context 边界，不是搭建大规模 vector knowledge platform。
-- 项目内置 `AestheticKnowledgeContext` + static chunks + feature tag overlap 足够支撑 MVP。
-- 无匹配时必须返回明确 message，而不是伪造偏好或风格结论。
+- 初版实现只要 score > 0 就返回 item，对 out-of-scope feature 虽已 abstain，但缺少显式 threshold 常量与 out-of-scope 测试。
+- 无 overlap 时必须返回明确 message，而不是伪造风格/偏好结论。
+- 需要补 out-of-scope feature 的单测与 `MIN_FEATURE_OVERLAP` 常量。
 
 不能照搬：
 
-- 不引入 BM25 / NLTK / 独立 KB-API 服务。
-- 不做自然语言 question answering；只做 feature tag → knowledge chunk 匹配。
+- 不引入 embedding similarity threshold 或 RAGAS runtime。
+- 不做 100+ query golden set；只补关键 abstention / overlap 单测。
 
 采用结论：
 
 ```text
-V3-B 采用内置静态 knowledge chunks + feature tag 启发式匹配，top_k=3，score<=0 时不返回 item。
+V3-B 采用 MIN_FEATURE_OVERLAP=1 的 abstention gate；无匹配时返回“暂未找到与当前输入足够相关的审美知识参考。”
 ```
 
 #### 记录 3：metadata / tag filtering 作为 embedding 前的可行路径
 
-来源名称：LlamaIndex — Metadata Extraction and Filtering
+来源名称：Metadata-Based Filtering in RAG Systems
 
-来源类型：框架文档 / RAG indexing 实践
+来源类型：课程文档 / RAG filtering 实践
 
-链接或出处：`https://docs.llamaindex.ai/en/stable/module_guides/indexing/metadata_extraction/`
+链接或出处：`https://codesignal.com/learn/courses/scaling-up-rag-with-vector-databases/lessons/metadata-based-filtering-in-rag-systems`
 
 调研问题：
 
 - 在 embedding pipeline 未就绪时，如何用 metadata / tags 做 pre-filter？
-- knowledge chunk 应携带哪些最小 metadata？
+- 多条 chunk 候选时如何减少 noise？
 
 核心做法：
 
-- chunk 可携带 tags、categories、section metadata，并在 retrieval 前先 filter。
-- metadata filter 能显著降低 noise，且比 full vector search 更易测试。
+- 先用 metadata filter 缩小候选，再做 relevance ranking。
 - 对 domain-specific small KB，curated tags 往往比 generic embedding 更稳定。
 
 对 V3-B 的启发：
 
-- 每个 `KnowledgeChunk` 带 `feature_tags`、`title`、`snippet`、`sourceId`。
-- 匹配逻辑基于 `feature key` 与 chunk tags 的 overlap score，结果 deterministic。
+- 每个 `KnowledgeChunk` 带 `feature_tags`、`title`、`snippet`、`source`。
+- 匹配逻辑基于 feature key overlap count，结果 deterministic。
 - 与 V3-A heuristic retrieval 保持同一 workflow step + pure function 模式。
 
 不能照搬：
 
-- 不引入 LlamaIndex runtime。
+- 不引入 ChromaDB / vector DB filter API。
 - 不做 LLM metadata extraction；tags 由项目维护者手工 curated。
 
 采用结论：
 
 ```text
-V3-B knowledge base 采用手工 curated feature_tags；service 层纯函数排序并截断 top_k。
+V3-B 采用手工 curated feature_tags + overlap-count ranking；不引入 vector runtime。
 ```
 
-#### 记录 4：前端 citation 与辅助区块展示
+#### 记录 4：overlap ranking 与稳定 tie-break
 
-来源名称：RAGAS — Faithfulness metric concept
+来源名称：RAG knowledge base: answers grounded in sources, never invented
 
-来源类型：评估框架文档 / grounding 概念
+来源类型：工程实践 / grounded RAG
 
-链接或出处：`https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/`
+链接或出处：`https://www.tmmagency.com/en/rag-knowledge-base-that-does-not-invent/`
 
 调研问题：
 
-- 用户如何知道某段风格解释来自知识库，而不是模型臆测？
-- Developer Debug 应如何区分 history retrieval 与 aesthetic knowledge RAG？
+- 多条 chunk 分数接近时，如何避免不稳定结果？
+- UI 层如何支撑 grounding？
 
 核心做法：
 
-- faithfulness 要求 response claims 可被 retrieved context 支持。
-- 在 UI 层，最轻量的 faithfulness 支撑是显式展示 retrieved snippet + source ref。
-- retrieval / generation 组件应可分别 trace。
+- 检索结果应可追溯到 source metadata；低于 grounding threshold 时不应输出。
+- 每条 fragment 应携带 source metadata，作为 citation 基础。
+- 对 small KB，确定性 ranking 比复杂 rerank 更适合 MVP。
 
 对 V3-B 的启发：
 
-- 前端“知识参考”展示 title、snippet、source refs，与“历史参考”“重点洞察”分区。
-- workflow 增加 `retrieve_aesthetic_knowledge` step；Developer Debug 对该 step 给出 boundary warning。
-- disclaimer 明确“只用于解释风格概念，不代表用户偏好证据”。
+- 初版按 score 排序但未定义 tie-break，测试结果可能不稳定。
+- 应像 V3-A 一样采用 overlap-count 降序 + 稳定 secondary key（docId）。
+- 前端“知识参考”展示 title、snippet、matchedFeatures、source refs。
 
 不能照搬：
 
-- V3-B 不接入 RAGAS runtime 或 LLM-as-judge。
-- 不做 sentence-level claim extraction。
+- 不做 LLM grounding judge 或 delivery-time faithfulness check。
+- 不引入权限 metadata filter。
 
 采用结论：
 
 ```text
-V3-B 在前端与 debug trace 中显式展示 knowledge citation，并与 history retrieval 分 step、分区块。
+V3-B 采用 overlap-count 降序 ranking，tie-break 使用 docId；前端与 debug trace 分 step、分区块展示 citation。
 ```
 
-### 3.3 最终方案选择
+### 3.3 方案对比
+
+| 方案 | 做法 | 优点 | 缺点 | 结论 |
+| --- | --- | --- | --- | --- |
+| A | 静态 curated chunks + feature tag overlap + abstention gate | 可解释、可单测、零 vector 依赖 | 无语义相似度 | **采用** |
+| B | ChromaDB / embedding semantic retrieval | 可找语义相近概念 | 超 V3-B 边界，依赖 mock embedding runtime | 拒绝 |
+| C | 任意 score>0 的 chunk 直接返回 | 实现最简单 | 弱相关 chunk 可能污染解释 | 拒绝 |
+
+knowledge vs profile 处理：
+
+| 选项 | 结论 |
+| --- | --- |
+| 把 knowledge context 写入 profile positive evidence | 拒绝；知识是 explanation support，不是 preference evidence |
+| 仅挂载到 `ReportResponse.knowledgeContext` | **采用** |
+
+### 3.4 最终方案选择
 
 采用：
 
 ```text
-内置静态 knowledge chunks + 特征标签启发式匹配
+内置静态 knowledge chunks + feature tag overlap + MIN_FEATURE_OVERLAP gate + overlap ranking
 ```
 
-原因：
+规则：
 
-- 记录 1 明确 explanation support 边界；记录 2–3 支持 static curated KB + tag overlap MVP。
-- V3-B 目标是验证 knowledge context 边界，不是搭建大规模向量知识库。
-- 当前 mock feature extractor 输出稳定，可用 feature key 做 deterministic 匹配。
-- 与 V3-A 的纯函数 + workflow step 模式一致。
+- 从当前输入提取 feature key（仅含 evidence 的信号）。
+- 仅保留 overlap >= 1 的 chunk。
+- 按 overlap-count 降序，tie-break 使用 docId；最多 top 3。
+- 无匹配时返回明确 message，不伪造偏好或风格结论。
+- 每条 item 带 matchedFeatures、sourceRefs、note、disclaimer。
+
+### 3.5 调研对实现的影响
+
+相对初版实现，调研后调整：
+
+| 项 | 初版 | 调研后 |
+| --- | --- | --- |
+| overlap threshold | `score <= 0` 隐式判断 | 显式 `MIN_FEATURE_OVERLAP = 1` |
+| chunk 排序 | 仅按 score 降序 | overlap-count 降序 + docId tie-break |
+| out-of-scope abstention | 行为已有，缺测试 | 补 out-of-scope feature 单测 |
+| overlap 优先级 | 缺断言 | 补高 overlap chunk 优先单测 |
+
+代码影响：
+
+- `backend/app/services/aesthetic_knowledge_retrieval.py`
+- `backend/app/tests/unit/test_aesthetic_knowledge_retrieval.py`
 
 ## 4. 实现摘要
 
@@ -233,34 +270,89 @@ V3-B 在前端与 debug trace 中显式展示 knowledge citation，并与 histor
 - 前端 `ReportDetailPage` 新增“知识参考”区块。
 - Developer Debug 拆分 history retrieval 与 aesthetic knowledge RAG boundary warnings。
 
-## 5. 验收标准
+## 5. 模块契约
 
-- 报告详情页展示知识参考，且带来源 refs。
+### 5.1 `aesthetic_knowledge_retrieval` service
+
+输入：
+
+- 当前 features
+- top_k（默认 3）
+
+输出：
+
+- `AestheticKnowledgeContext`
+
+规则：
+
+- 仅匹配与当前输入 feature key 有 overlap 的 chunk。
+- overlap-count 降序，docId tie-break。
+- 所有 item 必须有 `sourceRefs` 与 `matchedFeatures`。
+- 不写入 profile positive evidence。
+
+### 5.2 workflow
+
+顺序片段：
+
+```text
+retrieve_personal_history
+→ retrieve_aesthetic_knowledge
+→ generate_report
+→ compute_report_evaluation
+→ save_report
+```
+
+## 6. 验收标准
+
+功能：
+
+- 报告详情页展示“知识参考”，且带来源 refs / matchedFeatures。
+- mock 特征（低饱和、低密度、非人物中心）应匹配对应知识条目。
+- out-of-scope feature 时返回明确 abstention message。
+- overlap 更高的 chunk 排在更前。
+
+治理：
+
 - 知识 reference 与 insight evidenceRefs 分离。
 - 知识 reference 不进入 profile positive evidence。
-- 无匹配时返回明确 message，不伪造偏好结论。
+- summary / note 不输出人格、心理、能力诊断式表达。
 
-## 6. 测试记录
+测试：
+
+- 单元测试：`test_aesthetic_knowledge_retrieval.py`
+- 集成测试：`test_api_flow.py` 覆盖 workflow step 与 knowledgeContext
+
+## 7. 权威设计文档更新
+
+本轮已上升：
+
+- `docs/11-模块拆分与接口测试文档.md`：补充 V3-B overlap ranking / abstention 测试说明。
+- `docs/13-验证与评估文档.md`：补充 V3-B out-of-scope abstention 治理检查。
+
+## 8. 测试记录
 
 ```text
-2026-06-17：
+2026-06-17（初版）：
 - 后端：REPOSITORY_BACKEND=memory python -m pytest backend/app/tests -q，36 passed, 3 warnings。
-- 前端：npm run build，通过。
+
+2026-06-17（调研重对齐后）：
+- 后端：REPOSITORY_BACKEND=memory python -m pytest backend/app/tests -q，43 passed, 3 warnings。
+- 新增 MIN_FEATURE_OVERLAP gate、overlap ranking tie-break、out-of-scope abstention 单测。
 ```
 
-## 7. 人工验收
+## 9. 人工验收
 
 ```text
-2026-06-17：
-- 用户已完成人工测试，V3-B 知识参考路径测试成功。
+待用户重新验收（调研重对齐后）：
 - 报告详情页出现“知识参考”区块。
-- 每条知识参考包含 title、snippet、source refs。
-- “知识参考”与“历史参考”“重点洞察”分区展示。
+- 每条知识参考包含 title、snippet、matchedFeatures、source refs。
+- “知识参考”与“历史参考”“重点洞察”“质量评估”分区展示。
 - Developer Debug 中出现 retrieve_aesthetic_knowledge step。
+- 正常 mock 分析应匹配至少 1 条知识参考；知识 note 不写成用户偏好结论。
 ```
 
-## 8. 下一步
+## 10. 下一步
 
 ```text
-用户已完成 V3-B 人工验收；下一步进入 V3-C Evaluation Metrics Baseline。
+用户完成 V3-B 重验收后，确认 V3-C 人工验收状态；随后进入 V3-D Retrieval / RAG Observability 或继续 V3-C 流程重跑（如需要）。
 ```

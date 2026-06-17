@@ -26,6 +26,38 @@ def test_aesthetic_knowledge_context_prefers_relevant_chunks() -> None:
     assert "kb_person_absent_composition" in doc_ids
 
 
+def test_aesthetic_knowledge_context_prefers_higher_feature_overlap() -> None:
+    context = build_aesthetic_knowledge_context(_features())
+
+    assert context.items
+    assert context.items[0].doc_id in {"kb_low_saturation_space", "kb_low_density_fragment"}
+    assert len(context.items[0].matched_features) >= 2
+
+
+def test_aesthetic_knowledge_context_abstains_for_out_of_scope_features() -> None:
+    context = build_aesthetic_knowledge_context(
+        [
+            InputFeature(
+                inputId="input_1",
+                featureType="text",
+                lowLevelFeatures={
+                    "color_mood": {
+                        "value": "warm",
+                        "confidence": 0.8,
+                        "evidence": ["evidence_1"],
+                    }
+                },
+                sampleEvidence=["sample evidence"],
+                promptVersion="test",
+                modelName="mock",
+            )
+        ]
+    )
+
+    assert context.items == []
+    assert context.message == "暂未找到与当前输入足够相关的审美知识参考。"
+
+
 def _features(presence: str = "person_absent") -> list[InputFeature]:
     return [
         InputFeature(
