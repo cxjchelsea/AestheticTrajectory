@@ -53,7 +53,90 @@ def test_report_evaluation_counts_unsupported_insights() -> None:
     evaluation = build_report_evaluation(report, [], [])
 
     assert evaluation.metrics.unsupported_insight_count == 1
-    assert evaluation.metrics.evidence_coverage == 1.0
+    assert evaluation.metrics.evidence_coverage == 0.0
+
+
+def test_report_evaluation_feedback_hit_rate_only_counts_report_insights() -> None:
+    report = _report()
+    feedback = [
+        InsightFeedbackResponse(
+            id="feedback_1",
+            userId="user_a",
+            insightId="report_insight",
+            interpretationId=None,
+            rating="very_me",
+            comment="认可",
+            createdAt=utc_now(),
+        ),
+        InsightFeedbackResponse(
+            id="feedback_2",
+            userId="user_a",
+            insightId="other_insight",
+            interpretationId=None,
+            rating="not_me",
+            comment="不应计入",
+            createdAt=utc_now(),
+        ),
+    ]
+
+    evaluation = build_report_evaluation(report, feedback, [])
+
+    assert evaluation.metrics.feedback_hit_rate == 1.0
+
+
+def test_report_evaluation_schema_pass_rate_ignores_not_recorded_steps() -> None:
+    from app.schemas.analysis_debug import SchemaValidationRecord
+
+    report = _report()
+    schema_validation = [
+        SchemaValidationRecord(
+            stepId="extract_features",
+            schemaName="InputFeature",
+            status="passed",
+            developerMessage="ok",
+        ),
+        SchemaValidationRecord(
+            stepId="missing_step",
+            schemaName="Missing",
+            status="not_recorded",
+            developerMessage="missing",
+        ),
+    ]
+
+    evaluation = build_report_evaluation(report, [], schema_validation)
+
+    assert evaluation.metrics.schema_pass_rate == 1.0
+
+
+def test_report_evaluation_retrieval_coverage_requires_source_refs() -> None:
+    report = ReportResponse(
+        reportId="report_refs",
+        title="title",
+        summary="summary",
+        lowLevelFeatures=_report().low_level_features,
+        similarityGroups=[],
+        possibleInterpretations=[],
+        insights=_report().insights,
+        disclaimer="测试",
+        knowledgeContext={
+            "items": [
+                {
+                    "docId": "kb_bad",
+                    "title": "bad",
+                    "snippet": "snippet",
+                    "matchedFeatures": ["saturation=low"],
+                    "sourceRefs": [],
+                    "note": "note",
+                }
+            ],
+            "summary": "summary",
+            "disclaimer": "disclaimer",
+        },
+    )
+
+    evaluation = build_report_evaluation(report, [], [])
+
+    assert evaluation.metrics.retrieval_coverage == 0.0
 
 
 def test_report_evaluation_feedback_hit_rate() -> None:

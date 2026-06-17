@@ -18,7 +18,7 @@ def build_report_evaluation(
     report_feedback = [item for item in feedback if item.insight_id in insight_ids]
 
     metrics = ReportEvaluationMetrics(
-        evidenceCoverage=_evidence_coverage(report),
+        evidenceCoverage=_evidence_coverage(report, input_ids),
         retrievalCoverage=_retrieval_coverage(report),
         unsupportedInsightCount=_unsupported_insight_count(report, input_ids),
         feedbackHitRate=_feedback_hit_rate(report_feedback),
@@ -36,11 +36,15 @@ def build_report_evaluation(
     )
 
 
-def _evidence_coverage(report: ReportResponse) -> float:
+def _evidence_coverage(report: ReportResponse, input_ids: set[str]) -> float:
     if not report.insights:
         return 1.0
-    covered = sum(1 for insight in report.insights if insight.evidence_refs)
-    return covered / len(report.insights)
+    grounded = sum(
+        1
+        for insight in report.insights
+        if insight.evidence_refs and any(ref in input_ids for ref in insight.evidence_refs)
+    )
+    return grounded / len(report.insights)
 
 
 def _unsupported_insight_count(report: ReportResponse, input_ids: set[str]) -> int:
@@ -90,11 +94,14 @@ def _feedback_hit_rate(feedback: list[InsightFeedbackResponse]) -> float | None:
     return positive / len(feedback)
 
 
-def _schema_pass_rate(schema_validation: list[SchemaValidationRecord]) -> float:
-    if not schema_validation:
-        return 0.0
-    passed = sum(1 for record in schema_validation if record.status == "passed")
-    return passed / len(schema_validation)
+def _schema_pass_rate(schema_validation: list[SchemaValidationRecord]) -> float | None:
+    applicable = [
+        record for record in schema_validation if record.status in {"passed", "failed"}
+    ]
+    if not applicable:
+        return None
+    passed = sum(1 for record in applicable if record.status == "passed")
+    return passed / len(applicable)
 
 
 def _summary(metrics: ReportEvaluationMetrics) -> str:
@@ -107,5 +114,11 @@ def _summary(metrics: ReportEvaluationMetrics) -> str:
         f"当前报告 evidence coverage {metrics.evidence_coverage:.0%}，"
         f"retrieval coverage {metrics.retrieval_coverage:.0%}，"
         f"unsupported insight {metrics.unsupported_insight_count} 条，"
-        f"schema pass rate {metrics.schema_pass_rate:.0%}；{feedback_text}"
+        f"schema pass rate {_format_rate(metrics.schema_pass_rate)}；{feedback_text}"
     )
+
+
+def _format_rate(value: float | None) -> str:
+    if value is None:
+        return "暂无 workflow schema 记录"
+    return f"{value:.0%}"

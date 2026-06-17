@@ -13,9 +13,10 @@ const ratings: Array<{ value: FeedbackRating; label: string }> = [
 interface FeedbackPanelProps {
   insightId: string;
   canPersist?: boolean;
+  onFeedbackSaved?: () => void;
 }
 
-export function FeedbackPanel({ insightId, canPersist = true }: FeedbackPanelProps) {
+export function FeedbackPanel({ insightId, canPersist = true, onFeedbackSaved }: FeedbackPanelProps) {
   const [selected, setSelected] = useState<FeedbackRating | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "local">("loading");
 
@@ -57,6 +58,7 @@ export function FeedbackPanel({ insightId, canPersist = true }: FeedbackPanelPro
       const feedback = await submitInsightFeedback(insightId, rating);
       setSelected(feedback.rating);
       setStatus("saved");
+      onFeedbackSaved?.();
     } catch {
       setStatus("local");
     }

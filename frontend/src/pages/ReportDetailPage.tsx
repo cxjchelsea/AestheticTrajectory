@@ -33,6 +33,7 @@ export function ReportDetailPage({
   const [debugPayload, setDebugPayload] = useState<AnalysisJobDebugResponse | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
   const [evaluation, setEvaluation] = useState<ReportEvaluationResponse | null>(null);
+  const [evaluationRefreshKey, setEvaluationRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!canPersistFeedback) {
@@ -56,7 +57,7 @@ export function ReportDetailPage({
     return () => {
       cancelled = true;
     };
-  }, [canPersistFeedback, report.reportId]);
+  }, [canPersistFeedback, report.reportId, evaluationRefreshKey]);
 
   useEffect(() => {
     if (!import.meta.env.DEV || !debugJobId) {
@@ -218,7 +219,11 @@ export function ReportDetailPage({
         {report.insights.map((insight) => (
           <div key={insight.insightId} className="insight-block">
             <InsightCard insight={insight} inputs={evidenceInputs} />
-            <FeedbackPanel insightId={insight.insightId} canPersist={canPersistFeedback} />
+            <FeedbackPanel
+              insightId={insight.insightId}
+              canPersist={canPersistFeedback}
+              onFeedbackSaved={() => setEvaluationRefreshKey((value) => value + 1)}
+            />
           </div>
         ))}
       </ReportSection>

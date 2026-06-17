@@ -71,7 +71,7 @@ export interface ReportEvaluationMetrics {
   retrievalCoverage: number;
   unsupportedInsightCount: number;
   feedbackHitRate?: number | null;
-  schemaPassRate: number;
+  schemaPassRate?: number | null;
   insightCount: number;
   historyContextItemCount: number;
   knowledgeContextItemCount: number;

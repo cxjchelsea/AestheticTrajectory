@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-research_realigned / pending_manual_validation
+accepted / manual_validation_passed
 ```
 
 创建日期：
@@ -343,16 +343,15 @@ retrieve_personal_history
 ## 9. 人工验收
 
 ```text
-待用户重新验收（调研重对齐后）：
+2026-06-17（调研重对齐后，用户人工验收通过）：
 - 报告详情页出现“知识参考”区块。
 - 每条知识参考包含 title、snippet、matchedFeatures、source refs。
 - “知识参考”与“历史参考”“重点洞察”“质量评估”分区展示。
 - Developer Debug 中出现 retrieve_aesthetic_knowledge step。
-- 正常 mock 分析应匹配至少 1 条知识参考；知识 note 不写成用户偏好结论。
 ```
 
 ## 10. 下一步
 
 ```text
-用户完成 V3-B 重验收后，确认 V3-C 人工验收状态；随后进入 V3-D Retrieval / RAG Observability 或继续 V3-C 流程重跑（如需要）。
+V3-B 重验收已通过；V3-C 按同样流程重跑中。
 ```
