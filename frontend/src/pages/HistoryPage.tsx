@@ -8,10 +8,18 @@ interface HistoryPageProps {
   onOpenReport: (report: ReportResponse, jobId?: string | null) => void;
   onStart: () => void;
   onViewProfile: () => void;
+  onViewComparison: () => void;
   onBack: () => void;
 }
 
-export function HistoryPage({ userId, onOpenReport, onStart, onViewProfile, onBack }: HistoryPageProps) {
+export function HistoryPage({
+  userId,
+  onOpenReport,
+  onStart,
+  onViewProfile,
+  onViewComparison,
+  onBack,
+}: HistoryPageProps) {
   const [history, setHistory] = useState<ReportHistoryResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -64,6 +72,7 @@ export function HistoryPage({ userId, onOpenReport, onStart, onViewProfile, onBa
         <div className="hero-actions">
           <Button variant="secondary" onClick={onBack}>返回首页</Button>
           <Button variant="secondary" onClick={onViewProfile}>查看轻量画像</Button>
+          <Button variant="secondary" onClick={onViewComparison}>查看最近变化</Button>
           <Button onClick={onStart}>开始一次分析</Button>
         </div>
       </div>

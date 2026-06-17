@@ -253,6 +253,15 @@ class DatabaseReportRepository:
             offset=offset,
         )
 
+    def list_recent_by_user(self, user_id: str, limit: int) -> list[ReportResponse]:
+        rows = self.session.scalars(
+            select(AestheticReportModel)
+            .where(AestheticReportModel.user_id == user_id)
+            .order_by(AestheticReportModel.created_at.desc(), AestheticReportModel.id.desc())
+            .limit(limit)
+        ).all()
+        return [ReportResponse.model_validate(row.report_json) for row in rows]
+
 
 class DatabaseFeedbackRepository:
     def __init__(self, session: Session) -> None:

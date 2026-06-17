@@ -116,6 +116,19 @@ def test_database_report_repository_lists_reports_by_user() -> None:
     assert all(report.input_count == 3 for report in history.reports)
 
 
+def test_database_report_repository_lists_recent_reports_by_user() -> None:
+    session_factory = _session_factory()
+
+    first_report_id = _persist_report(session_factory, "user_recent", "job_recent_1", "recent1")
+    second_report_id = _persist_report(session_factory, "user_recent", "job_recent_2", "recent2")
+    _persist_report(session_factory, "user_other", "job_recent_other", "recent_other")
+
+    with session_factory() as session:
+        recent = DatabaseReportRepository(session).list_recent_by_user("user_recent", limit=2)
+
+    assert [report.report_id for report in recent] == [second_report_id, first_report_id]
+
+
 def test_database_profile_repository_builds_evidence_backed_profile() -> None:
     session_factory = _session_factory()
     report_id = _persist_report(session_factory, "user_profile", "job_profile", "profile")

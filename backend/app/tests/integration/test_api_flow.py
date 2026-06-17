@@ -57,6 +57,35 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert history["reports"][0]["reportId"] == job["reportId"]
     assert history["reports"][0]["inputCount"] == 3
 
+    second_input_ids: list[str] = []
+    for index in range(3):
+        response = client.post(
+            "/api/inputs",
+            json={
+                "type": "text",
+                "contentText": f"comparison sample {index}",
+                "title": f"comparison sample {index}",
+            },
+        )
+        assert response.status_code == 200
+        second_input_ids.append(response.json()["id"])
+
+    second_job_response = client.post("/api/analysis-jobs", json={"inputIds": second_input_ids})
+    assert second_job_response.status_code == 200
+    second_job = second_job_response.json()
+    assert second_job["reportId"] is not None
+
+    comparison_response = client.get("/api/users/user_anonymous/reports/comparison/latest")
+    assert comparison_response.status_code == 200
+    comparison = comparison_response.json()
+    assert comparison["currentReport"]["reportId"] == second_job["reportId"]
+    assert comparison["previousReport"]["reportId"] == job["reportId"]
+    assert comparison["featureChanges"]
+    assert all(change["evidenceRefs"] for change in comparison["featureChanges"])
+    assert "人格" not in comparison["summary"]
+    assert "心理" not in comparison["summary"]
+    assert "能力" not in comparison["summary"]
+
     profile_response = client.get("/api/users/user_anonymous/profile")
     assert profile_response.status_code == 200
     profile_payload = profile_response.json()

@@ -1,4 +1,4 @@
-export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile";
+export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile" | "comparison";
 
 export type InputType = "image" | "text";
 
@@ -77,6 +77,42 @@ export interface ReportHistoryResponse {
   total: number;
   limit: number;
   offset: number;
+}
+
+export interface ComparisonReportRef {
+  reportId: string;
+  title: string;
+  summary: string;
+  createdAt?: string | null;
+}
+
+export type ReportChangeType = "new" | "increased" | "decreased" | "repeated";
+
+export interface ReportFeatureChange {
+  changeType: ReportChangeType;
+  label: string;
+  previousCount: number;
+  currentCount: number;
+  evidenceRefs: string[];
+  note: string;
+}
+
+export interface ReportInterpretationChange {
+  changeType: ReportChangeType;
+  label: string;
+  evidenceRefs: string[];
+  note: string;
+}
+
+export interface ReportComparisonResponse {
+  userId: string;
+  previousReport: ComparisonReportRef | null;
+  currentReport: ComparisonReportRef | null;
+  featureChanges: ReportFeatureChange[];
+  interpretationChanges: ReportInterpretationChange[];
+  summary?: string | null;
+  message?: string | null;
+  disclaimer: string;
 }
 
 export type FeedbackRating = "not_me" | "unsure" | "somewhat_me" | "very_me";

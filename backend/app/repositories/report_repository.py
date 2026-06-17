@@ -44,3 +44,14 @@ class ReportRepository:
             limit=limit,
             offset=offset,
         )
+
+    def list_recent_by_user(self, user_id: str, limit: int) -> list[ReportResponse]:
+        rows: list[tuple[object, str, ReportResponse]] = []
+        for report_id, report in self.store.reports.items():
+            metadata = self.store.report_metadata.get(report_id, {})
+            if metadata.get("user_id") != user_id:
+                continue
+            rows.append((metadata.get("created_at") or utc_now(), report_id, report))
+
+        rows.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        return [report for _, _, report in rows[:limit]]

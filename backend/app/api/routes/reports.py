@@ -2,9 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.deps import get_report_service
 from app.schemas.report import ReportHistoryResponse, ReportResponse
+from app.schemas.report_comparison import ReportComparisonResponse
 from app.services.report_service import ReportService
 
 router = APIRouter(tags=["reports"])
+
+
+@router.get("/users/{user_id}/reports/comparison/latest", response_model=ReportComparisonResponse)
+def compare_latest_user_reports(
+    user_id: str,
+    service: ReportService = Depends(get_report_service),
+) -> ReportComparisonResponse:
+    return service.compare_latest_reports(user_id)
 
 
 @router.get("/users/{user_id}/reports", response_model=ReportHistoryResponse)

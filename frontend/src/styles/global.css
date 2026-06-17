@@ -135,6 +135,7 @@ input {
 .insight-card,
 .feedback-panel,
 .history-card,
+.comparison-summary,
 .profile-summary,
 .profile-card,
 .evidence-chip,
@@ -160,6 +161,9 @@ input {
 .interpretation-list,
 .history-page,
 .history-list,
+.comparison-page,
+.comparison-list,
+.comparison-section,
 .profile-page,
 .profile-list,
 .evidence-stack {
@@ -388,6 +392,16 @@ textarea {
 
 .history-card small {
   color: #676059;
+}
+
+.comparison-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.comparison-summary h2 {
+  margin: 0;
 }
 
 .profile-summary h2,
