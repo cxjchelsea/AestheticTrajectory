@@ -19,6 +19,20 @@ class ReportRepository:
     def get(self, report_id: str) -> ReportResponse | None:
         return self.store.reports.get(report_id)
 
+    def get_job_id(self, report_id: str) -> str | None:
+        metadata = self.store.report_metadata.get(report_id)
+        if metadata is None:
+            return None
+        job_id = metadata.get("job_id")
+        return job_id if isinstance(job_id, str) else None
+
+    def get_user_id(self, report_id: str) -> str | None:
+        metadata = self.store.report_metadata.get(report_id)
+        if metadata is None:
+            return None
+        user_id = metadata.get("user_id")
+        return user_id if isinstance(user_id, str) else None
+
     def list_by_user(self, user_id: str, limit: int, offset: int) -> ReportHistoryResponse:
         summaries: list[ReportSummary] = []
         for report_id, report in self.store.reports.items():

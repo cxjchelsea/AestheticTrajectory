@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import get_session
 from app.repositories.analysis_job_repository import AnalysisJobRepository
+from app.repositories.analysis_log_repository import AnalysisLogRepository
 from app.repositories.database_repositories import (
     DatabaseAnalysisJobRepository,
     DatabaseAnalysisLogRepository,
@@ -57,8 +58,16 @@ def get_analysis_job_service(session: Session = Depends(get_session)) -> Analysi
 
 def get_report_service(session: Session = Depends(get_session)) -> ReportService:
     if settings.repository_backend == "database":
-        return ReportService(DatabaseReportRepository(session))
-    return ReportService(ReportRepository(store))
+        return ReportService(
+            DatabaseReportRepository(session),
+            DatabaseFeedbackRepository(session),
+            DatabaseAnalysisLogRepository(session),
+        )
+    return ReportService(
+        ReportRepository(store),
+        FeedbackRepository(store),
+        AnalysisLogRepository(store),
+    )
 
 
 def get_feedback_service(session: Session = Depends(get_session)) -> FeedbackService:

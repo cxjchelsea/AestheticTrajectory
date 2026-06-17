@@ -40,6 +40,7 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
         "retrieve_personal_history",
         "retrieve_aesthetic_knowledge",
         "generate_report",
+        "compute_report_evaluation",
         "save_report",
     }
     assert debug["mockUsage"]
@@ -56,6 +57,15 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert report.get("knowledgeContext") is not None
     assert report["knowledgeContext"]["items"]
     assert all(item["sourceRefs"] for item in report["knowledgeContext"]["items"])
+    assert report.get("evaluationMetrics") is not None
+    assert report["evaluationMetrics"]["evidenceCoverage"] == 1.0
+
+    evaluation_response = client.get(f"/api/reports/{job['reportId']}/evaluation")
+    assert evaluation_response.status_code == 200
+    evaluation = evaluation_response.json()
+    assert evaluation["reportId"] == job["reportId"]
+    assert evaluation["metrics"]["unsupportedInsightCount"] == 0
+    assert "人格" not in evaluation["summary"]
 
     history_response = client.get("/api/users/user_anonymous/reports")
     assert history_response.status_code == 200

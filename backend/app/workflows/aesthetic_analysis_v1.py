@@ -13,6 +13,7 @@ from app.workflows.steps.analysis_logging import record_step
 from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
+from app.workflows.steps.compute_report_evaluation import compute_report_evaluation
 from app.workflows.steps.generate_report import generate_report
 from app.workflows.steps.retrieve_aesthetic_knowledge import retrieve_aesthetic_knowledge
 from app.workflows.steps.retrieve_personal_history import retrieve_personal_history
@@ -89,6 +90,17 @@ def run_mock_aesthetic_analysis(
             knowledge_context,
         ),
     )
+    evaluation = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "compute_report_evaluation",
+        lambda: compute_report_evaluation(
+            report,
+            job.id,
+            persistence.analysis_log_repository,
+        ),
+    )
+    report = report.model_copy(update={"evaluation_metrics": evaluation.metrics})
     record_step(
         persistence.analysis_log_repository,
         job.id,

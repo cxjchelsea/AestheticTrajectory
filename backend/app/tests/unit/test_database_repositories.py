@@ -92,6 +92,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
             "retrieve_personal_history",
             "retrieve_aesthetic_knowledge",
             "generate_report",
+            "compute_report_evaluation",
             "save_report",
         }
         assert all(log.status == "success" for log in logs)

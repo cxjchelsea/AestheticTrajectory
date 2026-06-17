@@ -224,6 +224,14 @@ class DatabaseReportRepository:
             return None
         return ReportResponse.model_validate(row.report_json)
 
+    def get_job_id(self, report_id: str) -> str | None:
+        row = self.session.get(AestheticReportModel, report_id)
+        return row.job_id if row is not None else None
+
+    def get_user_id(self, report_id: str) -> str | None:
+        row = self.session.get(AestheticReportModel, report_id)
+        return row.user_id if row is not None else None
+
     def list_by_user(self, user_id: str, limit: int, offset: int) -> ReportHistoryResponse:
         total = self.session.scalar(
             select(func.count()).select_from(AestheticReportModel).where(AestheticReportModel.user_id == user_id)

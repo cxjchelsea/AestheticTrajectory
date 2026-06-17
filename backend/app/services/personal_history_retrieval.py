@@ -24,10 +24,22 @@ def build_personal_history_context(
     current_feature_keys = _feature_keys(current_features)
     items: list[HistoryContextItem] = []
 
-    for report in prior_reports[:5]:
+    overlap_by_report_id: dict[str, list[str]] = {}
+    for report in prior_reports:
         matched = sorted(current_feature_keys & _feature_keys(report.low_level_features))
-        if not matched:
-            continue
+        if matched:
+            overlap_by_report_id[report.report_id] = matched
+
+    ranked_reports = sorted(
+        (report for report in prior_reports if report.report_id in overlap_by_report_id),
+        key=lambda report: (
+            -len(overlap_by_report_id[report.report_id]),
+            prior_reports.index(report),
+        ),
+    )
+
+    for report in ranked_reports[:5]:
+        matched = overlap_by_report_id[report.report_id]
         matched_text = "、".join(matched[:3])
         items.append(
             HistoryContextItem(
@@ -42,7 +54,8 @@ def build_personal_history_context(
         )
 
     feedback_by_insight = {item.insight_id: item for item in feedback}
-    for report in prior_reports:
+    for report in ranked_reports:
+        matched = overlap_by_report_id[report.report_id]
         for insight in report.insights:
             item = feedback_by_insight.get(insight.insight_id)
             if item is None:
@@ -58,6 +71,7 @@ def build_personal_history_context(
                     sourceId=item.id,
                     sourceRefs=[report.report_id, insight.insight_id],
                     direction=direction,
+                    matchedFeatures=matched[:5],
                     label=insight.title,
                     note=note,
                 )

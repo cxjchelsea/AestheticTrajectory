@@ -6,6 +6,7 @@ from app.schemas.feature import InputFeature
 from app.schemas.history_context import PersonalHistoryContext
 from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
 from app.schemas.knowledge_context import AestheticKnowledgeContext
+from app.schemas.report_evaluation import ReportEvaluationMetrics
 
 
 class Insight(BaseModel):
@@ -31,6 +32,7 @@ class ReportResponse(BaseModel):
     disclaimer: str
     history_context: PersonalHistoryContext | None = Field(default=None, alias="historyContext")
     knowledge_context: AestheticKnowledgeContext | None = Field(default=None, alias="knowledgeContext")
+    evaluation_metrics: ReportEvaluationMetrics | None = Field(default=None, alias="evaluationMetrics")
 
     model_config = {"populate_by_name": True}
 

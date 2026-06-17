@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.deps import get_report_service
 from app.schemas.report import ReportHistoryResponse, ReportResponse
 from app.schemas.report_comparison import ReportComparisonResponse
+from app.schemas.report_evaluation import ReportEvaluationResponse
 from app.services.report_service import ReportService
 
 router = APIRouter(tags=["reports"])
@@ -24,6 +25,17 @@ def list_user_reports(
     service: ReportService = Depends(get_report_service),
 ) -> ReportHistoryResponse:
     return service.list_user_reports(user_id, limit, offset)
+
+
+@router.get("/reports/{report_id}/evaluation", response_model=ReportEvaluationResponse)
+def get_report_evaluation(
+    report_id: str,
+    service: ReportService = Depends(get_report_service),
+) -> ReportEvaluationResponse:
+    evaluation = service.get_report_evaluation(report_id)
+    if evaluation is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return evaluation
 
 
 @router.get("/reports/{report_id}", response_model=ReportResponse)

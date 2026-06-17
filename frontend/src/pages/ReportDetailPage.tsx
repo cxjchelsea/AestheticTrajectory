@@ -4,8 +4,9 @@ import { FeedbackPanel } from "../features/report/FeedbackPanel";
 import { InsightCard } from "../features/report/InsightCard";
 import { ReportSection } from "../features/report/ReportSection";
 import { getAnalysisJobDebug } from "../services/analysisJobApi";
+import { getReportEvaluation } from "../services/reportApi";
 import { starterInputs } from "../services/mockData";
-import type { AestheticInput, AnalysisJobDebugResponse, ReportResponse } from "../types/aesthetic";
+import type { AestheticInput, AnalysisJobDebugResponse, ReportEvaluationResponse, ReportResponse } from "../types/aesthetic";
 
 interface ReportDetailPageProps {
   report: ReportResponse;
@@ -31,6 +32,31 @@ export function ReportDetailPage({
   const evidenceInputs = inputs.length >= 3 ? inputs : starterInputs;
   const [debugPayload, setDebugPayload] = useState<AnalysisJobDebugResponse | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
+  const [evaluation, setEvaluation] = useState<ReportEvaluationResponse | null>(null);
+
+  useEffect(() => {
+    if (!canPersistFeedback) {
+      setEvaluation(null);
+      return;
+    }
+
+    let cancelled = false;
+    async function loadEvaluation() {
+      try {
+        const payload = await getReportEvaluation(report.reportId);
+        if (cancelled) return;
+        setEvaluation(payload);
+      } catch {
+        if (cancelled) return;
+        setEvaluation(null);
+      }
+    }
+
+    loadEvaluation();
+    return () => {
+      cancelled = true;
+    };
+  }, [canPersistFeedback, report.reportId]);
 
   useEffect(() => {
     if (!import.meta.env.DEV || !debugJobId) {
@@ -159,6 +185,35 @@ export function ReportDetailPage({
         </ReportSection>
       ) : null}
 
+      {evaluation || report.evaluationMetrics ? (
+        <ReportSection title="质量评估">
+          <p>{evaluation?.summary ?? "当前报告已记录生成时的基础质量指标。"}</p>
+          <div className="feature-grid">
+            <article className="feature-card">
+              <h3>Evidence Coverage</h3>
+              <p>{formatRate(evaluation?.metrics.evidenceCoverage ?? report.evaluationMetrics?.evidenceCoverage)}</p>
+            </article>
+            <article className="feature-card">
+              <h3>Retrieval Coverage</h3>
+              <p>{formatRate(evaluation?.metrics.retrievalCoverage ?? report.evaluationMetrics?.retrievalCoverage)}</p>
+            </article>
+            <article className="feature-card">
+              <h3>Unsupported Insights</h3>
+              <p>{evaluation?.metrics.unsupportedInsightCount ?? report.evaluationMetrics?.unsupportedInsightCount ?? 0}</p>
+            </article>
+            <article className="feature-card">
+              <h3>Schema Pass Rate</h3>
+              <p>{formatRate(evaluation?.metrics.schemaPassRate ?? report.evaluationMetrics?.schemaPassRate)}</p>
+            </article>
+            <article className="feature-card">
+              <h3>Feedback Hit Rate</h3>
+              <p>{formatOptionalRate(evaluation?.metrics.feedbackHitRate ?? report.evaluationMetrics?.feedbackHitRate)}</p>
+            </article>
+          </div>
+          <p className="disclaimer">{evaluation?.disclaimer ?? "这些指标用于开发期质量观察，不代表对用户的人格、心理或能力判断。"}</p>
+        </ReportSection>
+      ) : null}
+
       <ReportSection title="重点洞察">
         {report.insights.map((insight) => (
           <div key={insight.insightId} className="insight-block">
@@ -175,6 +230,16 @@ export function ReportDetailPage({
       <p className="disclaimer">{report.disclaimer}</p>
     </main>
   );
+}
+
+function formatRate(value: number | null | undefined) {
+  if (value === null || value === undefined) return "—";
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatOptionalRate(value: number | null | undefined) {
+  if (value === null || value === undefined) return "尚无反馈";
+  return `${Math.round(value * 100)}%`;
 }
 
 function DeveloperDebugPanel({

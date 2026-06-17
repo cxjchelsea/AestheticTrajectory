@@ -63,6 +63,25 @@ export interface ReportResponse {
   disclaimer: string;
   historyContext?: PersonalHistoryContext | null;
   knowledgeContext?: AestheticKnowledgeContext | null;
+  evaluationMetrics?: ReportEvaluationMetrics | null;
+}
+
+export interface ReportEvaluationMetrics {
+  evidenceCoverage: number;
+  retrievalCoverage: number;
+  unsupportedInsightCount: number;
+  feedbackHitRate?: number | null;
+  schemaPassRate: number;
+  insightCount: number;
+  historyContextItemCount: number;
+  knowledgeContextItemCount: number;
+}
+
+export interface ReportEvaluationResponse {
+  reportId: string;
+  metrics: ReportEvaluationMetrics;
+  summary: string;
+  disclaimer: string;
 }
 
 export interface KnowledgeContextItem {

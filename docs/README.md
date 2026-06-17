@@ -71,7 +71,7 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - V2-C 已完成：`iterations/v2-c-feedback-weight-memory-update.md`
 - V2-D 已完成：`iterations/v2-d-report-comparison.md`
 - V2-E 已完成：`iterations/v2-e-memory-governance-validation.md`
-- 当前：V3-B 已验收通过；下一步进入 V3-C Evaluation Metrics Baseline。
-- V3-B：`iterations/v3-b-aesthetic-knowledge-rag.md`
+- 当前：V3-C Evaluation Metrics Baseline 已实现，等待人工验收；通过后进入 V3-D。
+- V3-C：`iterations/v3-c-evaluation-metrics-baseline.md`
 - V3-0：`iterations/v3-0-personalized-retrieval-research.md`
 - V3-A：`iterations/v3-a-personalized-history-retrieval.md`
