@@ -12,9 +12,9 @@
 12 开发执行
 13-14 验证与展示
 15 迭代记录
-16/17 开发收口
+16/17 历史收口兼容入口
 iterations 当前迭代任务单
-archive 历史归档
+archive 历史归档，包括已完成版本的任务拆分、收口清单、验收记录和遗留问题
 ```
 
 最推荐先读：
@@ -29,6 +29,8 @@ archive 历史归档
 1. `12-开发任务拆分与里程碑计划.md`
 2. 当前 iteration 文档
 3. 当前 iteration 明确引用的 specs
+
+已完成版本的任务拆分与收口清单不再从根目录推进，统一查看 `archive/v1/`、`archive/v2/`。
 
 当前第一阶段已完成 V0 / V1 / V2：
 
@@ -58,7 +60,7 @@ archive 历史归档
 
 历史归档：
 
-- `archive/v1/`
+- `archive/v1/`：V1 stable baseline，包含 V1 任务拆分、收口清单、验收和遗留问题。
 - `archive/v2/`：V2 Memory / User Model baseline，当前状态为 accepted / archived。
 
 当前迭代：
