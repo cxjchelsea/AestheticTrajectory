@@ -30,13 +30,16 @@ archive 历史归档
 2. 当前 iteration 文档
 3. 当前 iteration 明确引用的 specs
 
-当前第一阶段已完成 V0 / V1，并进入 V2：
+当前第一阶段已完成 V0 / V1 / V2：
 
 - V0：前端原型 + mock 报告。
 - V1：真实输入、底层特征抽象、embedding 抽象、相似性分组、报告、反馈、PostgreSQL 持久化、analysis logs。
 - V2-A：历史报告列表与详情回看。
 - V2-B：轻量画像数据模型与 profile evidence 已完成代码实现、自动测试、PostgreSQL runtime 验收和前端手动验收。
-- V2-C：反馈权重、否定解释和记忆更新已完成自动验证，等待前端人工验收。
+- V2-C：反馈权重、否定解释和记忆更新已完成自动验证和人工复核。
+- V2-D：最近两次报告对比与变化说明已完成自动验证和前端人工验收。
+- V2-E：稳定验收与记忆治理检查已完成自动验收。
+- V2 archive gate：V2 已归档为 Memory / User Model baseline。
 
 不要在第一版提前实现：
 
@@ -56,11 +59,14 @@ archive 历史归档
 历史归档：
 
 - `archive/v1/`
-- `archive/v2/`：V2 归档准备区，当前状态为 V2 未完成 / 未归档。
+- `archive/v2/`：V2 Memory / User Model baseline，当前状态为 accepted / archived。
 
 当前迭代：
 
 - V2-A 已验收归档：`iterations/v2-a-report-history.md`
 - V2-0 已验收归档：`iterations/v2-0-memory-user-model-research.md`
 - V2-B 已验收通过：`iterations/v2-b-profile-evidence.md`
-- 当前：V2-C 局部人工测试已完成，V2 整体仍需按 `17-V2开发收口清单.md` 继续收口。
+- V2-C 已完成：`iterations/v2-c-feedback-weight-memory-update.md`
+- V2-D 已完成：`iterations/v2-d-report-comparison.md`
+- V2-E 已完成：`iterations/v2-e-memory-governance-validation.md`
+- 当前：V3-0 版本级研究与架构拆分，不能直接进入 V3 runtime 实现。

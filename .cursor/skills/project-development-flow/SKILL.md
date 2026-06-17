@@ -74,6 +74,26 @@ After a version-level gate is accepted, promote durable decisions into the autho
 
 Do not mechanically update authoritative design docs in every iteration. At the start and end of each iteration, explicitly decide whether the iteration affects durable design. Only update `docs/04` to `docs/11` or other authoritative docs when the work changes long-lived architecture, data models, API contracts, workflow, prompt contracts, module boundaries, validation metrics, governance rules, or implementation-vs-design alignment. If it does not, record "No authoritative design doc update required" in the iteration sheet.
 
+## Next Stage Gate
+
+Before moving to any "next step", always re-check the version roadmap and the accepted version-level research sheet.
+
+Mandatory checks:
+
+1. Read the current major version's sub-stage order from `docs/02-版本迭代路线图.md`, `docs/12-开发任务拆分与里程碑计划.md`, and the version-level iteration sheet such as `docs/iterations/v2-0-memory-user-model-research.md`.
+2. Confirm the latest completed sub-stage and the next unfinished sub-stage.
+3. If an unfinished sub-stage exists, start that sub-stage. Do not enter version closure.
+4. Enter version closure / archive gate only when all planned sub-stages for the current major version are complete and the user explicitly asks for final closure, acceptance, or archive.
+5. If archive docs or closure checklists contain pending items while a later sub-stage is still planned, treat them as future closure preparation, not as the immediate next step.
+
+For V2 specifically:
+
+```text
+V2-0 -> V2-A -> V2-B -> V2-C -> V2-D -> V2-E -> V2 final closure / archive
+```
+
+After V2-D, the next step is V2-E unless the roadmap has been explicitly changed.
+
 Design promotion targets:
 
 - Product / Agent direction changes: `docs/01-产品概念说明书.md` or `docs/02-版本迭代路线图.md`
