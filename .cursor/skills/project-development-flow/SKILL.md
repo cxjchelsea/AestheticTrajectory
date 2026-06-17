@@ -117,14 +117,26 @@ Version closure must include:
 5. A version archive summary in the archive folder.
 6. Updates to `docs/15-迭代执行记录.md`, `docs/12-开发任务拆分与里程碑计划.md`, and `docs/README.md`.
 
+Legacy issue audit is mandatory during version closure:
+
+```text
+collect legacy issues
+-> classify each item
+-> mark resolved / pending_validation / carry_over / blocking / wont_fix
+-> assign a target version or closure task
+-> update archive/vX legacy issue doc
+-> update acceptance checklist, archive summary, execution record, and docs README
+```
+
 Legacy issues must be reviewed before starting the next major version. Each item must be classified as:
 
 - `resolved`: completed by the current or later version.
 - `carry_over`: still relevant and explicitly assigned to a later version.
 - `blocking`: must be fixed before the current version can be archived.
 - `wont_fix`: intentionally closed with a reason.
+- `pending_validation`: implemented or partially verified, but still waiting for final manual validation or full-path regression.
 
-Do not leave legacy issues as a plain list without owner version, impact, and status. If a previous version has unresolved `blocking` items, stop and resolve or reclassify them before starting new version work.
+Do not leave legacy issues as a plain list without owner version, impact, target version, and status. If a previous version has unresolved `blocking` items, stop and resolve or reclassify them before starting new version work. If an item is `pending_validation`, do not mark the version as archived until the validation result is recorded or the item is explicitly moved to `carry_over`.
 
 ## Project Documentation Targets
 
