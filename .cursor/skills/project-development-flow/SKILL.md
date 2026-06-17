@@ -104,6 +104,28 @@ If an item does not apply, explicitly record "不涉及" in the iteration docume
 
 Every sub-stage must cite its upstream version-level decisions. If no version-level gate exists for the major version, stop and create it before implementation.
 
+## Version Closure And Archive Gate
+
+Before marking any major version as accepted or moving to the next major version, run a version closure gate.
+
+Version closure must include:
+
+1. A version closure checklist, such as `docs/16-V1开发收口清单.md` or `docs/17-V2开发收口清单.md`.
+2. An archive folder under `docs/archive/vX/`.
+3. A version acceptance checklist in the archive folder.
+4. A version legacy issue list in the archive folder.
+5. A version archive summary in the archive folder.
+6. Updates to `docs/15-迭代执行记录.md`, `docs/12-开发任务拆分与里程碑计划.md`, and `docs/README.md`.
+
+Legacy issues must be reviewed before starting the next major version. Each item must be classified as:
+
+- `resolved`: completed by the current or later version.
+- `carry_over`: still relevant and explicitly assigned to a later version.
+- `blocking`: must be fixed before the current version can be archived.
+- `wont_fix`: intentionally closed with a reason.
+
+Do not leave legacy issues as a plain list without owner version, impact, and status. If a previous version has unresolved `blocking` items, stop and resolve or reclassify them before starting new version work.
+
 ## Project Documentation Targets
 
 Use the current repository documentation structure:
@@ -112,7 +134,7 @@ Use the current repository documentation structure:
 - Development plan and AI generation order: `docs/12-开发任务拆分与里程碑计划.md`
 - Test and validation evidence: `docs/13-验证与评估文档.md`
 - Iteration execution record and retrospective: `docs/15-迭代执行记录.md`
-- Version closure checklist: `docs/16-V1开发收口清单.md`
+- Version closure checklist: `docs/<NN>-V<version>开发收口清单.md`
 - Archived completed-version facts: `docs/archive/`
 
 When updating docs, keep project-level docs for durable decisions and iteration docs for per-round evidence.

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import delete, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -63,15 +64,20 @@ class DatabaseInputRepository:
 
     def _ensure_user(self, user_id: str, now: datetime) -> None:
         if self.session.get(UserModel, user_id) is None:
-            self.session.add(
-                UserModel(
-                    id=user_id,
-                    anonymous_id=user_id,
-                    created_at=now,
-                    updated_at=now,
+            try:
+                self.session.add(
+                    UserModel(
+                        id=user_id,
+                        anonymous_id=user_id,
+                        created_at=now,
+                        updated_at=now,
+                    )
                 )
-            )
-            self.session.flush()
+                self.session.flush()
+            except IntegrityError:
+                self.session.rollback()
+                if self.session.get(UserModel, user_id) is None:
+                    raise
 
 
 class DatabaseAnalysisJobRepository:

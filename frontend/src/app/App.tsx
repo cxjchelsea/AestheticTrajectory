@@ -15,6 +15,8 @@ export function App() {
   const [inputs, setInputs] = useState<AestheticInput[]>([]);
   const [apiReport, setApiReport] = useState<ReportResponse | null>(null);
   const [debugJobId, setDebugJobId] = useState<string | null>(null);
+  const [canPersistFeedback, setCanPersistFeedback] = useState(false);
+  const [analysisRunId, setAnalysisRunId] = useState("analysis_initial");
 
   const fallbackReport = useMemo(() => mockReport(inputs), [inputs]);
   const report = apiReport ?? fallbackReport;
@@ -22,21 +24,34 @@ export function App() {
   function startUploadFlow() {
     setApiReport(null);
     setDebugJobId(null);
+    setCanPersistFeedback(false);
     setRoute("upload");
   }
 
   if (route === "upload") {
-    return <UploadPage inputs={inputs} onChange={setInputs} onStart={() => setRoute("analysis")} onBack={() => setRoute("home")} />;
+    return (
+      <UploadPage
+        inputs={inputs}
+        onChange={setInputs}
+        onStart={() => {
+          setAnalysisRunId(`analysis_${Date.now()}`);
+          setRoute("analysis");
+        }}
+        onBack={() => setRoute("home")}
+      />
+    );
   }
 
   if (route === "analysis") {
     return (
       <AnalysisJobPage
+        runId={analysisRunId}
         inputs={inputs}
         fallbackReport={fallbackReport}
-        onComplete={(nextReport, jobId) => {
+        onComplete={(nextReport, jobId, nextCanPersistFeedback) => {
           setApiReport(nextReport);
           setDebugJobId(jobId ?? null);
+          setCanPersistFeedback(Boolean(nextCanPersistFeedback));
           setRoute("report");
         }}
         onBack={() => setRoute("upload")}
@@ -50,6 +65,7 @@ export function App() {
         report={report}
         inputs={inputs}
         debugJobId={debugJobId}
+        canPersistFeedback={canPersistFeedback}
         onHome={() => setRoute("home")}
         onRestart={startUploadFlow}
         onViewHistory={() => setRoute("history")}
@@ -65,6 +81,7 @@ export function App() {
         onOpenReport={(nextReport, jobId) => {
           setApiReport(nextReport);
           setDebugJobId(jobId ?? null);
+          setCanPersistFeedback(true);
           setInputs([]);
           setRoute("report");
         }}
@@ -89,7 +106,12 @@ export function App() {
   return (
     <HomePage
       onStart={startUploadFlow}
-      onViewDemo={() => setRoute("report")}
+      onViewDemo={() => {
+        setApiReport(null);
+        setDebugJobId(null);
+        setCanPersistFeedback(false);
+        setRoute("report");
+      }}
       onViewHistory={() => setRoute("history")}
       onViewProfile={() => setRoute("profile")}
     />

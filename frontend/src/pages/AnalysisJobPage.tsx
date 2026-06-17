@@ -7,19 +7,27 @@ import { createInput } from "../services/inputApi";
 import { getReport } from "../services/reportApi";
 import type { AestheticInput, ReportResponse } from "../types/aesthetic";
 
+const submittedAnalysisRuns = new Set<string>();
+
 interface AnalysisJobPageProps {
+  runId: string;
   inputs: AestheticInput[];
   fallbackReport: ReportResponse;
-  onComplete: (report: ReportResponse, jobId?: string) => void;
+  onComplete: (report: ReportResponse, jobId?: string, canPersistFeedback?: boolean) => void;
   onBack: () => void;
 }
 
-export function AnalysisJobPage({ inputs, fallbackReport, onComplete, onBack }: AnalysisJobPageProps) {
+export function AnalysisJobPage({ runId, inputs, fallbackReport, onComplete, onBack }: AnalysisJobPageProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [statusLabel, setStatusLabel] = useState("准备提交样本");
   const [fallbackReason, setFallbackReason] = useState<string | null>(null);
 
   useEffect(() => {
+    if (submittedAnalysisRuns.has(runId)) {
+      return;
+    }
+    submittedAnalysisRuns.add(runId);
+
     let cancelled = false;
 
     async function runAnalysis() {
@@ -46,13 +54,13 @@ export function AnalysisJobPage({ inputs, fallbackReport, onComplete, onBack }: 
         if (cancelled) return;
         setActiveStep(4);
         setStatusLabel("分析完成");
-        window.setTimeout(() => onComplete(report, job.id), 350);
+        window.setTimeout(() => onComplete(report, job.id, true), 350);
       } catch (error) {
         if (cancelled) return;
         setFallbackReason(error instanceof Error ? error.message : "API request failed");
         setActiveStep(4);
         setStatusLabel("后端不可用，已切换为本地 mock 报告");
-        window.setTimeout(() => onComplete(fallbackReport), 700);
+        window.setTimeout(() => onComplete(fallbackReport, undefined, false), 700);
       }
     }
 
@@ -60,7 +68,7 @@ export function AnalysisJobPage({ inputs, fallbackReport, onComplete, onBack }: 
     return () => {
       cancelled = true;
     };
-  }, [fallbackReport, inputs, onComplete]);
+  }, [fallbackReport, inputs, onComplete, runId]);
 
   return (
     <main className="page analysis-page">
@@ -70,7 +78,7 @@ export function AnalysisJobPage({ inputs, fallbackReport, onComplete, onBack }: 
       <LoadingState label={statusLabel} />
       <JobStatusPanel activeStep={activeStep} />
       {fallbackReason ? <p className="muted">Fallback reason: {fallbackReason}</p> : null}
-      <Button variant="secondary" onClick={() => onComplete(fallbackReport)}>使用本地 mock 报告</Button>
+      <Button variant="secondary" onClick={() => onComplete(fallbackReport, undefined, false)}>使用本地 mock 报告</Button>
     </main>
   );
 }

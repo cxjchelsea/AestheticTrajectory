@@ -11,6 +11,7 @@ interface ReportDetailPageProps {
   report: ReportResponse;
   inputs: AestheticInput[];
   debugJobId?: string | null;
+  canPersistFeedback?: boolean;
   onHome: () => void;
   onRestart: () => void;
   onViewHistory: () => void;
@@ -21,6 +22,7 @@ export function ReportDetailPage({
   report,
   inputs,
   debugJobId,
+  canPersistFeedback = true,
   onHome,
   onRestart,
   onViewHistory,
@@ -115,7 +117,7 @@ export function ReportDetailPage({
         {report.insights.map((insight) => (
           <div key={insight.insightId} className="insight-block">
             <InsightCard insight={insight} inputs={evidenceInputs} />
-            <FeedbackPanel insightId={insight.insightId} />
+            <FeedbackPanel insightId={insight.insightId} canPersist={canPersistFeedback} />
           </div>
         ))}
       </ReportSection>

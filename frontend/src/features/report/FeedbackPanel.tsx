@@ -12,13 +12,20 @@ const ratings: Array<{ value: FeedbackRating; label: string }> = [
 
 interface FeedbackPanelProps {
   insightId: string;
+  canPersist?: boolean;
 }
 
-export function FeedbackPanel({ insightId }: FeedbackPanelProps) {
+export function FeedbackPanel({ insightId, canPersist = true }: FeedbackPanelProps) {
   const [selected, setSelected] = useState<FeedbackRating | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "local">("loading");
 
   useEffect(() => {
+    if (!canPersist) {
+      setSelected(null);
+      setStatus("local");
+      return;
+    }
+
     let cancelled = false;
     setStatus("loading");
     getInsightFeedback(insightId)
@@ -36,10 +43,15 @@ export function FeedbackPanel({ insightId }: FeedbackPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [insightId]);
+  }, [canPersist, insightId]);
 
   async function submit(rating: FeedbackRating) {
     setSelected(rating);
+    if (!canPersist) {
+      setStatus("local");
+      return;
+    }
+
     setStatus("saving");
     try {
       const feedback = await submitInsightFeedback(insightId, rating);
@@ -69,7 +81,7 @@ export function FeedbackPanel({ insightId }: FeedbackPanelProps) {
       {status === "loading" ? <small>正在读取已保存反馈...</small> : null}
       {status === "saved" ? <small>已保存反馈；再次选择会更新这条反馈，不会重复累计。</small> : null}
       {status === "idle" && selected ? <small>已反馈；可重新选择来修改。</small> : null}
-      {status === "local" ? <small>后端不可用，反馈仅保留在当前界面</small> : null}
+      {status === "local" ? <small>当前报告未绑定后端洞察记录，反馈仅保留在当前界面，不会写入画像。</small> : null}
     </div>
   );
 }

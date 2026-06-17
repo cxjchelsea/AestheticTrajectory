@@ -12,7 +12,7 @@
 12 开发执行
 13-14 验证与展示
 15 迭代记录
-16 开发收口
+16/17 开发收口
 iterations 当前迭代任务单
 archive 历史归档
 ```
@@ -56,10 +56,11 @@ archive 历史归档
 历史归档：
 
 - `archive/v1/`
+- `archive/v2/`：V2 归档准备区，当前状态为 V2 未完成 / 未归档。
 
 当前迭代：
 
 - V2-A 已验收归档：`iterations/v2-a-report-history.md`
 - V2-0 已验收归档：`iterations/v2-0-memory-user-model-research.md`
 - V2-B 已验收通过：`iterations/v2-b-profile-evidence.md`
-- 当前：V2-C 前端人工验收，详见 `iterations/v2-c-feedback-weight-memory-update.md`
+- 当前：V2-C 局部人工测试已完成，V2 整体仍需按 `17-V2开发收口清单.md` 继续收口。

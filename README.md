@@ -56,6 +56,14 @@ cd backend
 python -m pytest
 ```
 
+Reset local/test PostgreSQL business data:
+
+```bash
+python scripts/reset_database.py
+```
+
+This keeps schema and Alembic migration records, clears only project business tables, and asks for a `RESET <database>` confirmation before running.
+
 ## Documentation
 
 Start with:
