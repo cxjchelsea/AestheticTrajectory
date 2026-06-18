@@ -53,3 +53,9 @@ def test_mock_workflow_completes_and_saves_report() -> None:
     assert report.insights
     assert report.insights[0].evidence_refs
     assert "人格诊断" in report.insights[0].uncertainty
+    assert report.history_context is not None
+    assert report.knowledge_context is not None
+    assert report.knowledge_context.items
+    assert all(item.source_refs for item in report.knowledge_context.items)
+    input_ids = {feature.input_id for feature in report.low_level_features}
+    assert all(ref in input_ids for ref in report.insights[0].evidence_refs)
