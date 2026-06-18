@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-implemented / automatic_validation_passed
+accepted / manual_validation_passed
 ```
 
 创建日期：
@@ -155,6 +155,59 @@ V3-E 通过需要满足：
 - workflow 正常路径 `unsupportedInsightCount == 0`。
 - history / knowledge / evaluation disclaimer 与 summary 无诊断式表达。
 - 后端治理测试全部通过。
+- **用户完成下方人工全链路验收。**
+
+## 6.1 人工验收清单
+
+自动测试覆盖的是代码层治理规则；人工验收需在全链路 UI 上确认 V3-A–D 组合后仍成立。
+
+### 测试 1：当前输入证据优先
+
+**操作**：完成第二份及以上分析，打开报告详情。
+
+**检查**：
+- 「重点洞察」每条 `evidenceRefs` 只指向**本次上传**的输入，不包含历史 reportId / knowledge docId。
+- 「历史参考」「知识参考」与「重点洞察」分区展示，互不混写。
+
+### 测试 2：RAG 知识不进 profile
+
+**操作**：完成至少一份带「知识参考」的报告 → 对某条洞察提交 `very_me` 或 `somewhat_me` 反馈 → 打开「我的画像」。
+
+**检查**：
+- 画像正向条目来自**用户反馈**，不是知识库 docId / 知识标题。
+- 画像里没有把知识参考包装成“用户偏好”。
+
+### 测试 3：历史否定不进正向偏好
+
+**操作**：对第一份报告的某条洞察提交 `not_me` → 再跑第二份分析（特征有重叠）。
+
+**检查**：
+- 「历史参考」里该反馈为 **negative** 方向。
+- 第二份报告不会把它写成正向偏好；画像里该解释进入 rejected/negative，而非 stable 正向条目。
+
+### 测试 4：evaluation 与治理指标
+
+**操作**：在报告详情查看「质量评估」。
+
+**检查**：
+- `unsupported insight` 为 0（正常路径）。
+- `evidence coverage`、`retrieval coverage` 数值合理。
+- summary 无人格、心理、能力诊断式表述。
+
+### 测试 5：mock / 边界诚实标记
+
+**操作**：展开 Developer Debug（`npm run dev`）。
+
+**检查**：
+- Mock Usage 仍标明 dev-only / mock。
+- retrieval trace 在 abstain 时不伪造选中 item。
+- 页面未暗示已接入真实 LLM / 外部 RAG 平台。
+
+### 测试 6：文案治理（快速扫读）
+
+**检查**报告页、画像页、历史对比页：
+- 无人格诊断、心理评估、命运判断、消费规训式措辞。
+- disclaimer 可以写「不是人格诊断」这类**否定**表述，但正文不做断定式诊断。
 
 ## 7. AI 生成计划
 
@@ -207,9 +260,15 @@ backend/app/tests/integration/test_analysis_workflow.py
 2026-06-17：REPOSITORY_BACKEND=memory python -m pytest app/tests -q → 54 passed, 3 warnings。
 ```
 
+人工验收：
+
+```text
+2026-06-17：用户人工全链路验收通过（含 not_me 反馈后 feedback hit rate=0%、画像治理检查）。
+```
+
 ## 9. 当前结论
 
 ```text
-V3-E 自动治理验收通过。
-下一步等待用户确认后进入 V3 final closure / archive gate。
+V3-E 自动治理测试与人工全链路验收均已通过。
+下一步进入 V3 final closure / archive gate（需用户明确确认）。
 ```

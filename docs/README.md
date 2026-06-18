@@ -71,7 +71,7 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - V2-C 已完成：`iterations/v2-c-feedback-weight-memory-update.md`
 - V2-D 已完成：`iterations/v2-d-report-comparison.md`
 - V2-E 已完成：`iterations/v2-e-memory-governance-validation.md`
-- 当前：V3-E 自动治理验收通过；下一步 V3 final closure / archive gate（需用户确认）。
+- 当前：V3-E 已验收通过；下一步 V3 final closure / archive gate（需用户确认）。
 - V3-E：`iterations/v3-e-stability-governance-validation.md`
 - V3-D：`iterations/v3-d-retrieval-rag-observability.md`
 - V3-C：`iterations/v3-c-evaluation-metrics-baseline.md`
