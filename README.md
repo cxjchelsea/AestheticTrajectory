@@ -16,10 +16,11 @@ The current project has an accepted and archived V2 Memory / User Model baseline
 - V3-A personalized history retrieval: workflow history retrieval step, `ReportResponse.historyContext`, and report detail history reference UI.
 - V3-B aesthetic knowledge RAG: static knowledge base retrieval, `ReportResponse.knowledgeContext`, and report detail knowledge reference UI.
 - V3-C evaluation metrics baseline: workflow evaluation step, evaluation API, report detail metrics UI.
-- Current validation status: backend tests pass (46 passed), frontend production build passes, V3-A / V3-B / V3-C manual validation passed after research realignment.
+- V3-D retrieval / RAG observability: debug API retrieval/context/evaluation trace, Developer Debug Panel sections.
+- Current validation status: backend tests pass (48 passed with memory, 6 passed with database), frontend production build passes, V3-A through V3-D manual validation passed.
 - Not included yet: real model calls, real image feature extraction, ChromaDB runtime writes, external knowledge RAG runtime, Agent, MCP, knowledge graph, or long-term profile automation beyond the V2 lightweight baseline.
 
-V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 is accepted in `docs/iterations/v3-0-personalized-retrieval-research.md`. V3-A, V3-B, and V3-C are accepted; next step is V3-D Retrieval / RAG Observability per `docs/12-开发任务拆分与里程碑计划.md`.
+V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 is accepted in `docs/iterations/v3-0-personalized-retrieval-research.md`. V3-A through V3-D are accepted; next step is V3-E per `docs/12-开发任务拆分与里程碑计划.md`.
 
 ## Frontend
 

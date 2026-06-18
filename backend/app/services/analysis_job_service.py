@@ -5,6 +5,7 @@ from app.schemas.analysis_debug import (
     MockUsageRecord,
 )
 from app.schemas.common import new_id, utc_now
+from app.services.observability_trace import build_debug_traces
 from app.services.schema_validation_summary import build_schema_validation_records
 from app.workflows.aesthetic_analysis_v1 import run_mock_aesthetic_analysis
 
@@ -45,14 +46,27 @@ class AnalysisJobService:
             self.workflow_persistence.analysis_log_repository.get_for_job(job_id),
             key=lambda log: log.created_at,
         )
+        schema_validation = build_schema_validation_records(logs)
+        report = None
+        if job.report_id is not None:
+            report = self.workflow_persistence.report_repository.get(job.report_id)
+        retrieval_trace, retrieval_items, context_assembly_trace, evaluation_trace = build_debug_traces(
+            report,
+            logs,
+            schema_validation,
+        )
         return AnalysisJobDebugResponse(
             jobId=job.id,
             status=job.status,
             workflowTrace=logs,
             fallbackEvents=[],
             mockUsage=_mock_usage(),
-            schemaValidation=build_schema_validation_records(logs),
+            schemaValidation=schema_validation,
             boundaryWarnings=_boundary_warnings(logs),
+            retrievalTrace=retrieval_trace,
+            retrievalItems=retrieval_items,
+            contextAssemblyTrace=context_assembly_trace,
+            evaluationTrace=evaluation_trace,
         )
 
 

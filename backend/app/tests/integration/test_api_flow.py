@@ -46,6 +46,11 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
     assert debug["mockUsage"]
     assert debug["schemaValidation"]
     assert debug["boundaryWarnings"]
+    assert debug["retrievalTrace"]
+    assert len(debug["retrievalTrace"]) == 2
+    assert debug["contextAssemblyTrace"] is not None
+    assert debug["evaluationTrace"] is not None
+    assert debug["evaluationTrace"]["metrics"]["evidenceCoverage"] == 1.0
 
     report_response = client.get(f"/api/reports/{job['reportId']}")
     assert report_response.status_code == 200

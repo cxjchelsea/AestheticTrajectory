@@ -275,6 +275,50 @@ export interface BoundaryWarning {
   developerMessage: string;
 }
 
+export type RetrievalType = "personal_history" | "aesthetic_knowledge";
+
+export interface RetrievalStepTrace {
+  stepId: string;
+  retrievalType: RetrievalType;
+  status: string;
+  latencyMs?: number | null;
+  selectedItemCount: number;
+  abstained: boolean;
+  message?: string | null;
+  developerMessage: string;
+}
+
+export interface RetrievalItemTrace {
+  retrievalType: RetrievalType;
+  itemId: string;
+  label: string;
+  matchedFeatures: string[];
+  sourceRefs: string[];
+  direction?: string | null;
+  note: string;
+}
+
+export interface ContextAssemblyTrace {
+  historyItemCount: number;
+  knowledgeItemCount: number;
+  totalSelectedItems: number;
+  historyAbstained: boolean;
+  knowledgeAbstained: boolean;
+  historyMessage?: string | null;
+  knowledgeMessage?: string | null;
+  developerMessage: string;
+}
+
+export interface EvaluationTrace {
+  stepId: string;
+  stepStatus: string;
+  latencyMs?: number | null;
+  metrics: ReportEvaluationMetrics;
+  schemaPassRate?: number | null;
+  schemaRecordCount: number;
+  developerMessage: string;
+}
+
 export interface AnalysisJobDebugResponse {
   jobId: string;
   status: string;
@@ -283,4 +327,8 @@ export interface AnalysisJobDebugResponse {
   mockUsage: MockUsageRecord[];
   schemaValidation: SchemaValidationRecord[];
   boundaryWarnings: BoundaryWarning[];
+  retrievalTrace: RetrievalStepTrace[];
+  retrievalItems: RetrievalItemTrace[];
+  contextAssemblyTrace?: ContextAssemblyTrace | null;
+  evaluationTrace?: EvaluationTrace | null;
 }

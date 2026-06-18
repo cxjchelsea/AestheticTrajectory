@@ -329,6 +329,81 @@ function DeveloperDebugPanel({
               ))}
             </ul>
           </section>
+
+          <section>
+            <h3>Retrieval Trace</h3>
+            {debug.retrievalTrace.length > 0 ? (
+              <ul>
+                {debug.retrievalTrace.map((step) => (
+                  <li key={step.stepId}>
+                    <strong>{step.retrievalType}</strong>
+                    <span>{step.status}</span>
+                    <span>{step.selectedItemCount} selected</span>
+                    {step.abstained ? <span>abstained</span> : null}
+                    <small>{step.developerMessage}</small>
+                    {step.message ? <small>{step.message}</small> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">暂无 retrieval trace。</p>
+            )}
+          </section>
+
+          <section>
+            <h3>Retrieval Items</h3>
+            {debug.retrievalItems.length > 0 ? (
+              <ul>
+                {debug.retrievalItems.map((item) => (
+                  <li key={`${item.retrievalType}-${item.itemId}`}>
+                    <strong>{item.label}</strong>
+                    <span>{item.retrievalType}</span>
+                    <small>{item.matchedFeatures.join(" · ")}</small>
+                    <small>{item.sourceRefs.join(" · ")}</small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">暂无选中 retrieval item。</p>
+            )}
+          </section>
+
+          <section>
+            <h3>Context Assembly</h3>
+            {debug.contextAssemblyTrace ? (
+              <div>
+                <p>
+                  history {debug.contextAssemblyTrace.historyItemCount} · knowledge{" "}
+                  {debug.contextAssemblyTrace.knowledgeItemCount}
+                </p>
+                <small>{debug.contextAssemblyTrace.developerMessage}</small>
+                {debug.contextAssemblyTrace.historyMessage ? (
+                  <small>{debug.contextAssemblyTrace.historyMessage}</small>
+                ) : null}
+                {debug.contextAssemblyTrace.knowledgeMessage ? (
+                  <small>{debug.contextAssemblyTrace.knowledgeMessage}</small>
+                ) : null}
+              </div>
+            ) : (
+              <p className="muted">暂无 context assembly trace。</p>
+            )}
+          </section>
+
+          <section>
+            <h3>Evaluation Trace</h3>
+            {debug.evaluationTrace ? (
+              <div>
+                <p>
+                  evidence {formatRate(debug.evaluationTrace.metrics.evidenceCoverage)} · retrieval{" "}
+                  {formatRate(debug.evaluationTrace.metrics.retrievalCoverage)} · unsupported{" "}
+                  {debug.evaluationTrace.metrics.unsupportedInsightCount}
+                </p>
+                <small>{debug.evaluationTrace.developerMessage}</small>
+              </div>
+            ) : (
+              <p className="muted">暂无 evaluation trace。</p>
+            )}
+          </section>
         </div>
       ) : null}
     </details>
