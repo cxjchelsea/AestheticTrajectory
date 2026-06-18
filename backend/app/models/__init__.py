@@ -1,4 +1,5 @@
 from app.models.persistence import (
+    AgentActionLogModel,
     AestheticConceptModel,
     AestheticConceptRelationModel,
     AestheticInputModel,
@@ -6,7 +7,10 @@ from app.models.persistence import (
     AestheticTimelineEventModel,
     AnalysisJobModel,
     AnalysisLogModel,
+    ExternalContextItemModel,
+    ExternalImportBatchModel,
     EmbeddingRecordModel,
+    ObservationSessionModel,
     InputFeatureModel,
     InsightFeedbackModel,
     InsightModel,
@@ -18,6 +22,7 @@ from app.models.persistence import (
 )
 
 __all__ = [
+    "AgentActionLogModel",
     "AestheticConceptModel",
     "AestheticConceptRelationModel",
     "AestheticInputModel",
@@ -25,7 +30,10 @@ __all__ = [
     "AestheticTimelineEventModel",
     "AnalysisJobModel",
     "AnalysisLogModel",
+    "ExternalContextItemModel",
+    "ExternalImportBatchModel",
     "EmbeddingRecordModel",
+    "ObservationSessionModel",
     "InputFeatureModel",
     "InsightFeedbackModel",
     "InsightModel",

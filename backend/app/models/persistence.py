@@ -229,3 +229,61 @@ class AestheticConceptRelationModel(Base):
     predicate: Mapped[str] = mapped_column(String(32), index=True)
     source_evidence_json: Mapped[dict] = json_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ObservationSessionModel(Base):
+    __tablename__ = "observation_sessions"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    trigger_source: Mapped[str] = mapped_column(String(64))
+    period: Mapped[str | None] = mapped_column(String(16))
+    summary: Mapped[str | None] = mapped_column(Text)
+    questions_json: Mapped[list] = json_column()
+    evidence_refs_json: Mapped[list] = json_column()
+    message: Mapped[str | None] = mapped_column(Text)
+    disclaimer: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AgentActionLogModel(Base):
+    __tablename__ = "agent_action_logs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    session_id: Mapped[str] = mapped_column(String(64), index=True)
+    step_index: Mapped[int] = mapped_column(Integer)
+    tool_name: Mapped[str] = mapped_column(String(64), index=True)
+    reason: Mapped[str] = mapped_column(Text)
+    input_refs_json: Mapped[list] = json_column()
+    output_refs_json: Mapped[list] = json_column()
+    status: Mapped[str] = mapped_column(String(32))
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ExternalImportBatchModel(Base):
+    __tablename__ = "external_import_batches"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    source_system: Mapped[str] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    item_count: Mapped[int] = mapped_column(Integer)
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ExternalContextItemModel(Base):
+    __tablename__ = "external_context_items"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    batch_id: Mapped[str] = mapped_column(String(64), index=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    snippet: Mapped[str] = mapped_column(Text)
+    source_uri: Mapped[str | None] = mapped_column(Text)
+    tags_json: Mapped[list] = json_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

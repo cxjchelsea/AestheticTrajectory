@@ -8,6 +8,8 @@ from app.schemas.feature import InputFeature
 from app.schemas.input import AestheticInputResponse
 from app.schemas.profile import ProfileResponse
 from app.schemas.report import ReportResponse
+from app.schemas.agent import AgentActionLog, ObservationSession
+from app.schemas.external_context import ExternalContextItem, ExternalImportBatch
 from app.schemas.timeline import TimelineEvent
 
 
@@ -24,6 +26,10 @@ class MemoryStore:
     profiles: dict[str, ProfileResponse] = field(default_factory=dict)
     timeline_events: dict[str, TimelineEvent] = field(default_factory=dict)
     timeline_dedupe_keys: set[tuple[str, str]] = field(default_factory=set)
+    observation_sessions: dict[str, ObservationSession] = field(default_factory=dict)
+    agent_action_logs: dict[str, AgentActionLog] = field(default_factory=dict)
+    external_import_batches: dict[str, ExternalImportBatch] = field(default_factory=dict)
+    external_context_items: dict[str, ExternalContextItem] = field(default_factory=dict)
 
 
 store = MemoryStore()

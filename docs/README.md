@@ -68,11 +68,12 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V4-C 方案待确认**（`research_completed / pending_user_review`）
+- 当前：**V4-E 待启动**（`not_started / pending_research`）
 - V4-0：`iterations/v4-0-long-term-personalized-agent-research.md`
 - V4-A：`iterations/v4-a-runtime-multimodal-foundation.md`（已验收）
 - V4-B：`iterations/v4-b-aesthetic-trajectory-temporal-profiling.md`（已验收）
-- V4-C：`iterations/v4-c-knowledge-graph-external-rag-runtime.md`
+- V4-C：`iterations/v4-c-knowledge-graph-external-rag-runtime.md`（已验收）
+- V4-D：`iterations/v4-d-agent-runtime-mcp-integration.md`（已验收）
 - 多模态偏好建模：`20-多模态偏好建模设计文档.md`
 - 记忆与用户模型：`19-记忆与用户模型设计文档.md`
 - V3 归档入口：`archive/v3/`、`18-V3开发收口清单.md`

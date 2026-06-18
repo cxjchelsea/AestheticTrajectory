@@ -16,7 +16,14 @@ from app.repositories.database_repositories import (
     DatabaseProfileRepository,
     DatabaseReportRepository,
 )
+from app.repositories.agent_repository import (
+    AgentActionLogRepository,
+    DatabaseAgentActionLogRepository,
+    DatabaseObservationSessionRepository,
+    ObservationSessionRepository,
+)
 from app.repositories.knowledge_graph_repository import DatabaseKnowledgeGraphRepository, KnowledgeGraphRepository
+from app.repositories.external_import_repository import DatabaseExternalImportRepository, ExternalImportRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
 from app.repositories.memory_store import store
@@ -30,6 +37,7 @@ from app.services.input_service import InputService
 from app.services.profile_service import ProfileService
 from app.services.report_service import ReportService
 from app.services.knowledge_graph_query import KnowledgeGraphQueryService
+from app.services.observation_service import ObservationService
 from app.services.timeline_service import TimelineService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
 
@@ -106,3 +114,31 @@ def get_knowledge_graph_service(session: Session = Depends(get_session)) -> Know
     if settings.repository_backend == "database":
         return KnowledgeGraphQueryService(DatabaseKnowledgeGraphRepository(session))
     return KnowledgeGraphQueryService(KnowledgeGraphRepository())
+
+
+def get_observation_service(
+    session: Session = Depends(get_session),
+    report_service: ReportService = Depends(get_report_service),
+    timeline_service: TimelineService = Depends(get_timeline_service),
+    profile_service: ProfileService = Depends(get_profile_service),
+    knowledge_service: KnowledgeGraphQueryService = Depends(get_knowledge_graph_service),
+) -> ObservationService:
+    if settings.repository_backend == "database":
+        return ObservationService(
+            DatabaseObservationSessionRepository(session),
+            DatabaseAgentActionLogRepository(session),
+            DatabaseExternalImportRepository(session),
+            report_service,
+            timeline_service,
+            profile_service,
+            knowledge_service,
+        )
+    return ObservationService(
+        ObservationSessionRepository(store),
+        AgentActionLogRepository(store),
+        ExternalImportRepository(store),
+        report_service,
+        timeline_service,
+        profile_service,
+        knowledge_service,
+    )

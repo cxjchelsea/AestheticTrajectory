@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
+import { createObservation, listAgentActions, type ObservationSession } from "../services/observationApi";
 import { getUserProfile } from "../services/profileApi";
 import type { ProfileEvidence, ProfileItem, ProfileResponse } from "../types/aesthetic";
 
@@ -15,6 +16,10 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
   const [profileResponse, setProfileResponse] = useState<ProfileResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [observation, setObservation] = useState<ObservationSession | null>(null);
+  const [observationStatus, setObservationStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [observationError, setObservationError] = useState<string | null>(null);
+  const [agentToolTrace, setAgentToolTrace] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +43,29 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
       cancelled = true;
     };
   }, [userId]);
+
+  async function handleCreateObservation() {
+    try {
+      setObservationStatus("loading");
+      setObservationError(null);
+      const session = await createObservation(userId, "profile_page", "week");
+      setObservation(session);
+      if (session.status === "completed") {
+        const actions = await listAgentActions(userId, session.id);
+        setAgentToolTrace(
+          actions.actions.map(
+            (action) => `${action.toolName}: ${action.reason} → ${action.outputRefs.slice(0, 2).join(", ") || "无输出"}`,
+          ),
+        );
+      } else {
+        setAgentToolTrace([]);
+      }
+      setObservationStatus("ready");
+    } catch (error) {
+      setObservationError(error instanceof Error ? error.message : "API request failed");
+      setObservationStatus("error");
+    }
+  }
 
   const profile = profileResponse?.profile ?? null;
   const totalEvidence = profile?.items.reduce((sum, item) => sum + item.sourceCount, 0) ?? 0;
@@ -94,6 +122,44 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
               该画像只描述输入中出现的审美倾向，不做人格、心理或能力判断。
             </p>
             <small className="muted">最近更新 {new Date(profile.updatedAt).toLocaleString()}</small>
+          </section>
+
+          <section className="profile-summary">
+            <div className="section-heading">
+              <p className="eyebrow">V4-D Observation</p>
+              <h2>观察摘要</h2>
+              <p className="muted">基于已有报告、时间轴与画像 evidence 生成，需你主动触发，不构成人格或心理判断。</p>
+            </div>
+            <Button variant="secondary" onClick={handleCreateObservation} disabled={observationStatus === "loading"}>
+              {observationStatus === "loading" ? "正在生成..." : "生成观察摘要"}
+            </Button>
+            {observationStatus === "error" ? <p className="muted">{observationError}</p> : null}
+            {observation ? (
+              <article className="wide-item">
+                <p>{observation.summary ?? observation.message}</p>
+                {observation.questions.length > 0 ? (
+                  <ul>
+                    {observation.questions.map((question) => (
+                      <li key={question.text}>
+                        {question.text}
+                        <small> evidence: {question.evidenceRefs.join(", ")}</small>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {observation.evidenceRefs.length > 0 ? (
+                  <small>证据引用：{observation.evidenceRefs.slice(0, 8).join(", ")}</small>
+                ) : null}
+                {agentToolTrace.length > 0 ? (
+                  <ul>
+                    {agentToolTrace.map((line) => (
+                      <li key={line}><small>{line}</small></li>
+                    ))}
+                  </ul>
+                ) : null}
+                <p className="disclaimer">{observation.disclaimer}</p>
+              </article>
+            ) : null}
           </section>
 
           {correctionItems.length > 0 ? (

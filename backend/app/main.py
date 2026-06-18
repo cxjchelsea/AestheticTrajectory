@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import analysis_jobs, aesthetic_knowledge, feedback, files, health, inputs, profiles, reports, timeline
+from app.api.routes import analysis_jobs, aesthetic_knowledge, feedback, files, health, inputs, observations, profiles, reports, timeline
 from app.core.config import settings
 
 
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     app.include_router(profiles.router, prefix="/api")
     app.include_router(timeline.router, prefix="/api")
     app.include_router(aesthetic_knowledge.router, prefix="/api")
+    app.include_router(observations.router, prefix="/api")
     app.include_router(feedback.router, prefix="/api")
     return app
 
