@@ -8,9 +8,10 @@ interface ProfilePageProps {
   onBack: () => void;
   onStart: () => void;
   onViewHistory: () => void;
+  onViewTimeline?: () => void;
 }
 
-export function ProfilePage({ userId, onBack, onStart, onViewHistory }: ProfilePageProps) {
+export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTimeline }: ProfilePageProps) {
   const [profileResponse, setProfileResponse] = useState<ProfileResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory }: ProfileP
         <div className="hero-actions">
           <Button variant="secondary" onClick={onBack}>返回首页</Button>
           <Button variant="secondary" onClick={onViewHistory}>历史报告</Button>
+          {onViewTimeline ? <Button variant="secondary" onClick={onViewTimeline}>审美时间轴</Button> : null}
           <Button onClick={onStart}>开始一次分析</Button>
         </div>
       </div>
@@ -205,6 +207,7 @@ function statusLabel(status: ProfileItem["status"]) {
   const labels: Record<ProfileItem["status"], string> = {
     stable: "稳定倾向",
     recent: "近期出现",
+    weakening: "近期减弱",
     rejected: "已被否定",
     uncertain: "仍不确定",
     inactive: "暂不活跃",

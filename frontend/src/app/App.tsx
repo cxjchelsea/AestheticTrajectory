@@ -6,6 +6,7 @@ import { ReportDetailPage } from "../pages/ReportDetailPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { ReportComparisonPage } from "../pages/ReportComparisonPage";
+import { TimelinePage } from "../pages/TimelinePage";
 import { mockReport } from "../services/mockData";
 import type { AestheticInput, AppRoute, ReportResponse } from "../types/aesthetic";
 
@@ -89,6 +90,7 @@ export function App() {
         onStart={startUploadFlow}
         onViewProfile={() => setRoute("profile")}
         onViewComparison={() => setRoute("comparison")}
+        onViewTimeline={() => setRoute("timeline")}
         onBack={() => setRoute("home")}
       />
     );
@@ -101,6 +103,19 @@ export function App() {
         onBack={() => setRoute("home")}
         onStart={startUploadFlow}
         onViewHistory={() => setRoute("history")}
+        onViewTimeline={() => setRoute("timeline")}
+      />
+    );
+  }
+
+  if (route === "timeline") {
+    return (
+      <TimelinePage
+        userId={CURRENT_USER_ID}
+        onBack={() => setRoute("home")}
+        onStart={startUploadFlow}
+        onViewHistory={() => setRoute("history")}
+        onViewComparison={() => setRoute("comparison")}
       />
     );
   }
@@ -112,6 +127,7 @@ export function App() {
         onBack={() => setRoute("home")}
         onStart={startUploadFlow}
         onViewHistory={() => setRoute("history")}
+        onViewTimeline={() => setRoute("timeline")}
       />
     );
   }
@@ -127,6 +143,7 @@ export function App() {
       }}
       onViewHistory={() => setRoute("history")}
       onViewProfile={() => setRoute("profile")}
+      onViewTimeline={() => setRoute("timeline")}
     />
   );
 }

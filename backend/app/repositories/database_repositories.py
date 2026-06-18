@@ -276,7 +276,13 @@ class DatabaseFeedbackRepository:
         self.session = session
 
     def insight_exists(self, insight_id: str) -> bool:
-        return self.session.get(InsightModel, insight_id) is not None
+        return self.find_insight_context(insight_id) is not None
+
+    def find_insight_context(self, insight_id: str) -> tuple[str, str | None] | None:
+        row = self.session.get(InsightModel, insight_id)
+        if row is None:
+            return None
+        return row.title, row.report_id
 
     def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
         rows = self.session.scalars(

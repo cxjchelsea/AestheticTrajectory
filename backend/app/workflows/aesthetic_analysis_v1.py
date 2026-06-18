@@ -4,6 +4,7 @@ from app.repositories.feature_repository import FeatureRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.memory_store import MemoryStore
 from app.repositories.report_repository import ReportRepository
+from app.repositories.timeline_repository import TimelineRepository
 from app.repositories.chroma_debug_store import chroma_write_results
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.schemas.analysis_job import AnalysisJobResponse
@@ -19,6 +20,7 @@ from app.workflows.steps.compute_report_evaluation import compute_report_evaluat
 from app.workflows.steps.generate_report import generate_report
 from app.workflows.steps.retrieve_aesthetic_knowledge import retrieve_aesthetic_knowledge
 from app.workflows.steps.retrieve_personal_history import retrieve_personal_history
+from app.workflows.steps.update_trajectory import update_trajectory
 from app.workflows.steps.write_vectors import write_vectors
 
 
@@ -130,6 +132,19 @@ def run_mock_aesthetic_analysis(
         lambda: persistence.report_repository.save(report, user_id=job.user_id, job_id=job.id),
     )
 
+    if persistence.timeline_repository is not None:
+        record_step(
+            persistence.analysis_log_repository,
+            job.id,
+            "update_trajectory",
+            lambda: update_trajectory(
+                job.user_id,
+                report,
+                persistence.report_repository,
+                persistence.timeline_repository,
+            ),
+        )
+
     return AnalysisJobResponse(
         id=job.id,
         userId=job.user_id,
@@ -150,5 +165,6 @@ def memory_workflow_persistence(store: MemoryStore) -> WorkflowPersistence:
         report_repository=ReportRepository(store),
         analysis_log_repository=AnalysisLogRepository(store),
         feedback_repository=FeedbackRepository(store),
+        timeline_repository=TimelineRepository(store),
         chroma_write_results=chroma_write_results,
     )

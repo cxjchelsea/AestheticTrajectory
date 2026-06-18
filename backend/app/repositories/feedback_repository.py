@@ -7,11 +7,14 @@ class FeedbackRepository:
         self.store = store
 
     def insight_exists(self, insight_id: str) -> bool:
-        return any(
-            insight.insight_id == insight_id
-            for report in self.store.reports.values()
-            for insight in report.insights
-        )
+        return self.find_insight_context(insight_id) is not None
+
+    def find_insight_context(self, insight_id: str) -> tuple[str, str | None] | None:
+        for report_id, report in self.store.reports.items():
+            for insight in report.insights:
+                if insight.insight_id == insight_id:
+                    return insight.title, report_id
+        return None
 
     def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
         return [feedback for feedback in self.store.feedback.values() if feedback.user_id == user_id]

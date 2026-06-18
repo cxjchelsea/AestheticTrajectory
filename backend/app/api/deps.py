@@ -16,17 +16,20 @@ from app.repositories.database_repositories import (
     DatabaseProfileRepository,
     DatabaseReportRepository,
 )
+from app.repositories.timeline_repository import DatabaseTimelineRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
 from app.repositories.memory_store import store
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.report_repository import ReportRepository
+from app.repositories.timeline_repository import TimelineRepository
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.services.analysis_job_service import AnalysisJobService
 from app.services.feedback_service import FeedbackService
 from app.services.input_service import InputService
 from app.services.profile_service import ProfileService
 from app.services.report_service import ReportService
+from app.services.timeline_service import TimelineService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
 
 
@@ -44,6 +47,7 @@ def get_analysis_job_service(session: Session = Depends(get_session)) -> Analysi
             report_repository=DatabaseReportRepository(session),
             analysis_log_repository=DatabaseAnalysisLogRepository(session),
             feedback_repository=DatabaseFeedbackRepository(session),
+            timeline_repository=DatabaseTimelineRepository(session),
             chroma_write_results=chroma_write_results,
         )
         return AnalysisJobService(
@@ -74,11 +78,23 @@ def get_report_service(session: Session = Depends(get_session)) -> ReportService
 
 def get_feedback_service(session: Session = Depends(get_session)) -> FeedbackService:
     if settings.repository_backend == "database":
-        return FeedbackService(DatabaseFeedbackRepository(session))
-    return FeedbackService(FeedbackRepository(store))
+        return FeedbackService(
+            DatabaseFeedbackRepository(session),
+            DatabaseTimelineRepository(session),
+        )
+    return FeedbackService(FeedbackRepository(store), TimelineRepository(store))
 
 
 def get_profile_service(session: Session = Depends(get_session)) -> ProfileService:
     if settings.repository_backend == "database":
-        return ProfileService(DatabaseProfileRepository(session))
-    return ProfileService(ProfileRepository(store))
+        return ProfileService(
+            DatabaseProfileRepository(session),
+            DatabaseTimelineRepository(session),
+        )
+    return ProfileService(ProfileRepository(store), TimelineRepository(store))
+
+
+def get_timeline_service(session: Session = Depends(get_session)) -> TimelineService:
+    if settings.repository_backend == "database":
+        return TimelineService(DatabaseTimelineRepository(session), DatabaseReportRepository(session))
+    return TimelineService(TimelineRepository(store), ReportRepository(store))

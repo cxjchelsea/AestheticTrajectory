@@ -8,9 +8,10 @@ interface ReportComparisonPageProps {
   onBack: () => void;
   onStart: () => void;
   onViewHistory: () => void;
+  onViewTimeline?: () => void;
 }
 
-export function ReportComparisonPage({ userId, onBack, onStart, onViewHistory }: ReportComparisonPageProps) {
+export function ReportComparisonPage({ userId, onBack, onStart, onViewHistory, onViewTimeline }: ReportComparisonPageProps) {
   const [comparison, setComparison] = useState<ReportComparisonResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function ReportComparisonPage({ userId, onBack, onStart, onViewHistory }:
         <div className="hero-actions">
           <Button variant="secondary" onClick={onBack}>返回首页</Button>
           <Button variant="secondary" onClick={onViewHistory}>查看历史报告</Button>
+          {onViewTimeline ? <Button variant="secondary" onClick={onViewTimeline}>审美时间轴</Button> : null}
           <Button onClick={onStart}>开始一次分析</Button>
         </div>
       </div>

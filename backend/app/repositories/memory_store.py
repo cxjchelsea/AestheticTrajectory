@@ -8,6 +8,7 @@ from app.schemas.feature import InputFeature
 from app.schemas.input import AestheticInputResponse
 from app.schemas.profile import ProfileResponse
 from app.schemas.report import ReportResponse
+from app.schemas.timeline import TimelineEvent
 
 
 @dataclass
@@ -21,6 +22,8 @@ class MemoryStore:
     feedback: dict[str, InsightFeedbackResponse] = field(default_factory=dict)
     analysis_logs: dict[str, AnalysisLogRecord] = field(default_factory=dict)
     profiles: dict[str, ProfileResponse] = field(default_factory=dict)
+    timeline_events: dict[str, TimelineEvent] = field(default_factory=dict)
+    timeline_dedupe_keys: set[tuple[str, str]] = field(default_factory=set)
 
 
 store = MemoryStore()

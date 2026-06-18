@@ -9,6 +9,7 @@ interface HistoryPageProps {
   onStart: () => void;
   onViewProfile: () => void;
   onViewComparison: () => void;
+  onViewTimeline: () => void;
   onBack: () => void;
 }
 
@@ -18,6 +19,7 @@ export function HistoryPage({
   onStart,
   onViewProfile,
   onViewComparison,
+  onViewTimeline,
   onBack,
 }: HistoryPageProps) {
   const [history, setHistory] = useState<ReportHistoryResponse | null>(null);
@@ -73,6 +75,7 @@ export function HistoryPage({
           <Button variant="secondary" onClick={onBack}>返回首页</Button>
           <Button variant="secondary" onClick={onViewProfile}>查看轻量画像</Button>
           <Button variant="secondary" onClick={onViewComparison}>查看最近变化</Button>
+          <Button variant="secondary" onClick={onViewTimeline}>查看审美时间轴</Button>
           <Button onClick={onStart}>开始一次分析</Button>
         </div>
       </div>

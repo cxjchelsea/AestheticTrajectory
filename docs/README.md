@@ -68,7 +68,7 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V4-B 方案待确认**（`research_completed / pending_user_review`）
+- 当前：**V4-B 实现待验收**（`implementation_completed / pending_validation`）
 - V4-0：`iterations/v4-0-long-term-personalized-agent-research.md`
 - V4-A：`iterations/v4-a-runtime-multimodal-foundation.md`（已验收）
 - V4-B：`iterations/v4-b-aesthetic-trajectory-temporal-profiling.md`

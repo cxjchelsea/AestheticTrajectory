@@ -189,3 +189,20 @@ class AnalysisLogModel(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AestheticTimelineEventModel(Base):
+    __tablename__ = "aesthetic_timeline_events"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    event_type: Mapped[str] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
+    related_report_ids_json: Mapped[list] = json_column()
+    related_insight_ids_json: Mapped[list] = json_column()
+    related_feedback_ids_json: Mapped[list] = json_column()
+    evidence_json: Mapped[dict] = json_column()
+    dedupe_key: Mapped[str] = mapped_column(String(256), index=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

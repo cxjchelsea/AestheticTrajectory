@@ -1,6 +1,7 @@
 from app.models.persistence import (
     AestheticInputModel,
     AestheticReportModel,
+    AestheticTimelineEventModel,
     AnalysisJobModel,
     AnalysisLogModel,
     EmbeddingRecordModel,
@@ -17,6 +18,7 @@ from app.models.persistence import (
 __all__ = [
     "AestheticInputModel",
     "AestheticReportModel",
+    "AestheticTimelineEventModel",
     "AnalysisJobModel",
     "AnalysisLogModel",
     "EmbeddingRecordModel",

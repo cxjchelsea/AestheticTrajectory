@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-research_completed / pending_user_review
+implementation_completed / pending_validation
 ```
 
 创建日期：
@@ -372,18 +372,19 @@ frontend/src/types/aesthetic.ts            # TimelineEvent types
 - `docs/13` 若新增 governance 检查项
 - `agent-frontier-design-docs.md` §3.3 → `partial`（以 `19` §10.1 为入口，暂不强制 `docs/21`）
 
-## 11. 用户确认（待接受）
+## 11. 用户确认（已接受）
 
-- [ ] 接受 **持久化 `aesthetic_timeline_events` 表** + workflow 写入钩子。
-- [ ] 接受周期摘要为 **规则模板聚合**，V4-B 不使用 LLM 生成。
-- [ ] 接受首版 event_type 枚举（§7.1）与 **列表式** 时间轴 UI（无图表）。
-- [ ] 接受 `weakening` 为 **只读 temporal 状态**，不自动改 profile 权重。
-- [ ] 接受 timeline 写入失败 **不阻塞** report 完成（显性降级）。
+- [x] 接受 **持久化 `aesthetic_timeline_events` 表** + workflow 写入钩子。
+- [x] 接受周期摘要为 **规则模板聚合**，V4-B 不使用 LLM 生成。
+- [x] 接受首版 event_type 枚举（§7.1）与 **列表式** 时间轴 UI（无图表）。
+- [x] 接受 `weakening` 为 **只读 temporal 状态**，不自动改 profile 权重。
+- [x] 接受 timeline 写入失败 **不阻塞** report 完成（显性降级）。
 
 ## 12. 当前结论
 
 ```text
-V4-B 调研与方案选择已完成，状态 research_completed / pending_user_review。
-推荐方案：持久化 timeline events + 规则周期摘要 + comparison 派生 + profile weakening 展示。
-待用户确认 §11 后更新 07/11/19，再进入代码实现。
+V4-B 实现已完成，状态 implementation_completed / pending_validation。
+已实现：timeline events 持久化、update_trajectory workflow、timeline/summary API、TimelinePage、weakening 展示。
+memory backend pytest：71 passed（2026-06-18）。
+待完成：人工验收 §8.2、上升 07/11/19、15 记录。
 ```

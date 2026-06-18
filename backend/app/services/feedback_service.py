@@ -1,5 +1,6 @@
 from app.schemas.common import new_id, utc_now
 from app.schemas.feedback import CreateInsightFeedbackRequest, InsightFeedbackResponse
+from app.services.timeline_builder import build_feedback_decline_event
 
 
 class FeedbackTargetNotFoundError(ValueError):
@@ -7,8 +8,9 @@ class FeedbackTargetNotFoundError(ValueError):
 
 
 class FeedbackService:
-    def __init__(self, repository) -> None:
+    def __init__(self, repository, timeline_repository=None) -> None:
         self.repository = repository
+        self.timeline_repository = timeline_repository
 
     def get_feedback(self, insight_id: str) -> InsightFeedbackResponse | None:
         return self.repository.get_for_target("user_anonymous", insight_id)
@@ -27,4 +29,23 @@ class FeedbackService:
             comment=request.comment,
             createdAt=utc_now(),
         )
-        return self.repository.save(feedback)
+        saved = self.repository.save(feedback)
+        self._append_feedback_timeline_event(saved)
+        return saved
+
+    def _append_feedback_timeline_event(self, feedback: InsightFeedbackResponse) -> None:
+        if self.timeline_repository is None or feedback.rating != "not_me":
+            return
+        context = self.repository.find_insight_context(feedback.insight_id)
+        if context is None:
+            return
+        insight_title, report_id = context
+        draft = build_feedback_decline_event(
+            feedback.user_id,
+            feedback,
+            insight_title,
+            report_id,
+            feedback.created_at,
+        )
+        if draft is not None:
+            self.timeline_repository.append_events([draft])

@@ -1,4 +1,4 @@
-export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile" | "comparison";
+export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile" | "comparison" | "timeline";
 
 export type InputType = "image" | "text" | "music" | "video";
 
@@ -183,7 +183,7 @@ export interface InsightFeedbackResponse {
   createdAt: string;
 }
 
-export type ProfileItemStatus = "stable" | "recent" | "rejected" | "uncertain" | "inactive" | "hidden" | "deleted";
+export type ProfileItemStatus = "stable" | "recent" | "weakening" | "rejected" | "uncertain" | "inactive" | "hidden" | "deleted";
 
 export type ProfileEvidenceType = "feature" | "report" | "interpretation" | "insight" | "feedback";
 
@@ -223,6 +223,67 @@ export interface ProfileResponse {
   userId: string;
   profile: UserProfile | null;
   message?: string | null;
+}
+
+export type TimelineEventType =
+  | "new_interpretation"
+  | "interpretation_decline"
+  | "feature_shift"
+  | "style_shift"
+  | "contradiction_detected"
+  | "stable_preference"
+  | "report_completed";
+
+export interface TimelineEvidence {
+  evidenceRefs: string[];
+  comparisonRef?: string | null;
+  featureKeys?: string[];
+  insightIds?: string[];
+  feedbackIds?: string[];
+  note?: string | null;
+  dedupeKey: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  userId: string;
+  eventType: TimelineEventType;
+  title: string;
+  description?: string | null;
+  relatedReportIds: string[];
+  relatedInsightIds?: string[];
+  relatedFeedbackIds?: string[];
+  evidence: TimelineEvidence;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface TimelineListResponse {
+  userId: string;
+  events: TimelineEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+  message?: string | null;
+  disclaimer: string;
+}
+
+export interface TimelineSummaryHighlight {
+  eventType: TimelineEventType;
+  title: string;
+  occurredAt: string;
+  evidenceRefs: string[];
+}
+
+export interface TimelineSummaryResponse {
+  userId: string;
+  period: "week" | "month";
+  summaryText: string;
+  eventCount: number;
+  reportCount: number;
+  highlights: TimelineSummaryHighlight[];
+  message?: string | null;
+  disclaimer: string;
 }
 
 export type AnalysisLogStatus = "running" | "success" | "failed" | "skipped";

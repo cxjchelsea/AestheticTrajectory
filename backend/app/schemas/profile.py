@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-ProfileItemStatus = Literal["stable", "recent", "rejected", "uncertain", "inactive", "hidden", "deleted"]
+ProfileItemStatus = Literal["stable", "recent", "weakening", "rejected", "uncertain", "inactive", "hidden", "deleted"]
 ProfileEvidenceType = Literal["feature", "report", "interpretation", "insight", "feedback"]
 ProfileEvidenceDirection = Literal["positive", "negative", "uncertain", "conflict"]
 
