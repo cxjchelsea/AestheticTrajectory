@@ -270,5 +270,5 @@ backend/app/tests/integration/test_analysis_workflow.py
 
 ```text
 V3-E 自动治理测试与人工全链路验收均已通过。
-下一步进入 V3 final closure / archive gate（需用户明确确认）。
+V3 已归档：docs/archive/v3/。
 ```

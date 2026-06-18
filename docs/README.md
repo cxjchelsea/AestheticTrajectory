@@ -60,18 +60,14 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 历史归档：
 
-- `archive/v1/`：V1 stable baseline，包含 V1 任务拆分、收口清单、验收和遗留问题。
-- `archive/v2/`：V2 Memory / User Model baseline，当前状态为 accepted / archived。
+- `archive/v1/`：V1 stable baseline。
+- `archive/v2/`：V2 Memory / User Model baseline，accepted / archived。
+- `archive/v3/`：V3 Personalized Retrieval / RAG / Evaluation / Observability baseline，accepted / archived。
 
 当前迭代：
 
-- V2-A 已验收归档：`iterations/v2-a-report-history.md`
-- V2-0 已验收归档：`iterations/v2-0-memory-user-model-research.md`
-- V2-B 已验收通过：`iterations/v2-b-profile-evidence.md`
-- V2-C 已完成：`iterations/v2-c-feedback-weight-memory-update.md`
-- V2-D 已完成：`iterations/v2-d-report-comparison.md`
-- V2-E 已完成：`iterations/v2-e-memory-governance-validation.md`
-- 当前：V3-E 已验收通过；下一步 V3 final closure / archive gate（需用户确认）。
+- 当前：V3 已归档；下一步 V4 版本级研究（V4-0）。
+- V3 归档入口：`archive/v3/`、`18-V3开发收口清单.md`
 - V3-E：`iterations/v3-e-stability-governance-validation.md`
 - V3-D：`iterations/v3-d-retrieval-rag-observability.md`
 - V3-C：`iterations/v3-c-evaluation-metrics-baseline.md`

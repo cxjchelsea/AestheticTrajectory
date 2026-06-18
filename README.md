@@ -2,7 +2,7 @@
 
 AI aesthetic analysis product for exploring long-term personal preference modeling.
 
-The current project has an accepted and archived V2 Memory / User Model baseline.
+The current project has accepted and archived V1, V2, and V3 baselines.
 
 ## Scope
 
@@ -20,7 +20,7 @@ The current project has an accepted and archived V2 Memory / User Model baseline
 - Current validation status: backend tests pass (54 passed), V3-A through V3-E manual validation passed.
 - Not included yet: real model calls, real image feature extraction, ChromaDB runtime writes, external knowledge RAG runtime, Agent, MCP, knowledge graph, or long-term profile automation beyond the V2 lightweight baseline.
 
-V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3-0 is accepted in `docs/iterations/v3-0-personalized-retrieval-research.md`. V3-A through V3-E are accepted; next step is V3 final closure / archive gate per `docs/12-开发任务拆分与里程碑计划.md`.
+V1 validation is archived in `docs/archive/v1/`. V2 is archived in `docs/archive/v2/`. V3 is archived in `docs/archive/v3/`. Next step is V4 version-level research per `docs/12-开发任务拆分与里程碑计划.md`.
 
 ## Frontend
 
