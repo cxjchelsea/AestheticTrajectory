@@ -24,7 +24,7 @@ export function UploadPage({ inputs, onChange, onStart, onBack }: UploadPageProp
       <section>
         <button className="text-button" onClick={onBack}>返回首页</button>
         <h1>上传审美样本</h1>
-        <p className="muted">至少 3 个，建议 5-10 个，最多 12 个。V0 仅使用本地 mock 数据。</p>
+        <p className="muted">至少 3 个，建议 5-10 个，最多 12 个。支持图片上传、文字，以及音乐/视频元数据样本。</p>
         <UploadForm onAdd={addInput} />
         <div className="actions-row">
           <Button variant="secondary" onClick={() => onChange(starterInputs)}>填入示例样本</Button>

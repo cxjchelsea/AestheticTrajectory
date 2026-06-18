@@ -9,9 +9,20 @@ def build_embedding_text(input_record: AestheticInputResponse, feature: InputFea
     if input_record.type == "text":
         _append(parts, "正文", input_record.content_text)
         _append(parts, "描述", input_record.description)
-    else:
+    elif input_record.type == "image":
         _append(parts, "描述", input_record.description)
-        parts.append("当前边界：图片真实分析尚未接入，本轮仅使用用户提供的标题、描述和已抽取 placeholder feature。")
+        _append(parts, "文件", input_record.file_url)
+        parts.append("当前边界：图片内容理解仍可能使用 placeholder feature；文件 URL 仅作来源记录。")
+    elif input_record.type == "music":
+        _append(parts, "备注", input_record.content_text)
+        _append(parts, "链接", input_record.file_url)
+        _append(parts, "描述", input_record.description)
+        parts.append("当前边界：未解析音频内容，仅使用音乐元数据参与 embedding。")
+    elif input_record.type == "video":
+        _append(parts, "备注", input_record.content_text)
+        _append(parts, "链接", input_record.file_url)
+        _append(parts, "描述", input_record.description)
+        parts.append("当前边界：未解析视频内容，仅使用视频元数据参与 embedding。")
 
     if feature is not None:
         feature_summary = _feature_summary(feature)

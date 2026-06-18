@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
-InputType = Literal["image", "text"]
+InputType = Literal["image", "text", "music", "video"]
 
 
 class CreateInputRequest(BaseModel):
@@ -14,6 +14,16 @@ class CreateInputRequest(BaseModel):
     source: str = "manual"
     title: str | None = None
     description: str | None = None
+
+    @model_validator(mode="after")
+    def validate_metadata(self) -> "CreateInputRequest":
+        if self.type == "text" and not (self.content_text and self.content_text.strip()):
+            raise ValueError("text input requires contentText")
+        if self.type in {"music", "video"} and not (
+            (self.title and self.title.strip()) or (self.file_url and self.file_url.strip())
+        ):
+            raise ValueError(f"{self.type} input requires title or fileUrl")
+        return self
 
 
 class AestheticInputResponse(BaseModel):

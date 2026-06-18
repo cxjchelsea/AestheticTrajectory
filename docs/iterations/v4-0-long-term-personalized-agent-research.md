@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-draft / pending_user_review
+accepted / no_runtime_implementation
 ```
 
 创建日期：
@@ -660,7 +660,7 @@ V4-0 可继续，但 V4-D 前必须明确 identity / MCP 授权方案。
 状态：
 
 ```text
-draft / pending_user_review
+accepted / no_runtime_implementation
 ```
 
 范围：
@@ -816,19 +816,27 @@ V4-0 草案与路线图、V3 归档边界、既有设计占位一致。
 V4-0 仍不应直接实现任何 V4 runtime。
 ```
 
-## 16. 当前仍需用户确认
+## 16. 用户确认记录
 
-- 是否接受 V4 子阶段拆分：V4-A → V4-B → V4-C → V4-D → V4-E。
-- 是否接受 V4-A 先做 runtime / 存储 / ChromaDB / 多模态 schema，而不是直接做 Agent。
-- 是否接受知识图谱与外部 RAG 只作 explanation support，不进入 profile positive evidence。
-- 是否接受 MCP 先 internal tools、后用户确认的外部只读导入。
-- 是否接受 Agent 第一版为 evidence-bound observation agent，而非无边界自主 Agent。
-- 是否接受音乐/视频第一版可为 metadata-only placeholder。
+复核日期：
+
+```text
+2026-06-17
+```
+
+用户确认项：
+
+- [x] 接受 V4 子阶段拆分：V4-A → V4-B → V4-C → V4-D → V4-E。
+- [x] 接受 V4-A 先做 runtime / 存储 / ChromaDB / 多模态 schema，而不是直接做 Agent。
+- [x] 接受知识图谱与外部 RAG 只作 explanation support，不进入 profile positive evidence。
+- [x] 接受 MCP 先 internal tools、后用户确认的外部只读导入。
+- [x] 接受 Agent 第一版为 evidence-bound observation agent，而非无边界自主 Agent。
+- [x] 接受音乐/视频第一版可为 metadata-only placeholder。
 
 ## 17. 当前结论
 
 ```text
-V4-0 版本级研究与架构拆分草案已完成，等待用户复核。
-V4 建议从 runtime & multimodal foundation（V4-A）开始，而不是直接做 Agent / MCP runtime。
-用户确认后，V4-0 状态可更新为 accepted / no_runtime_implementation，并启动 V4-A 任务单起草。
+V4-0 版本级研究与架构拆分已获用户确认并接受。
+V4 应从 runtime & multimodal foundation（V4-A）开始，而不是直接做 Agent / MCP runtime。
+V4-A 任务单见 docs/iterations/v4-a-runtime-multimodal-foundation.md。
 ```

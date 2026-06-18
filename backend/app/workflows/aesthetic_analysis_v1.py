@@ -4,12 +4,14 @@ from app.repositories.feature_repository import FeatureRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.memory_store import MemoryStore
 from app.repositories.report_repository import ReportRepository
+from app.repositories.chroma_debug_store import chroma_write_results
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.schemas.analysis_job import AnalysisJobResponse
 from app.schemas.common import new_id, utc_now
 from app.schemas.input import AestheticInputResponse
 from app.schemas.report import ReportResponse
 from app.workflows.steps.analysis_logging import record_step
+from app.workflows.steps.build_embedding_text import build_embedding_text
 from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
@@ -39,11 +41,31 @@ def run_mock_aesthetic_analysis(
         "generate_embeddings",
         lambda: generate_embeddings(inputs, feature_result),
     )
+    feature_by_input_id = {feature.input_id: feature for feature in feature_result}
+    embedding_texts = {
+        input_record.id: build_embedding_text(
+            input_record,
+            feature_by_input_id.get(input_record.id),
+        )
+        for input_record in inputs
+    }
+
+    def persist_vectors():
+        records, chroma_result = write_vectors(
+            job,
+            inputs,
+            embeddings,
+            embedding_texts=embedding_texts,
+        )
+        if chroma_result.status in {"skipped", "failed", "success"}:
+            persistence.save_chroma_write_result(job.id, chroma_result)
+        return records
+
     embedding_records = record_step(
         persistence.analysis_log_repository,
         job.id,
         "write_vectors",
-        lambda: write_vectors(job, inputs, embeddings),
+        persist_vectors,
     )
     persistence.embedding_record_repository.save_many(embedding_records)
 
@@ -128,4 +150,5 @@ def memory_workflow_persistence(store: MemoryStore) -> WorkflowPersistence:
         report_repository=ReportRepository(store),
         analysis_log_repository=AnalysisLogRepository(store),
         feedback_repository=FeedbackRepository(store),
+        chroma_write_results=chroma_write_results,
     )

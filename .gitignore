@@ -24,5 +24,9 @@ backend/.venv/
 backend/.env
 frontend/.env
 
-开发流程固定模板.md
+# Local runtime data (do not commit)
+chroma_data/
+chroma_data_test/
+ollama-models/
+backend/uploads/
 

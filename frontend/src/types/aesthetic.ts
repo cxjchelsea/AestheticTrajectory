@@ -1,6 +1,6 @@
 export type AppRoute = "home" | "upload" | "analysis" | "report" | "history" | "profile" | "comparison";
 
-export type InputType = "image" | "text";
+export type InputType = "image" | "text" | "music" | "video";
 
 export interface AestheticInput {
   id: string;

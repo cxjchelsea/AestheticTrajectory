@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.db.session import get_session
 from app.repositories.analysis_job_repository import AnalysisJobRepository
 from app.repositories.analysis_log_repository import AnalysisLogRepository
+from app.repositories.chroma_debug_store import chroma_write_results
 from app.repositories.database_repositories import (
     DatabaseAnalysisJobRepository,
     DatabaseAnalysisLogRepository,
@@ -43,6 +44,7 @@ def get_analysis_job_service(session: Session = Depends(get_session)) -> Analysi
             report_repository=DatabaseReportRepository(session),
             analysis_log_repository=DatabaseAnalysisLogRepository(session),
             feedback_repository=DatabaseFeedbackRepository(session),
+            chroma_write_results=chroma_write_results,
         )
         return AnalysisJobService(
             DatabaseAnalysisJobRepository(session),

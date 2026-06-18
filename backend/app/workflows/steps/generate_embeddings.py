@@ -1,5 +1,4 @@
-from app.ai.embedding_client import EmbeddingClient
-from app.ai.mock.mock_embedding import MockEmbeddingClient
+from app.ai.factory import get_embedding_client
 from app.schemas.feature import InputFeature
 from app.schemas.input import AestheticInputResponse
 from app.workflows.steps.build_embedding_text import build_embedding_text
@@ -8,9 +7,9 @@ from app.workflows.steps.build_embedding_text import build_embedding_text
 def generate_embeddings(
     inputs: list[AestheticInputResponse],
     features: list[InputFeature] | None = None,
-    client: EmbeddingClient | None = None,
+    client=None,
 ) -> dict[str, list[float]]:
-    active_client = client or MockEmbeddingClient()
+    active_client = client or get_embedding_client()
     feature_by_input_id = {feature.input_id: feature for feature in features or []}
     embeddings: dict[str, list[float]] = {}
 
