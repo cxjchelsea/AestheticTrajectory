@@ -91,6 +91,15 @@ export interface KnowledgeContextItem {
   matchedFeatures: string[];
   sourceRefs: string[];
   note: string;
+  relatedConceptIds?: string[];
+  relationNotes?: string[];
+}
+
+export interface KnowledgeRetrievalMeta {
+  tagMatchCount: number;
+  graphHitCount: number;
+  vectorPath: "skipped" | "used" | "not_applicable";
+  abstentionReason?: string | null;
 }
 
 export interface AestheticKnowledgeContext {
@@ -98,6 +107,7 @@ export interface AestheticKnowledgeContext {
   summary?: string | null;
   message?: string | null;
   disclaimer: string;
+  retrievalMeta?: KnowledgeRetrievalMeta | null;
 }
 
 export type HistoryContextDirection = "positive" | "negative" | "neutral";
@@ -347,6 +357,9 @@ export interface RetrievalStepTrace {
   abstained: boolean;
   message?: string | null;
   developerMessage: string;
+  graphHitCount?: number | null;
+  vectorPath?: string | null;
+  tagMatchCount?: number | null;
 }
 
 export interface RetrievalItemTrace {

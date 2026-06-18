@@ -4,6 +4,7 @@ from app.repositories.feature_repository import FeatureRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.memory_store import MemoryStore
 from app.repositories.report_repository import ReportRepository
+from app.repositories.knowledge_graph_repository import KnowledgeGraphRepository
 from app.repositories.timeline_repository import TimelineRepository
 from app.repositories.chroma_debug_store import chroma_write_results
 from app.repositories.workflow_persistence import WorkflowPersistence
@@ -98,7 +99,10 @@ def run_mock_aesthetic_analysis(
         persistence.analysis_log_repository,
         job.id,
         "retrieve_aesthetic_knowledge",
-        lambda: retrieve_aesthetic_knowledge(feature_result),
+        lambda: retrieve_aesthetic_knowledge(
+            feature_result,
+            graph_repository=persistence.knowledge_graph_repository,
+        ),
     )
     report = record_step(
         persistence.analysis_log_repository,
@@ -166,5 +170,6 @@ def memory_workflow_persistence(store: MemoryStore) -> WorkflowPersistence:
         analysis_log_repository=AnalysisLogRepository(store),
         feedback_repository=FeedbackRepository(store),
         timeline_repository=TimelineRepository(store),
+        knowledge_graph_repository=KnowledgeGraphRepository(),
         chroma_write_results=chroma_write_results,
     )

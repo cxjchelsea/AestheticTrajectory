@@ -25,6 +25,7 @@ class Settings:
     )
     test_database_url: str = os.getenv("TEST_DATABASE_URL", "sqlite+pysqlite:///:memory:")
     chroma_collection_inputs: str = "inputs"
+    chroma_collection_knowledge: str = "knowledge"
     chroma_enabled: bool = os.getenv("CHROMA_ENABLED", "false").lower() in {"1", "true", "yes"}
     chroma_host: str = os.getenv("CHROMA_HOST", "127.0.0.1")
     chroma_port: int = int(os.getenv("CHROMA_PORT", "8001"))

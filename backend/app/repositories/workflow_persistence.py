@@ -11,6 +11,7 @@ class WorkflowPersistence:
     analysis_log_repository: object
     feedback_repository: object
     timeline_repository: object | None = None
+    knowledge_graph_repository: object | None = None
     chroma_write_results: dict[str, ChromaWriteResult] | None = None
 
     def save_chroma_write_result(self, job_id: str, result: ChromaWriteResult) -> None:

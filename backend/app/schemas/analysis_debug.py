@@ -66,6 +66,9 @@ class RetrievalStepTrace(BaseModel):
     abstained: bool
     message: str | None = None
     developer_message: str = Field(alias="developerMessage")
+    graph_hit_count: int | None = Field(default=None, alias="graphHitCount")
+    vector_path: str | None = Field(default=None, alias="vectorPath")
+    tag_match_count: int | None = Field(default=None, alias="tagMatchCount")
 
     model_config = {"populate_by_name": True}
 

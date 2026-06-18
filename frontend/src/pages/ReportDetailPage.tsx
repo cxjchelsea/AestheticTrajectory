@@ -175,6 +175,16 @@ export function ReportDetailPage({
                 <h3>{item.title}</h3>
                 <p>{item.snippet}</p>
                 <p>{item.note}</p>
+                {item.relationNotes && item.relationNotes.length > 0 ? (
+                  <ul className="relation-notes">
+                    {item.relationNotes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {item.relatedConceptIds && item.relatedConceptIds.length > 0 ? (
+                  <small>相关概念：{item.relatedConceptIds.join(", ")}</small>
+                ) : null}
                 <small>
                   {item.matchedFeatures.length > 0 ? item.matchedFeatures.join(" / ") : "无特征匹配"}
                 </small>
@@ -340,6 +350,8 @@ function DeveloperDebugPanel({
                     <span>{step.status}</span>
                     <span>{step.selectedItemCount} selected</span>
                     {step.abstained ? <span>abstained</span> : null}
+                    {step.graphHitCount != null ? <span>graph {step.graphHitCount}</span> : null}
+                    {step.vectorPath ? <span>vector {step.vectorPath}</span> : null}
                     <small>{step.developerMessage}</small>
                     {step.message ? <small>{step.message}</small> : null}
                   </li>

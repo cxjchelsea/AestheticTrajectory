@@ -1,4 +1,6 @@
 from app.models.persistence import (
+    AestheticConceptModel,
+    AestheticConceptRelationModel,
     AestheticInputModel,
     AestheticReportModel,
     AestheticTimelineEventModel,
@@ -16,6 +18,8 @@ from app.models.persistence import (
 )
 
 __all__ = [
+    "AestheticConceptModel",
+    "AestheticConceptRelationModel",
     "AestheticInputModel",
     "AestheticReportModel",
     "AestheticTimelineEventModel",

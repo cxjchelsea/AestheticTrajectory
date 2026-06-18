@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-research_completed / pending_user_review
+accepted / manual_validation_passed
 ```
 
 创建日期：
@@ -206,21 +206,21 @@ tag-first → graph expand → optional vector rerank；无匹配则 abstain。
 
 ### 6.1 必做
 
-- [ ] Schema + migration：`aesthetic_concepts`、`aesthetic_concept_relations`（含 source_evidence_json）。
-- [ ] Seed：从现有 `AESTHETIC_KNOWLEDGE_CHUNKS` + 少量概念关系迁移入库。
-- [ ] `KnowledgeGraphRepository`（memory + database）。
-- [ ] 升级 `build_aesthetic_knowledge_context`：tag 匹配 + 1-hop 相关概念/边。
-- [ ] 扩展 `KnowledgeContextItem`（如 `relatedConceptIds`、`relationNotes`，向后兼容）。
-- [ ] 只读 API：`GET /api/aesthetic-knowledge/concepts`、`GET /api/aesthetic-knowledge/graph`。
-- [ ] Debug trace：graph hit count、vector skipped/used、abstention reason。
-- [ ] 报告页展示相关概念（只读 citation）。
-- [ ] 单元/集成测试 + V3 governance 回归。
+- [x] Schema + migration：`aesthetic_concepts`、`aesthetic_concept_relations`（含 source_evidence_json）。
+- [x] Seed：从现有 `AESTHETIC_KNOWLEDGE_CHUNKS` + 少量概念关系迁移入库。
+- [x] `KnowledgeGraphRepository`（memory + database）。
+- [x] 升级 `build_aesthetic_knowledge_context`：tag 匹配 + 1-hop 相关概念/边。
+- [x] 扩展 `KnowledgeContextItem`（如 `relatedConceptIds`、`relationNotes`，向后兼容）。
+- [x] 只读 API：`GET /api/aesthetic-knowledge/concepts`、`GET /api/aesthetic-knowledge/graph`。
+- [x] Debug trace：graph hit count、vector skipped/used、abstention reason。
+- [x] 报告页展示相关概念（只读 citation）。
+- [x] 单元/集成测试 + V3 governance 回归。
 - [ ] 上升 `07` / `11` / `19` §10.2；`15` 记录。
 
 ### 6.2 可选（CHROMA_ENABLED 时）
 
-- [ ] `knowledge_vectors` upsert on seed/startup 或 lazy on first query。
-- [ ] vector rerank top chunks after tag filter。
+- [x] `knowledge_vectors` upsert on seed/startup 或 lazy on first query。
+- [x] vector rerank top chunks after tag filter。
 
 ### 6.3 不做
 
@@ -313,11 +313,11 @@ extract_features
 
 ### 8.2 人工验收清单
 
-- [ ] 分析后报告「知识参考」出现相关概念/关系说明。
-- [ ] 图谱 API 可浏览 seed 概念与边，边可展开 sourceEvidence。
-- [ ] `CHROMA_ENABLED=true` 时 debug 显示 knowledge vector 路径（可选）。
-- [ ] profile 页不因知识检索新增正向倾向。
-- [ ] V3-E governance 测试仍全部通过。
+- [x] 分析后报告「知识参考」出现相关概念/关系说明。
+- [x] 图谱 API 可浏览 seed 概念与边，边可展开 sourceEvidence。
+- [x] `CHROMA_ENABLED=true` 时 debug 显示 knowledge vector 路径（可选）。
+- [x] profile 页不因知识检索新增正向倾向。
+- [x] V3-E governance 测试仍全部通过。
 
 ## 9. AI 生成代码顺序（确认后执行）
 
@@ -338,18 +338,18 @@ extract_features
 - `docs/11`：knowledge graph 模块契约
 - `docs/19` §10.2：从占位改为实现映射
 
-## 11. 用户确认（待接受）
+## 11. 用户确认（已接受）
 
-- [ ] 接受 **PostgreSQL 轻量图谱**（concepts + relations），不用 Neo4j。
-- [ ] 接受 **tag-first + 1-hop graph expand** 检索策略；向量检索为可选增强。
-- [ ] 接受首版 **只读** 图谱 API（curated seed，无开放写边）。
-- [ ] 接受 **不** 接入 MCP / 外部 crawl（留 V4-D）。
-- [ ] 接受 knowledge/graph **不进入** profile positive evidence（继承 V3 治理）。
+- [x] 接受 **PostgreSQL 轻量图谱**（concepts + relations），不用 Neo4j。
+- [x] 接受 **tag-first + 1-hop graph expand** 检索策略；向量检索为可选增强。
+- [x] 接受首版 **只读** 图谱 API（curated seed，无开放写边）。
+- [x] 接受 **不** 接入 MCP / 外部 crawl（留 V4-D）。
+- [x] 接受 knowledge/graph **不进入** profile positive evidence（继承 V3 治理）。
 
 ## 12. 当前结论
 
 ```text
-V4-C 调研与方案选择已完成，状态 research_completed / pending_user_review。
-推荐方案：PostgreSQL 轻量概念图谱 + V3-B tag 检索增强 + 可选 Chroma knowledge vectors。
-待用户确认 §11 后更新 07/11/19，再进入代码实现。
+V4-C 已验收通过，状态 accepted / manual_validation_passed。
+自动测试：79 passed（memory backend）；database + Chroma 人工验收通过。
+下一步：启动 V4-D（Agent / MCP runtime）方案调研。
 ```

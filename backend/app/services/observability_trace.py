@@ -39,6 +39,9 @@ def _build_retrieval_step_traces(report: ReportResponse, logs_by_step) -> list[R
     traces: list[RetrievalStepTrace] = []
     for step_id, retrieval_type in RETRIEVAL_STEPS:
         log = logs_by_step.get(step_id)
+        graph_hit_count = None
+        vector_path = None
+        tag_match_count = None
         if retrieval_type == "personal_history":
             context = report.history_context
             selected_count = len(context.items) if context is not None else 0
@@ -54,11 +57,23 @@ def _build_retrieval_step_traces(report: ReportResponse, logs_by_step) -> list[R
             selected_count = len(context.items) if context is not None else 0
             abstained = selected_count == 0
             message = context.message if context is not None else None
-            developer_message = (
-                "Aesthetic knowledge retrieval abstained; no knowledge chunk met the minimum feature overlap."
-                if abstained
-                else f"Aesthetic knowledge retrieval selected {selected_count} chunk(s) for explanation support."
-            )
+            meta = context.retrieval_meta if context is not None else None
+            graph_hit_count = meta.graph_hit_count if meta is not None else None
+            vector_path = meta.vector_path if meta is not None else None
+            tag_match_count = meta.tag_match_count if meta is not None else None
+            if abstained:
+                reason = meta.abstention_reason if meta is not None else "no_tag_overlap"
+                developer_message = (
+                    f"Aesthetic knowledge retrieval abstained ({reason}); "
+                    "no knowledge chunk met the minimum feature overlap."
+                )
+            else:
+                graph_part = f" graph hits={graph_hit_count or 0}" if graph_hit_count is not None else ""
+                vector_part = f" vector={vector_path}" if vector_path else ""
+                developer_message = (
+                    f"Aesthetic knowledge retrieval selected {selected_count} chunk(s) for explanation support;"
+                    f"{graph_part}{vector_part}."
+                )
 
         traces.append(
             RetrievalStepTrace(
@@ -70,6 +85,9 @@ def _build_retrieval_step_traces(report: ReportResponse, logs_by_step) -> list[R
                 abstained=abstained,
                 message=message,
                 developerMessage=developer_message,
+                graphHitCount=graph_hit_count if retrieval_type == "aesthetic_knowledge" else None,
+                vectorPath=vector_path if retrieval_type == "aesthetic_knowledge" else None,
+                tagMatchCount=tag_match_count if retrieval_type == "aesthetic_knowledge" else None,
             )
         )
     return traces

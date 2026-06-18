@@ -206,3 +206,26 @@ class AestheticTimelineEventModel(Base):
     dedupe_key: Mapped[str] = mapped_column(String(256), index=True)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AestheticConceptModel(Base):
+    __tablename__ = "aesthetic_concepts"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    label: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text)
+    feature_tags_json: Mapped[list] = json_column()
+    source_refs_json: Mapped[list] = json_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AestheticConceptRelationModel(Base):
+    __tablename__ = "aesthetic_concept_relations"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    from_concept_id: Mapped[str] = mapped_column(String(64), index=True)
+    to_concept_id: Mapped[str] = mapped_column(String(64), index=True)
+    predicate: Mapped[str] = mapped_column(String(32), index=True)
+    source_evidence_json: Mapped[dict] = json_column()
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

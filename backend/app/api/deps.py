@@ -16,19 +16,20 @@ from app.repositories.database_repositories import (
     DatabaseProfileRepository,
     DatabaseReportRepository,
 )
-from app.repositories.timeline_repository import DatabaseTimelineRepository
+from app.repositories.knowledge_graph_repository import DatabaseKnowledgeGraphRepository, KnowledgeGraphRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
 from app.repositories.memory_store import store
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.report_repository import ReportRepository
-from app.repositories.timeline_repository import TimelineRepository
+from app.repositories.timeline_repository import DatabaseTimelineRepository, TimelineRepository
 from app.repositories.workflow_persistence import WorkflowPersistence
 from app.services.analysis_job_service import AnalysisJobService
 from app.services.feedback_service import FeedbackService
 from app.services.input_service import InputService
 from app.services.profile_service import ProfileService
 from app.services.report_service import ReportService
+from app.services.knowledge_graph_query import KnowledgeGraphQueryService
 from app.services.timeline_service import TimelineService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
 
@@ -48,6 +49,7 @@ def get_analysis_job_service(session: Session = Depends(get_session)) -> Analysi
             analysis_log_repository=DatabaseAnalysisLogRepository(session),
             feedback_repository=DatabaseFeedbackRepository(session),
             timeline_repository=DatabaseTimelineRepository(session),
+            knowledge_graph_repository=DatabaseKnowledgeGraphRepository(session),
             chroma_write_results=chroma_write_results,
         )
         return AnalysisJobService(
@@ -98,3 +100,9 @@ def get_timeline_service(session: Session = Depends(get_session)) -> TimelineSer
     if settings.repository_backend == "database":
         return TimelineService(DatabaseTimelineRepository(session), DatabaseReportRepository(session))
     return TimelineService(TimelineRepository(store), ReportRepository(store))
+
+
+def get_knowledge_graph_service(session: Session = Depends(get_session)) -> KnowledgeGraphQueryService:
+    if settings.repository_backend == "database":
+        return KnowledgeGraphQueryService(DatabaseKnowledgeGraphRepository(session))
+    return KnowledgeGraphQueryService(KnowledgeGraphRepository())
