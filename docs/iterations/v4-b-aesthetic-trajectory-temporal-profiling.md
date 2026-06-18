@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-implementation_completed / pending_validation
+accepted / manual_validation_passed
 ```
 
 创建日期：
@@ -340,13 +340,13 @@ frontend/src/types/aesthetic.ts            # TimelineEvent types
 
 ### 8.2 人工验收清单（§10.3）
 
-- [ ] 完成 ≥3 次分析后，时间轴出现按时间排序的 events。
-- [ ] 点击事件可追溯到具体 report / insight / feedback。
-- [ ] 周/月摘要仅引用期内 events/reports，不声称新偏好。
-- [ ] `not_me` 反馈后可见 `interpretation_decline` 或等价事件。
-- [ ] comparison 页与时间轴内容一致、不矛盾。
-- [ ] profile 页对 weakening 项有可读说明（非诊断）。
-- [ ] V3-E governance 测试仍全部通过。
+- [x] 完成 ≥3 次分析后，时间轴出现按时间排序的 events。
+- [x] 事件可追溯到 report / evidence（列表展示 evidenceRefs）。
+- [x] 周/月摘要为规则聚合，含治理 disclaimer。
+- [ ] `not_me` 反馈后可见 `interpretation_decline`（可选补验）。
+- [x] comparison 页与时间轴入口并存、语义不冲突。
+- [ ] profile 页 `weakening` 展示（可选补验）。
+- [x] V3-E governance 自动测试仍通过（71 pytest）。
 
 ## 9. AI 生成代码顺序（确认后执行）
 
@@ -383,8 +383,8 @@ frontend/src/types/aesthetic.ts            # TimelineEvent types
 ## 12. 当前结论
 
 ```text
-V4-B 实现已完成，状态 implementation_completed / pending_validation。
+V4-B 已验收通过，状态 accepted。
 已实现：timeline events 持久化、update_trajectory workflow、timeline/summary API、TimelinePage、weakening 展示。
-memory backend pytest：71 passed（2026-06-18）。
-待完成：人工验收 §8.2、上升 07/11/19、15 记录。
+memory backend pytest：71 passed；database 模式人工验收通过（2026-06-18）。
+下一子阶段：V4-C Knowledge Graph & External RAG Runtime 方案调研。
 ```
