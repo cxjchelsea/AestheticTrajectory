@@ -26,7 +26,7 @@ docs/<NN>-<方向简称>设计文档.md
 | --- | --- | --- | --- | --- | --- |
 | §3.1 | Memory / User Model | `docs/19-记忆与用户模型设计文档.md` | **created** | V2 归档 + V3 history/knowledge 边界稳定后 | 含 L4 context 不进 profile 规则 |
 | §3.2 | Multimodal Preference Modeling | `docs/20-多模态偏好建模设计文档.md` | **created** | V4-A 验收后 | V4-A 已上升 07/11；音视频解析仍 deferred |
-| §3.3 | Temporal User Profiling | 扩展 `19` §10 或独立 `docs/21-时间型用户画像设计文档.md`（拟） | pending | V4-B 方案确认前 | 与 Memory 强相关；可并入 19 若边界清晰 |
+| §3.3 | Temporal User Profiling | 扩展 `19` §10.1（拟 `docs/21`） | partial | V4-B 方案确认前 | V4-B 任务单已起草；以 19 §10.1 为语义入口 |
 | §3.4 | Preference Explanation | `04`–`06` + 可选 `docs/22-偏好解释设计文档.md`（拟） | partial | 当解释链跨 report/RAG/history 且缺单一入口时 | 若 04–06 已足够可不新建 |
 | §3.5 | Skill / Capability | `docs/23-Skill与能力沉淀设计文档.md`（拟） | pending | V4-D Agent runtime 方案确认前 | workflow step → skill 沉淀规则 |
 | §3.6 | Evaluation / Observability | `docs/13` + 可选 `docs/24-评估与可观测性设计文档.md`（拟） | partial | V4-E 或接入真实 LLM/OTel 前 | V3 已有 baseline metrics + debug trace |
