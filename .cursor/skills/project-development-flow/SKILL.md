@@ -1,6 +1,6 @@
 ---
 name: project-development-flow
-description: Follow this project's AI-assisted development workflow. Use when starting project planning, a new version, feature iteration, milestone, acceptance pass, refactor, documentation pass, or when the user asks to develop according to the fixed project process.
+description: Follow this project's AI-assisted development workflow. Use when starting project planning, a new version, feature iteration, milestone, acceptance pass, refactor, documentation pass, Agent frontier domain design docs, or when the user asks to develop according to the fixed project process.
 ---
 
 # Project Development Flow
@@ -53,6 +53,7 @@ Check or update the relevant docs:
 - System architecture and data design: `docs/07-数据结构与系统架构文档.md`
 - Module boundaries and interface tests: `docs/11-模块拆分与接口测试文档.md`
 - Validation strategy and technical risks: `docs/13-验证与评估文档.md`
+- Agent frontier domain design backlog and registry: `agent-frontier-design-docs.md`
 
 For a new project, fill the project-level sections in `workflow-template.md`.
 
@@ -66,13 +67,72 @@ The version-level task sheet must record:
 2. The version-level research questions.
 3. The capability map for the whole version.
 4. Memory / user model write, update, forget, conflict, explainability, and governance rules if the version touches memory.
-5. The sub-stage split and dependency order.
-6. Which decisions are version-level and cannot be reinvented by sub-stages.
-7. The version-level acceptance criteria.
+5. Which Agent frontier domain design docs (`docs/19+`) must be created, extended, or deferred before sub-stages—see `agent-frontier-design-docs.md`.
+6. The sub-stage split and dependency order.
+7. Which decisions are version-level and cannot be reinvented by sub-stages.
+8. The version-level acceptance criteria.
 
 After a version-level gate is accepted, promote durable decisions into the authoritative design docs before starting implementation sub-stages. Do not leave architecture, memory rules, data model decisions, module contracts, validation metrics, or governance rules only in `docs/iterations/`.
 
-Do not mechanically update authoritative design docs in every iteration. At the start and end of each iteration, explicitly decide whether the iteration affects durable design. Only update `docs/04` to `docs/11` or other authoritative docs when the work changes long-lived architecture, data models, API contracts, workflow, prompt contracts, module boundaries, validation metrics, governance rules, or implementation-vs-design alignment. If it does not, record "No authoritative design doc update required" in the iteration sheet.
+Do not mechanically update authoritative design docs in every iteration. At the start and end of each iteration, explicitly decide whether the iteration affects durable design. Only update `docs/04` to `docs/11`, domain design docs (`docs/19+`), or other authoritative docs when the work changes long-lived architecture, data models, API contracts, workflow, prompt contracts, module boundaries, validation metrics, governance rules, or implementation-vs-design alignment. If it does not, record "No authoritative design doc update required" in the iteration sheet.
+
+## Agent Frontier Design Documents
+
+`docs/01-产品概念说明书.md` §3 defines the project's Agent frontier directions. Each direction should eventually have a **complete domain design document** as semantic authority—not only scattered notes in `07`, `11`, `13`, or `iterations/`.
+
+Do **not** create all of these at project start. Maintain a backlog and create or extend them at the **appropriate gate**.
+
+Read and update the registry in `agent-frontier-design-docs.md`.
+
+### When to create or extend
+
+Create or substantially extend a domain design doc when **any** of these is true:
+
+1. A major version's version-level gate (`vX-0`) will advance that direction and sub-stages need a stable semantic anchor.
+2. A version has **accepted / archived** implementation for that direction and knowledge still lives only in iterations or archive snapshots.
+3. Two or more authoritative docs (`07`, `11`, `13`, `04`–`06`) now define overlapping rules for the same direction and readers lack a single entry point.
+4. The next sub-stage would otherwise invent boundaries in code or iteration sheets without a promoted design doc.
+
+Do **not** create a domain design doc when:
+
+- The direction is still product-level vision only and no version has planned implementation.
+- The iteration only fixes bugs or copy and does not change durable semantics.
+- Existing docs already provide a clear single authority (record "已有权威入口：…" in the iteration sheet instead).
+
+### Relationship to other docs
+
+```text
+docs/01 §3          → 产品层：为什么有这个方向
+领域设计文档 docs/19+ → 语义层：对象、边界、规则、治理不变量
+docs/07             → 结构层：表、API、架构（引用领域文档）
+docs/11 / docs/13   → 契约与验收（引用领域文档）
+docs/iterations/    → 过程与证据，不长期承载唯一语义
+archive/vX/         → 历史事实快照
+```
+
+`docs/19-记忆与用户模型设计文档.md` is the reference pattern for Memory / User Model. Other directions follow the same pattern when triggered.
+
+### Agent workflow
+
+At **version-level gate (vX-0)**:
+
+1. List which `docs/01` §3 directions this version advances.
+2. For each direction, check `agent-frontier-design-docs.md` status.
+3. If status is `pending` or `partial` and the trigger applies, add a version-0 task: "promote or create `<doc>`" **before** the first implementation sub-stage that depends on it.
+4. Record in the vX-0 sheet which domain docs are created, extended, deferred, or already sufficient.
+
+At **sub-stage start**:
+
+- Cite the relevant domain design doc in the iteration sheet upstream references.
+- If missing and trigger conditions are met, stop and create the doc (or extend an existing one) before coding.
+
+At **version closure**:
+
+- If the version materially implemented a direction, ensure registry status is `created` or explicitly `partial` with documented reason and target doc.
+
+At **user request** ("补齐某某方向设计文档"):
+
+- Use the registry, draft the doc from implemented code + archive + `01`/`02`, update `00`/`README` cross-refs, and set registry status to `created`.
 
 ## Next Stage Gate
 
@@ -97,6 +157,8 @@ After V2-D, the next step is V2-E unless the roadmap has been explicitly changed
 Design promotion targets:
 
 - Product / Agent direction changes: `docs/01-产品概念说明书.md` or `docs/02-版本迭代路线图.md`
+- Memory / User Model semantics: `docs/19-记忆与用户模型设计文档.md`
+- Other Agent frontier direction semantics: see `agent-frontier-design-docs.md` registry; create or extend when trigger conditions are met
 - Data structures, memory model, storage boundaries, and system architecture: `docs/07-数据结构与系统架构文档.md`
 - Module responsibilities, inputs, outputs, dependencies, and interface tests: `docs/11-模块拆分与接口测试文档.md`
 - Validation metrics, evaluation methods, and governance checks: `docs/13-验证与评估文档.md`

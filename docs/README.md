@@ -12,7 +12,8 @@
 12 开发执行
 13-14 验证与展示
 15 迭代记录
-16/17 历史收口兼容入口
+16/17/18 历史收口兼容入口
+19 记忆与用户模型
 iterations 当前迭代任务单
 archive 历史归档，包括已完成版本的任务拆分、收口清单、验收记录和遗留问题
 ```
@@ -29,6 +30,7 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 1. `12-开发任务拆分与里程碑计划.md`
 2. 当前 iteration 文档
 3. 当前 iteration 明确引用的 specs
+4. `19-记忆与用户模型设计文档.md`（涉及 profile、history、knowledge、feedback 时）
 
 已完成版本的任务拆分与收口清单不再从根目录推进，统一查看 `archive/v1/`、`archive/v2/`。
 
@@ -66,10 +68,6 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：V3 已归档；下一步 V4 版本级研究（V4-0）。
+- 当前：V4-0 版本级研究（draft / pending_user_review）。
+- V4-0：`iterations/v4-0-long-term-personalized-agent-research.md`
 - V3 归档入口：`archive/v3/`、`18-V3开发收口清单.md`
-- V3-E：`iterations/v3-e-stability-governance-validation.md`
-- V3-D：`iterations/v3-d-retrieval-rag-observability.md`
-- V3-C：`iterations/v3-c-evaluation-metrics-baseline.md`
-- V3-0：`iterations/v3-0-personalized-retrieval-research.md`
-- V3-A：`iterations/v3-a-personalized-history-retrieval.md`
