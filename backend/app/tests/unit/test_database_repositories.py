@@ -91,6 +91,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
             "cluster_inputs",
             "retrieve_personal_history",
             "retrieve_aesthetic_knowledge",
+            "generate_interpretations",
             "generate_report",
             "compute_report_evaluation",
             "save_report",
@@ -100,6 +101,7 @@ def test_database_repositories_persist_workflow_outputs_across_sessions() -> Non
         feedback = FeedbackService(DatabaseFeedbackRepository(session)).create_feedback(
             report.insights[0].insight_id,
             CreateInsightFeedbackRequest(rating="somewhat_me", comment="sqlite validation"),
+            "user_anonymous",
         )
         session.commit()
         assert feedback.insight_id == report.insights[0].insight_id
@@ -174,12 +176,14 @@ def test_database_feedback_repository_updates_existing_target_feedback() -> None
         first_feedback = service.create_feedback(
             report.insights[0].insight_id,
             CreateInsightFeedbackRequest(rating="somewhat_me", comment="first"),
+            "user_anonymous",
         )
         second_feedback = service.create_feedback(
             report.insights[0].insight_id,
             CreateInsightFeedbackRequest(rating="not_me", comment="updated"),
+            "user_anonymous",
         )
-        current_feedback = service.get_feedback(report.insights[0].insight_id)
+        current_feedback = service.get_feedback(report.insights[0].insight_id, "user_anonymous")
         profile = DatabaseProfileRepository(session).get_or_build("user_anonymous")
         session.commit()
 

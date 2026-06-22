@@ -16,6 +16,8 @@ def _reset_chroma_debug_store() -> None:
 def _reset_embedding_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("EMBEDDING_RUNTIME", "mock")
     monkeypatch.setenv("CHROMA_ENABLED", "false")
+    monkeypatch.setenv("AUTH_MODE", "dev")
+    monkeypatch.setenv("REPORT_LLM_RUNTIME", "mock")
     monkeypatch.setenv("REPOSITORY_BACKEND", "memory")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("LLM_API_KEY", raising=False)

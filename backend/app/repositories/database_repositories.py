@@ -284,6 +284,15 @@ class DatabaseFeedbackRepository:
             return None
         return row.title, row.report_id
 
+    def get_insight_user_id(self, insight_id: str) -> str | None:
+        row = self.session.get(InsightModel, insight_id)
+        if row is None:
+            return None
+        report = self.session.get(AestheticReportModel, row.report_id)
+        if report is None:
+            return None
+        return report.user_id
+
     def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
         rows = self.session.scalars(
             select(InsightFeedbackModel).where(InsightFeedbackModel.user_id == user_id)

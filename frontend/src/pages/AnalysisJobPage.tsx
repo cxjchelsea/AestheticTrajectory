@@ -11,6 +11,7 @@ interface AnalysisRunResult {
   report: ReportResponse;
   jobId?: string;
   canPersistFeedback: boolean;
+  createdInputs: AestheticInput[];
 }
 
 const analysisRunPromises = new Map<string, Promise<AnalysisRunResult>>();
@@ -19,7 +20,12 @@ interface AnalysisJobPageProps {
   runId: string;
   inputs: AestheticInput[];
   fallbackReport: ReportResponse;
-  onComplete: (report: ReportResponse, jobId?: string, canPersistFeedback?: boolean) => void;
+  onComplete: (
+    report: ReportResponse,
+    jobId?: string,
+    canPersistFeedback?: boolean,
+    createdInputs?: AestheticInput[]
+  ) => void;
   onBack: () => void;
 }
 
@@ -60,6 +66,7 @@ export function AnalysisJobPage({ runId, inputs, fallbackReport, onComplete, onB
           report,
           jobId: job.id,
           canPersistFeedback: true,
+          createdInputs,
         };
       })();
 
@@ -73,7 +80,10 @@ export function AnalysisJobPage({ runId, inputs, fallbackReport, onComplete, onB
         if (cancelled) return;
         setActiveStep(4);
         setStatusLabel("分析完成");
-        window.setTimeout(() => onComplete(result.report, result.jobId, result.canPersistFeedback), 350);
+        window.setTimeout(
+          () => onComplete(result.report, result.jobId, result.canPersistFeedback, result.createdInputs),
+          350
+        );
       } catch (error) {
         if (cancelled) return;
         setFallbackReason(error instanceof Error ? error.message : "API request failed");

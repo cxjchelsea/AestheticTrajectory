@@ -1,9 +1,36 @@
-from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
 from app.schemas.feature import InputFeature
+from app.schemas.history_context import PersonalHistoryContext
+from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
+from app.schemas.knowledge_context import AestheticKnowledgeContext
 from app.schemas.report import Insight
 
 
+PROMPT_VERSION = "interpretations.generate.v1"
+MODEL_NAME = "mock-interpretation-v1"
+
+
 class MockInterpretationGenerator:
+    @property
+    def model_name(self) -> str:
+        return MODEL_NAME
+
+    @property
+    def prompt_version(self) -> str:
+        return PROMPT_VERSION
+
+    def generate(
+        self,
+        groups: list[SimilarityGroup],
+        features: list[InputFeature],
+        input_ids: list[str],
+        history_context: PersonalHistoryContext | None = None,
+        knowledge_context: AestheticKnowledgeContext | None = None,
+    ) -> tuple[list[PossibleInterpretation], list[Insight]]:
+        return (
+            self.interpret(groups, features, input_ids),
+            self.insights(groups, features, input_ids),
+        )
+
     def group(self, input_ids: list[str]) -> list[SimilarityGroup]:
         if len(input_ids) < 3:
             return []

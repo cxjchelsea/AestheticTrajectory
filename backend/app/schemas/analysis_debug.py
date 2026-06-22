@@ -54,6 +54,14 @@ class BoundaryWarning(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class AuthContextTrace(BaseModel):
+    auth_mode: str = Field(alias="authMode")
+    resolved_user_id: str = Field(alias="resolvedUserId")
+    session_present: bool = Field(alias="sessionPresent")
+
+    model_config = {"populate_by_name": True}
+
+
 RetrievalType = Literal["personal_history", "aesthetic_knowledge"]
 
 
@@ -133,5 +141,6 @@ class AnalysisJobDebugResponse(BaseModel):
         alias="groupingStabilityTrace",
     )
     failure_replay: FailureReplayResponse | None = Field(default=None, alias="failureReplay")
+    auth_context: AuthContextTrace | None = Field(default=None, alias="authContext")
 
     model_config = {"populate_by_name": True}

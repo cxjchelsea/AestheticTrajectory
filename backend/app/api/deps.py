@@ -1,6 +1,7 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.core.auth import DEV_USER_ID, CurrentUser
 from app.core.config import settings
 from app.db.session import get_session
 from app.repositories.analysis_job_repository import AnalysisJobRepository
@@ -26,6 +27,7 @@ from app.repositories.knowledge_graph_repository import DatabaseKnowledgeGraphRe
 from app.repositories.external_import_repository import DatabaseExternalImportRepository, ExternalImportRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
+from app.repositories.session_repository import DatabaseSessionRepository, MemorySessionRepository
 from app.repositories.memory_store import store
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.report_repository import ReportRepository
@@ -39,7 +41,50 @@ from app.services.report_service import ReportService
 from app.services.knowledge_graph_query import KnowledgeGraphQueryService
 from app.services.observation_service import ObservationService
 from app.services.timeline_service import TimelineService
+from app.services.session_service import SessionService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
+
+
+def get_session_service(session: Session = Depends(get_session)) -> SessionService:
+    if settings.repository_backend == "database":
+        return SessionService(DatabaseSessionRepository(session))
+    return SessionService(MemorySessionRepository(store))
+
+
+def get_current_user(request: Request, session: Session = Depends(get_session)) -> CurrentUser:
+    auth_mode = settings.auth_mode
+    cookie_session_id = request.cookies.get(settings.session_cookie_name)
+
+    if auth_mode == "dev":
+        return CurrentUser(
+            user_id=DEV_USER_ID,
+            auth_mode=auth_mode,
+            session_id=cookie_session_id,
+            session_present=cookie_session_id is not None,
+        )
+
+    if cookie_session_id is None:
+        raise HTTPException(status_code=401, detail="Session required")
+
+    session_service = get_session_service(session)
+    record = session_service.resolve_session(cookie_session_id)
+    if record is None:
+        raise HTTPException(status_code=401, detail="Session expired or invalid")
+
+    return CurrentUser(
+        user_id=record.user_id,
+        auth_mode=auth_mode,
+        session_id=record.id,
+        session_present=True,
+    )
+
+
+def require_user_scope(
+    user_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> str:
+    current_user.assert_scope(user_id)
+    return user_id
 
 
 def get_input_service(session: Session = Depends(get_session)) -> InputService:

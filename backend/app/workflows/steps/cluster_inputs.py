@@ -1,7 +1,5 @@
-from app.ai.mock.mock_interpretation_generator import MockInterpretationGenerator
 from app.schemas.feature import InputFeature
-from app.schemas.interpretation import PossibleInterpretation, SimilarityGroup
-from app.schemas.report import Insight
+from app.schemas.interpretation import SimilarityGroup
 from app.workflows.steps.similarity import connected_components, cosine_similarity
 
 
@@ -13,14 +11,8 @@ def cluster_inputs(
     features: list[InputFeature],
     embeddings: dict[str, list[float]],
     similarity_threshold: float = SIMILARITY_THRESHOLD,
-) -> tuple[list[SimilarityGroup], list[PossibleInterpretation], list[Insight]]:
-    generator = MockInterpretationGenerator()
-    groups = build_similarity_groups(input_ids, features, embeddings, similarity_threshold)
-    return (
-        groups,
-        generator.interpret(groups, features, input_ids),
-        generator.insights(groups, features, input_ids),
-    )
+) -> list[SimilarityGroup]:
+    return build_similarity_groups(input_ids, features, embeddings, similarity_threshold)
 
 
 def build_similarity_groups(

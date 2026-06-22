@@ -95,6 +95,22 @@ def test_duplicate_mock_insight_ids_do_not_duplicate_one_feedback() -> None:
     assert feedback_evidence[0].direction == "negative"
 
 
+def test_profile_item_ids_are_scoped_by_user() -> None:
+    report = _report("insight_001", "冷感空间偏好")
+    feedback = [_feedback("feedback_positive", "insight_001", "somewhat_me")]
+
+    profile_a = build_profile_from_sources("user_a", [report], feedback)
+    profile_b = build_profile_from_sources("user_b", [report], feedback)
+
+    assert profile_a.profile is not None
+    assert profile_b.profile is not None
+    ids_a = {item.id for item in profile_a.profile.items}
+    ids_b = {item.id for item in profile_b.profile.items}
+    assert ids_a.isdisjoint(ids_b)
+    assert all(item_id.startswith("profile_item_user_a_") for item_id in ids_a)
+    assert all(item_id.startswith("profile_item_user_b_") for item_id in ids_b)
+
+
 def _report(insight_id: str, title: str) -> ReportResponse:
     return ReportResponse(
         reportId=f"report_{insight_id}",

@@ -94,7 +94,10 @@ def build_profile_from_sources(
             )
         )
 
-    items = [_to_profile_item(f"profile_item_{index:03d}", draft) for index, draft in enumerate(drafts.values(), start=1)]
+    items = [
+        _to_profile_item(f"profile_item_{user_id}_{index:03d}", draft)
+        for index, draft in enumerate(drafts.values(), start=1)
+    ]
     items = [item for item in items if item.evidence]
     if not items:
         return ProfileResponse(

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 
-from app.api.deps import get_timeline_service
+from app.api.deps import get_timeline_service, require_user_scope
 from app.schemas.timeline import TimelineListResponse, TimelineSummaryPeriod, TimelineSummaryResponse
 from app.services.timeline_service import TimelineService
 
@@ -13,6 +13,7 @@ def list_user_timeline(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     service: TimelineService = Depends(get_timeline_service),
+    _: str = Depends(require_user_scope),
 ) -> TimelineListResponse:
     return service.list_timeline(user_id, limit=limit, offset=offset)
 
@@ -22,5 +23,6 @@ def get_user_timeline_summary(
     user_id: str,
     period: TimelineSummaryPeriod = Query(default="week"),
     service: TimelineService = Depends(get_timeline_service),
+    _: str = Depends(require_user_scope),
 ) -> TimelineSummaryResponse:
     return service.get_summary(user_id, period)

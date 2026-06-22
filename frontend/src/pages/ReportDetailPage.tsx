@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { FeedbackPanel } from "../features/report/FeedbackPanel";
 import { InsightCard } from "../features/report/InsightCard";
+import { resolveEvidenceInputs } from "../features/report/resolveEvidenceInputs";
 import { ReportSection } from "../features/report/ReportSection";
 import { getAnalysisJobDebug } from "../services/analysisJobApi";
 import { getReportEvaluation } from "../services/reportApi";
@@ -29,7 +30,12 @@ export function ReportDetailPage({
   onViewHistory,
   onViewProfile
 }: ReportDetailPageProps) {
-  const evidenceInputs = inputs.length >= 3 ? inputs : starterInputs;
+  const evidenceInputs = useMemo(() => {
+    if (report.lowLevelFeatures.length > 0) {
+      return resolveEvidenceInputs(report, inputs);
+    }
+    return inputs.length >= 3 ? inputs : starterInputs;
+  }, [inputs, report]);
   const [debugPayload, setDebugPayload] = useState<AnalysisJobDebugResponse | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
   const [evaluation, setEvaluation] = useState<ReportEvaluationResponse | null>(null);
@@ -271,6 +277,28 @@ function DeveloperDebugPanel({
       {!debug && !errorMessage ? <p className="muted">正在读取 workflow debug trace...</p> : null}
       {debug ? (
         <div className="debug-grid">
+          <section>
+            <h3>Auth Context</h3>
+            {debug.authContext ? (
+              <ul>
+                <li>
+                  <strong>authMode</strong>
+                  <span>{debug.authContext.authMode}</span>
+                </li>
+                <li>
+                  <strong>resolvedUserId</strong>
+                  <span>{debug.authContext.resolvedUserId}</span>
+                </li>
+                <li>
+                  <strong>sessionPresent</strong>
+                  <span>{debug.authContext.sessionPresent ? "true" : "false"}</span>
+                </li>
+              </ul>
+            ) : (
+              <p className="muted">暂无 authContext（需 V5-A 后端与有效 session）。</p>
+            )}
+          </section>
+
           <section>
             <h3>Workflow Trace</h3>
             <ul>

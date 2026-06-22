@@ -19,6 +19,7 @@ from app.models.persistence import (
     ProfileItemModel,
     UserModel,
     UserProfileModel,
+    UserSessionModel,
 )
 
 __all__ = [
@@ -42,5 +43,6 @@ __all__ = [
     "ProfileItemModel",
     "UserModel",
     "UserProfileModel",
+    "UserSessionModel",
 ]
 

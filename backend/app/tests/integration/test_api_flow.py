@@ -39,6 +39,7 @@ def test_v1_api_flow_creates_report_and_feedback() -> None:
         "cluster_inputs",
         "retrieve_personal_history",
         "retrieve_aesthetic_knowledge",
+        "generate_interpretations",
         "generate_report",
         "compute_report_evaluation",
         "save_report",

@@ -428,6 +428,12 @@ export interface FailureReplayResponse {
   replayDisclaimer: string;
 }
 
+export interface AuthContextTrace {
+  authMode: string;
+  resolvedUserId: string;
+  sessionPresent: boolean;
+}
+
 export interface AnalysisJobDebugResponse {
   jobId: string;
   status: string;
@@ -442,4 +448,5 @@ export interface AnalysisJobDebugResponse {
   evaluationTrace?: EvaluationTrace | null;
   groupingStabilityTrace?: GroupingStabilityTrace | null;
   failureReplay?: FailureReplayResponse | null;
+  authContext?: AuthContextTrace | null;
 }

@@ -8,6 +8,7 @@ from app.repositories.knowledge_graph_repository import KnowledgeGraphRepository
 from app.repositories.timeline_repository import TimelineRepository
 from app.repositories.chroma_debug_store import chroma_write_results
 from app.repositories.workflow_persistence import WorkflowPersistence
+from app.ai.factory import get_interpretation_generator
 from app.schemas.analysis_job import AnalysisJobResponse
 from app.schemas.common import new_id, utc_now
 from app.schemas.input import AestheticInputResponse
@@ -18,6 +19,7 @@ from app.workflows.steps.cluster_inputs import cluster_inputs
 from app.workflows.steps.extract_features import extract_features
 from app.workflows.steps.generate_embeddings import generate_embeddings
 from app.workflows.steps.compute_report_evaluation import compute_report_evaluation
+from app.workflows.steps.generate_interpretations import generate_interpretations
 from app.workflows.steps.generate_report import generate_report
 from app.workflows.steps.retrieve_aesthetic_knowledge import retrieve_aesthetic_knowledge
 from app.workflows.steps.retrieve_personal_history import retrieve_personal_history
@@ -72,7 +74,7 @@ def run_mock_aesthetic_analysis(
     )
     persistence.embedding_record_repository.save_many(embedding_records)
 
-    groups, interpretations, insights = record_step(
+    groups = record_step(
         persistence.analysis_log_repository,
         job.id,
         "cluster_inputs",
@@ -103,6 +105,22 @@ def run_mock_aesthetic_analysis(
             feature_result,
             graph_repository=persistence.knowledge_graph_repository,
         ),
+    )
+    interpretation_generator = get_interpretation_generator()
+    interpretations, insights = record_step(
+        persistence.analysis_log_repository,
+        job.id,
+        "generate_interpretations",
+        lambda: generate_interpretations(
+            groups,
+            feature_result,
+            [input_record.id for input_record in inputs],
+            history_context,
+            knowledge_context,
+            interpretation_generator,
+        ),
+        model_name=interpretation_generator.model_name,
+        prompt_version=interpretation_generator.prompt_version,
     )
     report = record_step(
         persistence.analysis_log_repository,

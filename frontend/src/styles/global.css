@@ -500,6 +500,34 @@ textarea {
   max-width: 640px;
 }
 
+.evidence-block {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.evidence-label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted, #6b7280);
+}
+
+.evidence-item {
+  display: grid;
+  gap: 4px;
+}
+
+.evidence-id {
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+  word-break: break-all;
+}
+
+.evidence-body {
+  margin: 0;
+  color: inherit;
+}
+
 .evidence-list {
   display: grid;
   gap: 8px;

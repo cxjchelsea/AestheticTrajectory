@@ -30,6 +30,7 @@ class MemoryStore:
     agent_action_logs: dict[str, AgentActionLog] = field(default_factory=dict)
     external_import_batches: dict[str, ExternalImportBatch] = field(default_factory=dict)
     external_context_items: dict[str, ExternalContextItem] = field(default_factory=dict)
+    user_sessions: dict[str, dict[str, object]] = field(default_factory=dict)
 
 
 store = MemoryStore()

@@ -16,6 +16,17 @@ class FeedbackRepository:
                     return insight.title, report_id
         return None
 
+    def get_insight_user_id(self, insight_id: str) -> str | None:
+        context = self.find_insight_context(insight_id)
+        if context is None:
+            return None
+        _, report_id = context
+        if report_id is None:
+            return None
+        metadata = self.store.report_metadata.get(report_id, {})
+        user_id = metadata.get("user_id")
+        return user_id if isinstance(user_id, str) else None
+
     def list_by_user(self, user_id: str) -> list[InsightFeedbackResponse]:
         return [feedback for feedback in self.store.feedback.values() if feedback.user_id == user_id]
 

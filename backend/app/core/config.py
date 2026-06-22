@@ -32,5 +32,29 @@ class Settings:
     max_upload_bytes: int = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
     cors_origins: tuple[str, ...] = ("http://127.0.0.1:5173", "http://localhost:5173")
 
+    @property
+    def auth_mode(self) -> str:
+        return os.getenv("AUTH_MODE", "dev")
+
+    @property
+    def session_cookie_name(self) -> str:
+        return os.getenv("SESSION_COOKIE_NAME", "aesthetic_session")
+
+    @property
+    def session_ttl_days(self) -> int:
+        return int(os.getenv("SESSION_TTL_DAYS", "365"))
+
+    @property
+    def report_llm_runtime(self) -> str:
+        return os.getenv("REPORT_LLM_RUNTIME", "mock")
+
+    @property
+    def report_llm_model(self) -> str:
+        return os.getenv("REPORT_LLM_MODEL", "llama3.2")
+
+    @property
+    def report_llm_timeout_seconds(self) -> int:
+        return int(os.getenv("REPORT_LLM_TIMEOUT_SECONDS", "120"))
+
 
 settings = Settings()
