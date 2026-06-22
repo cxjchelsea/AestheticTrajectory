@@ -416,6 +416,44 @@ function DeveloperDebugPanel({
               <p className="muted">暂无 evaluation trace。</p>
             )}
           </section>
+
+          <section>
+            <h3>Grouping Stability</h3>
+            {debug.groupingStabilityTrace ? (
+              <div>
+                <p>
+                  score {debug.groupingStabilityTrace.score != null ? formatRate(debug.groupingStabilityTrace.score) : "N/A"} ·
+                  pairs {debug.groupingStabilityTrace.consistentPairCount}/{debug.groupingStabilityTrace.pairCount}
+                </p>
+                <small>{debug.groupingStabilityTrace.developerMessage}</small>
+                <small>{debug.groupingStabilityTrace.disclaimer}</small>
+              </div>
+            ) : (
+              <p className="muted">暂无 grouping stability trace。</p>
+            )}
+          </section>
+
+          <section>
+            <h3>Failure Replay</h3>
+            {debug.failureReplay ? (
+              <div>
+                <p>{debug.failureReplay.failed ? "failed job" : "successful job"} · {debug.failureReplay.replayDisclaimer}</p>
+                {debug.failureReplay.message ? <small>{debug.failureReplay.message}</small> : null}
+                <ul>
+                  {debug.failureReplay.steps.map((step) => (
+                    <li key={step.stepId}>
+                      <strong>{step.stepId}</strong>
+                      <span>{step.status}</span>
+                      {step.errorType ? <span>{step.errorType}</span> : null}
+                      <small>{step.developerSummary}</small>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="muted">暂无 failure replay。</p>
+            )}
+          </section>
         </div>
       ) : null}
     </details>

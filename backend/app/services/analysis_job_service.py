@@ -7,6 +7,8 @@ from app.schemas.analysis_debug import (
     MockUsageRecord,
 )
 from app.schemas.common import new_id, utc_now
+from app.services.failure_replay import build_failure_replay
+from app.services.grouping_stability import build_grouping_stability_trace
 from app.services.observability_trace import build_debug_traces
 from app.services.schema_validation_summary import build_schema_validation_records
 from app.vector_store.input_vector_store import ChromaWriteResult
@@ -37,6 +39,20 @@ class AnalysisJobService:
         result = run_mock_aesthetic_analysis(job, inputs, self.workflow_persistence)
         return self.job_repository.save(result)
 
+    def get_failure_replay(self, job_id: str):
+        job = self.job_repository.get(job_id)
+        if job is None:
+            return None
+        logs = sorted(
+            self.workflow_persistence.analysis_log_repository.get_for_job(job_id),
+            key=lambda log: log.created_at,
+        )
+        chroma_result = None
+        if self.workflow_persistence.chroma_write_results is not None:
+            chroma_result = self.workflow_persistence.chroma_write_results.get(job_id)
+        fallback_events = _chroma_fallback_events(job.id, chroma_result)
+        return build_failure_replay(job.id, job.status, logs, fallback_events)
+
     def get_job(self, job_id: str) -> AnalysisJobResponse | None:
         return self.job_repository.get(job_id)
 
@@ -61,11 +77,18 @@ class AnalysisJobService:
         chroma_result = None
         if self.workflow_persistence.chroma_write_results is not None:
             chroma_result = self.workflow_persistence.chroma_write_results.get(job_id)
+        fallback_events = _chroma_fallback_events(job.id, chroma_result)
+        grouping_inputs = []
+        if report is not None:
+            input_ids = [feature.input_id for feature in report.low_level_features]
+            grouping_inputs = self.input_repository.get_many(input_ids)
+        grouping_stability_trace = build_grouping_stability_trace(report, grouping_inputs)
+        failure_replay = build_failure_replay(job.id, job.status, logs, fallback_events)
         return AnalysisJobDebugResponse(
             jobId=job.id,
             status=job.status,
             workflowTrace=logs,
-            fallbackEvents=_chroma_fallback_events(job.id, chroma_result),
+            fallbackEvents=fallback_events,
             mockUsage=_mock_usage(),
             schemaValidation=schema_validation,
             boundaryWarnings=_boundary_warnings(logs, chroma_result),
@@ -73,6 +96,8 @@ class AnalysisJobService:
             retrievalItems=retrieval_items,
             contextAssemblyTrace=context_assembly_trace,
             evaluationTrace=evaluation_trace,
+            groupingStabilityTrace=grouping_stability_trace,
+            failureReplay=failure_replay,
         )
 
 
@@ -204,8 +229,16 @@ def _boundary_warnings(logs, chroma_result: ChromaWriteResult | None) -> list[Bo
         ),
         BoundaryWarning(
             capability="Agent / MCP runtime",
-            status="planned",
-            developerMessage="Planned for V4; this iteration must not create Agent or MCP runtime behavior.",
+            status="dev_only",
+            developerMessage=(
+                "V4-D Agent observation and optional stdio MCP catalog are implemented separately "
+                "from the core analysis workflow; this job trace only covers aesthetic_analysis_v1."
+            ),
+        ),
+        BoundaryWarning(
+            capability="LangSmith / OpenTelemetry",
+            status="not_used",
+            developerMessage="Production observability pipelines are not connected in V4-E baseline.",
         ),
     ]
 

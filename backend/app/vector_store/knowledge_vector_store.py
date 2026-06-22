@@ -112,7 +112,7 @@ _fake_store: FakeKnowledgeVectorStore | None = None
 
 def get_knowledge_vector_store() -> KnowledgeVectorStore | FakeKnowledgeVectorStore:
     global _fake_store
-    if settings.repository_backend == "memory" and not settings.chroma_enabled:
+    if not settings.chroma_enabled:
         if _fake_store is None:
             _fake_store = FakeKnowledgeVectorStore()
         return _fake_store

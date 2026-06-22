@@ -110,6 +110,9 @@ class EvaluationTrace(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+from app.schemas.evaluation_maturity import FailureReplayResponse, GroupingStabilityTrace
+
+
 class AnalysisJobDebugResponse(BaseModel):
     job_id: str = Field(alias="jobId")
     status: str
@@ -125,5 +128,10 @@ class AnalysisJobDebugResponse(BaseModel):
         alias="contextAssemblyTrace",
     )
     evaluation_trace: EvaluationTrace | None = Field(default=None, alias="evaluationTrace")
+    grouping_stability_trace: GroupingStabilityTrace | None = Field(
+        default=None,
+        alias="groupingStabilityTrace",
+    )
+    failure_replay: FailureReplayResponse | None = Field(default=None, alias="failureReplay")
 
     model_config = {"populate_by_name": True}

@@ -4,6 +4,7 @@ from app.api.deps import get_report_service
 from app.schemas.report import ReportHistoryResponse, ReportResponse
 from app.schemas.report_comparison import ReportComparisonResponse
 from app.schemas.report_evaluation import ReportEvaluationResponse
+from app.schemas.evaluation_maturity import GroupingStabilityResponse
 from app.services.report_service import ReportService
 
 router = APIRouter(tags=["reports"])
@@ -25,6 +26,17 @@ def list_user_reports(
     service: ReportService = Depends(get_report_service),
 ) -> ReportHistoryResponse:
     return service.list_user_reports(user_id, limit, offset)
+
+
+@router.get("/reports/{report_id}/grouping-stability", response_model=GroupingStabilityResponse)
+def get_report_grouping_stability(
+    report_id: str,
+    service: ReportService = Depends(get_report_service),
+) -> GroupingStabilityResponse:
+    result = service.get_grouping_stability(report_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return result
 
 
 @router.get("/reports/{report_id}/evaluation", response_model=ReportEvaluationResponse)

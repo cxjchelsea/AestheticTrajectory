@@ -16,9 +16,22 @@ def _reset_chroma_debug_store() -> None:
 def _reset_embedding_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("EMBEDDING_RUNTIME", "mock")
     monkeypatch.setenv("CHROMA_ENABLED", "false")
+    monkeypatch.setenv("REPOSITORY_BACKEND", "memory")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("LLM_API_KEY", raising=False)
 
     import app.core.config as config_module
+    import app.vector_store.chroma_client as chroma_client_module
+    import app.vector_store.knowledge_vector_store as knowledge_vector_store_module
 
     importlib.reload(config_module)
+    importlib.reload(chroma_client_module)
+    importlib.reload(knowledge_vector_store_module)
+
+    for module_name in (
+        "app.services.analysis_job_service",
+        "app.api.deps",
+        "app.workflows.steps.retrieve_aesthetic_knowledge",
+        "app.workflows.steps.write_vectors",
+    ):
+        importlib.reload(importlib.import_module(module_name))

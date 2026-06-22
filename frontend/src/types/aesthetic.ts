@@ -393,6 +393,41 @@ export interface EvaluationTrace {
   developerMessage: string;
 }
 
+export interface GroupingStabilityTrace {
+  reportId?: string | null;
+  score?: number | null;
+  pairCount: number;
+  consistentPairCount: number;
+  developerMessage: string;
+  disclaimer: string;
+}
+
+export interface FailureReplayFallback {
+  fallbackType: string;
+  originalError: string;
+  fallbackAction: string;
+  severity: string;
+  developerMessage: string;
+}
+
+export interface FailureReplayStep {
+  stepId: string;
+  status: string;
+  errorType?: string | null;
+  errorMessage?: string | null;
+  latencyMs?: number | null;
+  fallbacks: FailureReplayFallback[];
+  developerSummary: string;
+}
+
+export interface FailureReplayResponse {
+  jobId: string;
+  failed: boolean;
+  steps: FailureReplayStep[];
+  message?: string | null;
+  replayDisclaimer: string;
+}
+
 export interface AnalysisJobDebugResponse {
   jobId: string;
   status: string;
@@ -405,4 +440,6 @@ export interface AnalysisJobDebugResponse {
   retrievalItems: RetrievalItemTrace[];
   contextAssemblyTrace?: ContextAssemblyTrace | null;
   evaluationTrace?: EvaluationTrace | null;
+  groupingStabilityTrace?: GroupingStabilityTrace | null;
+  failureReplay?: FailureReplayResponse | null;
 }

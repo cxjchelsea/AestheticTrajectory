@@ -78,11 +78,13 @@ def get_report_service(session: Session = Depends(get_session)) -> ReportService
             DatabaseReportRepository(session),
             DatabaseFeedbackRepository(session),
             DatabaseAnalysisLogRepository(session),
+            DatabaseInputRepository(session),
         )
     return ReportService(
         ReportRepository(store),
         FeedbackRepository(store),
         AnalysisLogRepository(store),
+        InputRepository(store),
     )
 
 
