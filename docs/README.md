@@ -12,7 +12,7 @@
 12 开发执行
 13-14 验证与展示
 15 迭代记录
-16/17/18 历史收口兼容入口
+16/17/18/21 历史收口兼容入口
 19 记忆与用户模型
 iterations 当前迭代任务单
 archive 历史归档，包括已完成版本的任务拆分、收口清单、验收记录和遗留问题
@@ -65,16 +65,18 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - `archive/v1/`：V1 stable baseline。
 - `archive/v2/`：V2 Memory / User Model baseline，accepted / archived。
 - `archive/v3/`：V3 Personalized Retrieval / RAG / Evaluation / Observability baseline，accepted / archived。
+- `archive/v4/`：V4 Long-term Personalized Agent baseline，accepted / archived。
 
 当前迭代：
 
-- 当前：**V4 final closure 待启动**（`pending_archive_gate`）
+- 当前：**V4 已归档**（`accepted / archived`）；V5 版本级研究未启动
 - V4-0：`iterations/v4-0-long-term-personalized-agent-research.md`
 - V4-A：`iterations/v4-a-runtime-multimodal-foundation.md`（已验收）
 - V4-B：`iterations/v4-b-aesthetic-trajectory-temporal-profiling.md`（已验收）
 - V4-C：`iterations/v4-c-knowledge-graph-external-rag-runtime.md`（已验收）
 - V4-D：`iterations/v4-d-agent-runtime-mcp-integration.md`（已验收）
 - V4-E：`iterations/v4-e-evaluation-maturity-governance-validation.md`（已验收）
+- V4 归档入口：`archive/v4/`、`21-V4开发收口清单.md`
 - 多模态偏好建模：`20-多模态偏好建模设计文档.md`
 - 记忆与用户模型：`19-记忆与用户模型设计文档.md`
 - V3 归档入口：`archive/v3/`、`18-V3开发收口清单.md`
