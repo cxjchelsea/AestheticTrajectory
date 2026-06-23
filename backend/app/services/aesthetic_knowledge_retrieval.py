@@ -48,8 +48,9 @@ def build_aesthetic_knowledge_context(
 
     tag_match_count = len(items)
 
+    vector_error_message = None
     if knowledge_vector_store is not None and settings_chroma_enabled():
-        vector_path, items = _apply_vector_rerank(
+        vector_path, items, vector_error_message = _apply_vector_rerank(
             items,
             feature_keys,
             ranked,
@@ -66,6 +67,7 @@ def build_aesthetic_knowledge_context(
                 graphHitCount=0,
                 vectorPath=vector_path if vector_path != "not_applicable" else "skipped",
                 abstentionReason="no_tag_overlap",
+                vectorErrorMessage=vector_error_message,
             ),
         )
 
@@ -82,6 +84,7 @@ def build_aesthetic_knowledge_context(
             graphHitCount=graph_hit_count,
             vectorPath=vector_path,
             abstentionReason=None,
+            vectorErrorMessage=vector_error_message,
         ),
     )
 
@@ -109,18 +112,22 @@ def _apply_vector_rerank(
     knowledge_vector_store,
     *,
     top_k: int,
-) -> tuple[str, list[KnowledgeContextItem]]:
+) -> tuple[str, list[KnowledgeContextItem], str | None]:
     if not items:
-        return "skipped", items
+        return "skipped", items, None
 
-    embedding_text = " ".join(sorted(feature_keys))
-    embedding_client = get_embedding_client()
-    if hasattr(knowledge_vector_store, "ensure_seeded"):
-        knowledge_vector_store.ensure_seeded(embedding_client)
-    vector = embedding_client.embed(embedding_text)
-    result = knowledge_vector_store.query(vector, limit=top_k)
+    try:
+        embedding_text = " ".join(sorted(feature_keys))
+        embedding_client = get_embedding_client()
+        if hasattr(knowledge_vector_store, "ensure_seeded"):
+            knowledge_vector_store.ensure_seeded(embedding_client)
+        vector = embedding_client.embed(embedding_text)
+        result = knowledge_vector_store.query(vector, limit=top_k)
+    except Exception as exc:
+        return "failed", items, str(exc)
+
     if result.path == "skipped" or not result.doc_ids:
-        return result.path, items
+        return result.path, items, None
 
     chunk_by_doc = {chunk.doc_id: chunk for chunk in AESTHETIC_KNOWLEDGE_CHUNKS}
     reranked: list[KnowledgeContextItem] = []
@@ -140,8 +147,8 @@ def _apply_vector_rerank(
             break
 
     if reranked:
-        return result.path, reranked
-    return result.path, items
+        return result.path, reranked, None
+    return result.path, items, None
 
 
 def _enrich_items_with_graph(

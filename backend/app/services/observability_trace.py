@@ -61,7 +61,13 @@ def _build_retrieval_step_traces(report: ReportResponse, logs_by_step) -> list[R
             graph_hit_count = meta.graph_hit_count if meta is not None else None
             vector_path = meta.vector_path if meta is not None else None
             tag_match_count = meta.tag_match_count if meta is not None else None
-            if abstained:
+            vector_failed = vector_path == "failed"
+            if vector_failed:
+                developer_message = (
+                    "Aesthetic knowledge retrieval degraded: vector rerank failed, "
+                    f"selected {selected_count} tag/graph-backed chunk(s) instead."
+                )
+            elif abstained:
                 reason = meta.abstention_reason if meta is not None else "no_tag_overlap"
                 developer_message = (
                     f"Aesthetic knowledge retrieval abstained ({reason}); "
@@ -79,7 +85,9 @@ def _build_retrieval_step_traces(report: ReportResponse, logs_by_step) -> list[R
             RetrievalStepTrace(
                 stepId=step_id,
                 retrievalType=retrieval_type,
-                status=log.status if log is not None else "not_recorded",
+                status="degraded" if retrieval_type == "aesthetic_knowledge" and vector_path == "failed" else (
+                    log.status if log is not None else "not_recorded"
+                ),
                 latencyMs=log.latency_ms if log is not None else None,
                 selectedItemCount=selected_count,
                 abstained=abstained,

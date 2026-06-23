@@ -6,8 +6,9 @@ from pydantic import BaseModel, Field
 class KnowledgeRetrievalMeta(BaseModel):
     tag_match_count: int = Field(alias="tagMatchCount")
     graph_hit_count: int = Field(alias="graphHitCount")
-    vector_path: Literal["skipped", "used", "not_applicable"] = Field(alias="vectorPath")
+    vector_path: Literal["skipped", "used", "not_applicable", "failed"] = Field(alias="vectorPath")
     abstention_reason: str | None = Field(default=None, alias="abstentionReason")
+    vector_error_message: str | None = Field(default=None, alias="vectorErrorMessage")
 
     model_config = {"populate_by_name": True}
 

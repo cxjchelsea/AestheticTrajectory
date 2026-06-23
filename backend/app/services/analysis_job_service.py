@@ -8,6 +8,7 @@ from app.schemas.analysis_debug import (
     MockUsageRecord,
 )
 from app.schemas.common import new_id, utc_now
+from app.schemas.report import ReportResponse
 from app.services.failure_replay import build_failure_replay
 from app.services.grouping_stability import build_grouping_stability_trace
 from app.services.observability_trace import build_debug_traces
@@ -58,7 +59,10 @@ class AnalysisJobService:
         chroma_result = None
         if self.workflow_persistence.chroma_write_results is not None:
             chroma_result = self.workflow_persistence.chroma_write_results.get(job_id)
-        fallback_events = _chroma_fallback_events(job.id, chroma_result)
+        report = None
+        if job.report_id is not None:
+            report = self.workflow_persistence.report_repository.get(job.report_id)
+        fallback_events = _chroma_fallback_events(job.id, chroma_result) + _knowledge_fallback_events(job.id, report)
         return build_failure_replay(job.id, job.status, logs, fallback_events)
 
     def get_job(self, job_id: str) -> AnalysisJobResponse | None:
@@ -85,7 +89,7 @@ class AnalysisJobService:
         chroma_result = None
         if self.workflow_persistence.chroma_write_results is not None:
             chroma_result = self.workflow_persistence.chroma_write_results.get(job_id)
-        fallback_events = _chroma_fallback_events(job.id, chroma_result)
+        fallback_events = _chroma_fallback_events(job.id, chroma_result) + _knowledge_fallback_events(job.id, report)
         grouping_inputs = []
         if report is not None:
             input_ids = [feature.input_id for feature in report.low_level_features]
@@ -108,7 +112,7 @@ class AnalysisJobService:
             fallbackEvents=fallback_events,
             mockUsage=_mock_usage(),
             schemaValidation=schema_validation,
-            boundaryWarnings=_boundary_warnings(logs, chroma_result),
+            boundaryWarnings=_boundary_warnings(logs, chroma_result, report),
             retrievalTrace=retrieval_trace,
             retrievalItems=retrieval_items,
             contextAssemblyTrace=context_assembly_trace,
@@ -242,7 +246,38 @@ def _chroma_fallback_events(job_id: str, chroma_result: ChromaWriteResult | None
     ]
 
 
-def _boundary_warnings(logs, chroma_result: ChromaWriteResult | None) -> list[BoundaryWarning]:
+def _knowledge_fallback_events(job_id: str, report: ReportResponse | None) -> list[FallbackEvent]:
+    meta = None
+    if report is not None and report.knowledge_context is not None:
+        meta = report.knowledge_context.retrieval_meta
+    if meta is None or meta.vector_path != "failed":
+        return []
+
+    error = meta.vector_error_message or "Knowledge vector retrieval failed"
+    return [
+        FallbackEvent(
+            id=new_id("fallback"),
+            jobId=job_id,
+            stepId="retrieve_aesthetic_knowledge",
+            fallbackType="knowledge_vector_retrieval_failed",
+            originalError=error,
+            fallbackAction="Used tag and knowledge-graph matches without vector reranking",
+            severity="warning",
+            userVisible=False,
+            developerMessage=(
+                "Knowledge vector retrieval degraded gracefully; report generation continued with "
+                "static tag matches and graph context."
+            ),
+            createdAt=utc_now(),
+        )
+    ]
+
+
+def _boundary_warnings(
+    logs,
+    chroma_result: ChromaWriteResult | None,
+    report: ReportResponse | None = None,
+) -> list[BoundaryWarning]:
     step_ids = {log.step_id for log in logs}
     history_status = "dev_only" if "retrieve_personal_history" in step_ids else "planned"
     history_message = (
@@ -251,11 +286,7 @@ def _boundary_warnings(logs, chroma_result: ChromaWriteResult | None) -> list[Bo
         else "Planned for V3 after V2 profile and feedback loops are stable."
     )
     knowledge_status = "dev_only" if "retrieve_aesthetic_knowledge" in step_ids else "planned"
-    knowledge_message = (
-        "V3-B aesthetic knowledge RAG is enabled for this workflow run."
-        if knowledge_status == "dev_only"
-        else "Planned for V3-B; external knowledge must remain explanation support only."
-    )
+    knowledge_message = _knowledge_boundary_message(knowledge_status, report)
     chroma_status, chroma_message = _chroma_boundary_status(chroma_result)
     llm_status, llm_message = _report_llm_boundary_status()
     return [
@@ -293,6 +324,20 @@ def _boundary_warnings(logs, chroma_result: ChromaWriteResult | None) -> list[Bo
             developerMessage="Production observability pipelines are not connected in V4-E baseline.",
         ),
     ]
+
+
+def _knowledge_boundary_message(knowledge_status: str, report: ReportResponse | None) -> str:
+    meta = None
+    if report is not None and report.knowledge_context is not None:
+        meta = report.knowledge_context.retrieval_meta
+    if meta is not None and meta.vector_path == "failed":
+        return (
+            "V3-B aesthetic knowledge RAG degraded for this workflow run: vector rerank failed, "
+            "so static tag matches and graph context were used."
+        )
+    if knowledge_status == "dev_only":
+        return "V3-B aesthetic knowledge RAG is enabled for this workflow run."
+    return "Planned for V3-B; external knowledge must remain explanation support only."
 
 
 def _chroma_boundary_status(chroma_result: ChromaWriteResult | None) -> tuple[str, str]:

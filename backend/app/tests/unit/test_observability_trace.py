@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 from app.schemas.history_context import HistoryContextItem, PersonalHistoryContext
-from app.schemas.knowledge_context import AestheticKnowledgeContext, KnowledgeContextItem
+from app.schemas.knowledge_context import AestheticKnowledgeContext, KnowledgeContextItem, KnowledgeRetrievalMeta
 from app.schemas.report import Insight, ReportResponse
 from app.schemas.report_evaluation import ReportEvaluationMetrics
 from app.services.observability_trace import build_debug_traces
@@ -142,3 +142,35 @@ def test_debug_traces_include_history_items_and_evaluation() -> None:
     assert evaluation_trace is not None
     assert evaluation_trace.metrics.evidence_coverage == 1.0
     assert evaluation_trace.step_status == "success"
+
+
+def test_debug_traces_mark_knowledge_vector_degradation() -> None:
+    report = _report(
+        knowledge=AestheticKnowledgeContext(
+            items=[
+                KnowledgeContextItem(
+                    docId="doc_1",
+                    title="Low saturation",
+                    snippet="snippet",
+                    matchedFeatures=["saturation=low"],
+                    sourceRefs=["doc_1"],
+                    note="note",
+                )
+            ],
+            disclaimer="d",
+            retrievalMeta=KnowledgeRetrievalMeta(
+                tagMatchCount=1,
+                graphHitCount=0,
+                vectorPath="failed",
+                vectorErrorMessage="chroma unavailable",
+            ),
+        )
+    )
+    logs = [_success_log("retrieve_aesthetic_knowledge")]
+
+    retrieval_trace, _, _, _ = build_debug_traces(report, logs, [])
+
+    knowledge_trace = next(item for item in retrieval_trace if item.retrieval_type == "aesthetic_knowledge")
+    assert knowledge_trace.status == "degraded"
+    assert knowledge_trace.vector_path == "failed"
+    assert "degraded" in knowledge_trace.developer_message

@@ -9,8 +9,29 @@ def retrieve_aesthetic_knowledge(
     *,
     graph_repository=None,
 ) -> AestheticKnowledgeContext:
+    try:
+        knowledge_vector_store = get_knowledge_vector_store()
+    except Exception as exc:
+        context = build_aesthetic_knowledge_context(
+            features,
+            graph_repository=graph_repository,
+            knowledge_vector_store=None,
+        )
+        if context.retrieval_meta is None:
+            return context
+        return context.model_copy(
+            update={
+                "retrieval_meta": context.retrieval_meta.model_copy(
+                    update={
+                        "vector_path": "failed",
+                        "vector_error_message": str(exc),
+                    }
+                )
+            }
+        )
+
     return build_aesthetic_knowledge_context(
         features,
         graph_repository=graph_repository,
-        knowledge_vector_store=get_knowledge_vector_store(),
+        knowledge_vector_store=knowledge_vector_store,
     )
