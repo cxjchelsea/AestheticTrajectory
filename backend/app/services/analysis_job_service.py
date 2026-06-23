@@ -165,15 +165,17 @@ def _mock_usage() -> list[MockUsageRecord]:
 
     image_feature_records = _image_feature_mock_usage()
     music_feature_records = _music_feature_mock_usage()
+    video_feature_records = _video_feature_mock_usage()
     embedding_records = [
         MockUsageRecord(
             component="MockFeatureExtractor",
             status="enabled",
             devOnly=True,
-            developerMessage="Text/video feature extraction still uses mock or heuristic logic.",
+            developerMessage="Text feature extraction still uses mock or heuristic logic.",
         ),
         *image_feature_records,
         *music_feature_records,
+        *video_feature_records,
         *interpretation_records,
     ]
     if embedding_runtime == "openai" and settings.openai_api_key:
@@ -477,10 +479,64 @@ def _music_feature_mock_usage() -> list[MockUsageRecord]:
     ]
 
 
+def _video_feature_mock_usage() -> list[MockUsageRecord]:
+    runtime = settings.video_feature_runtime
+    if runtime == "disabled":
+        return [
+            MockUsageRecord(
+                component="MockVideoFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="VIDEO_FEATURE_RUNTIME=disabled; video inputs fail fast instead of using mock video.",
+            )
+        ]
+    if runtime == "mock":
+        return [
+            MockUsageRecord(
+                component="MockVideoFeatureExtractor",
+                status="enabled",
+                devOnly=True,
+                developerMessage=(
+                    "V6-C video understanding uses a dev-only mock placeholder; it must not be treated as real video."
+                ),
+            )
+        ]
+    if runtime == "text_notes":
+        return [
+            MockUsageRecord(
+                component="TextNotesVideoFeatureExtractor",
+                status="disabled",
+                devOnly=False,
+                developerMessage="Video features are derived from user-provided subtitles, description, or shot notes.",
+            ),
+            MockUsageRecord(
+                component="MockVideoFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="Mock video features are bypassed because VIDEO_FEATURE_RUNTIME=text_notes.",
+            ),
+        ]
+    return [
+        MockUsageRecord(
+            component="MetadataOnlyVideoFeatureExtractor",
+            status="disabled",
+            devOnly=False,
+            developerMessage="Video features use metadata only; no frames or subtitles are parsed.",
+        ),
+        MockUsageRecord(
+            component="MockVideoFeatureExtractor",
+            status="disabled",
+            devOnly=True,
+            developerMessage="Mock video features are bypassed because VIDEO_FEATURE_RUNTIME=metadata_only.",
+        ),
+    ]
+
+
 def _runtime_boundary_status() -> tuple[str, str]:
     report_status, report_message = _report_llm_boundary_status()
     image_runtime = settings.image_feature_runtime
     music_runtime = settings.music_feature_runtime
+    video_runtime = settings.video_feature_runtime
     if image_runtime == "ollama_vision":
         image_message = f"IMAGE_FEATURE_RUNTIME=ollama_vision configured ({settings.image_feature_model})."
         status = "dev_only" if report_status == "dev_only" else report_status
@@ -500,4 +556,14 @@ def _runtime_boundary_status() -> tuple[str, str]:
         music_message = "MUSIC_FEATURE_RUNTIME=text_notes; music features use user-provided lyrics/transcript/notes."
     else:
         music_message = "MUSIC_FEATURE_RUNTIME=metadata_only; music inputs do not claim parsed audio."
-    return (status, f"{report_message} {image_message} {music_message}")
+
+    if video_runtime == "disabled":
+        video_message = "VIDEO_FEATURE_RUNTIME=disabled; video content parsing fails fast."
+    elif video_runtime == "mock":
+        video_message = "VIDEO_FEATURE_RUNTIME=mock; video features are dev-only placeholders."
+        status = "dev_only" if status == "not_used" else status
+    elif video_runtime == "text_notes":
+        video_message = "VIDEO_FEATURE_RUNTIME=text_notes; video features use user-provided subtitles/descriptions/shot notes."
+    else:
+        video_message = "VIDEO_FEATURE_RUNTIME=metadata_only; video inputs do not claim parsed frames or subtitles."
+    return (status, f"{report_message} {image_message} {music_message} {video_message}")

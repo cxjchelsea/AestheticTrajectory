@@ -9,7 +9,7 @@ from app.schemas.input import AestheticInputResponse
 
 
 class ModalityFeatureExtractor:
-    model_name = "modality-feature-extractor-v6b"
+    model_name = "modality-feature-extractor-v6c"
 
     def __init__(
         self,
@@ -17,16 +17,20 @@ class ModalityFeatureExtractor:
         fallback_extractor: FeatureExtractor,
         image_extractor: FeatureExtractor,
         music_extractor: FeatureExtractor,
+        video_extractor: FeatureExtractor,
     ) -> None:
         self.fallback_extractor = fallback_extractor
         self.image_extractor = image_extractor
         self.music_extractor = music_extractor
+        self.video_extractor = video_extractor
 
     def extract(self, input_record: AestheticInputResponse, index: int) -> InputFeature:
         if input_record.type == "image":
             return self.image_extractor.extract(input_record, index)
         if input_record.type == "music":
             return self.music_extractor.extract(input_record, index)
+        if input_record.type == "video":
+            return self.video_extractor.extract(input_record, index)
         return self.fallback_extractor.extract(input_record, index)
 
 
@@ -101,10 +105,31 @@ def get_feature_extractor() -> FeatureExtractor:
     else:
         raise ValueError(f"Unsupported MUSIC_FEATURE_RUNTIME={music_runtime}")
 
+    video_runtime = settings.video_feature_runtime
+    if video_runtime == "disabled":
+        from app.ai.video_feature_extractor import DisabledVideoFeatureExtractor
+
+        video_extractor = DisabledVideoFeatureExtractor()
+    elif video_runtime == "mock":
+        from app.ai.video_feature_extractor import MockVideoFeatureExtractor
+
+        video_extractor = MockVideoFeatureExtractor()
+    elif video_runtime == "text_notes":
+        from app.ai.video_feature_extractor import TextNotesVideoFeatureExtractor
+
+        video_extractor = TextNotesVideoFeatureExtractor()
+    elif video_runtime == "metadata_only":
+        from app.ai.video_feature_extractor import MetadataOnlyVideoFeatureExtractor
+
+        video_extractor = MetadataOnlyVideoFeatureExtractor()
+    else:
+        raise ValueError(f"Unsupported VIDEO_FEATURE_RUNTIME={video_runtime}")
+
     return ModalityFeatureExtractor(
         fallback_extractor=MockFeatureExtractor(),
         image_extractor=image_extractor,
         music_extractor=music_extractor,
+        video_extractor=video_extractor,
     )
 
 

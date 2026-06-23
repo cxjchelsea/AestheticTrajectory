@@ -73,6 +73,10 @@ class Settings:
         return os.getenv("MUSIC_FEATURE_RUNTIME", "metadata_only")
 
     @property
+    def video_feature_runtime(self) -> str:
+        return os.getenv("VIDEO_FEATURE_RUNTIME", "metadata_only")
+
+    @property
     def external_source_runtime(self) -> str:
         return os.getenv("EXTERNAL_SOURCE_RUNTIME", "disabled")
 
