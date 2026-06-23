@@ -67,10 +67,13 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - `archive/v3/`：V3 Personalized Retrieval / RAG / Evaluation / Observability baseline，accepted / archived。
 - `archive/v4/`：V4 Long-term Personalized Agent baseline，accepted / archived。
 - `archive/v5/`：V5 Production Runtime & Trust Boundary baseline，accepted / archived。
+- `archive/v6/`：V6 Multimodal Runtime & Production Hardening baseline，accepted / archived。
 
 当前迭代：
 
-- 当前：**V6-E 自动验收完成**（`ready_for_validation / accepted_auto`）
+- 当前：**V6 已归档**（`accepted / archived`）
+- 下一步：创建 V7-0 版本级调研与架构闸门（待用户确认主题）
+- V6 归档入口：`archive/v6/`、`23-V6开发收口清单.md`
 - V6-E：`iterations/v6-e-multimodal-governance-validation-closure-prep.md`
 - V6-D：`iterations/v6-d-production-hardening-runtime-ci.md`
 - V6-C：`iterations/v6-c-video-understanding-boundary.md`
