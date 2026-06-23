@@ -123,6 +123,7 @@ def _to_profile_item(item_id: str, draft: ItemDraft) -> ProfileItem:
     positive_count = sum(1 for evidence in draft.evidence if evidence.direction == "positive")
     negative_count = sum(1 for evidence in draft.evidence if evidence.direction == "negative")
     uncertain_count = sum(1 for evidence in draft.evidence if evidence.direction == "uncertain")
+    feature_only = all(evidence.evidence_type == "feature" for evidence in draft.evidence)
     weight = max(-1.0, min(1.0, sum(evidence.weight_delta for evidence in draft.evidence)))
 
     if negative_count and weight <= 0:
@@ -134,6 +135,8 @@ def _to_profile_item(item_id: str, draft: ItemDraft) -> ProfileItem:
     elif positive_count >= 2 or any(evidence.weight_delta >= 0.4 for evidence in draft.evidence):
         status = "stable"
     else:
+        status = "recent"
+    if feature_only and status == "stable":
         status = "recent"
 
     confidence = max(0.1, min(0.95, abs(weight) + min(len(draft.evidence), 3) * 0.1))

@@ -70,7 +70,8 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V6-D 自动验收完成**（`ready_for_validation / accepted_auto`）
+- 当前：**V6-E 自动验收完成**（`ready_for_validation / accepted_auto`）
+- V6-E：`iterations/v6-e-multimodal-governance-validation-closure-prep.md`
 - V6-D：`iterations/v6-d-production-hardening-runtime-ci.md`
 - V6-C：`iterations/v6-c-video-understanding-boundary.md`
 - V6-B：`iterations/v6-b-audio-music-understanding-boundary.md`

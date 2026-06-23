@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from app.schemas.common import utc_now
 from app.schemas.feedback import InsightFeedbackResponse
+from app.schemas.feature import FeatureSignal, InputFeature
 from app.schemas.report import Insight, ReportResponse
 from app.services.profile_builder import build_profile_from_sources
 
@@ -109,6 +110,51 @@ def test_profile_item_ids_are_scoped_by_user() -> None:
     assert ids_a.isdisjoint(ids_b)
     assert all(item_id.startswith("profile_item_user_a_") for item_id in ids_a)
     assert all(item_id.startswith("profile_item_user_b_") for item_id in ids_b)
+
+
+def test_feature_only_profile_items_do_not_become_stable_without_feedback() -> None:
+    report = _report("insight_001", "多模态占位特征")
+    report.low_level_features = [
+        InputFeature(
+            inputId="input_image_001",
+            featureType="image",
+            lowLevelFeatures={
+                "imageParsingStatus": FeatureSignal(
+                    value="placeholder",
+                    confidence=1.0,
+                    evidence=["mock placeholder"],
+                )
+            },
+            sampleEvidence=["image sample"],
+            promptVersion="image_features.mock.v6a",
+            modelName="mock-image-feature-extractor-v6a",
+        ),
+        InputFeature(
+            inputId="input_music_001",
+            featureType="music",
+            lowLevelFeatures={
+                "musicParsingStatus": FeatureSignal(
+                    value="metadata_only",
+                    confidence=1.0,
+                    evidence=["metadata only"],
+                )
+            },
+            sampleEvidence=["music sample"],
+            promptVersion="music_features.extract.v6b",
+            modelName="metadata-music-feature-extractor-v6b",
+        ),
+    ]
+
+    profile = build_profile_from_sources("user_001", [report], [])
+
+    assert profile.profile is not None
+    feature_only_items = [
+        item
+        for item in profile.profile.items
+        if all(evidence.evidence_type == "feature" for evidence in item.evidence)
+    ]
+    assert feature_only_items
+    assert all(item.status != "stable" for item in feature_only_items)
 
 
 def _report(insight_id: str, title: str) -> ReportResponse:
