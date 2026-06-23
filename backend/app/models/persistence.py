@@ -297,3 +297,33 @@ class ExternalContextItemModel(Base):
     source_uri: Mapped[str | None] = mapped_column(Text)
     tags_json: Mapped[list] = json_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ExternalSourceConnectionModel(Base):
+    __tablename__ = "external_source_connections"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    provider: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    scopes_json: Mapped[list] = json_column()
+    access_token_ciphertext: Mapped[str | None] = mapped_column(Text)
+    refresh_token_ciphertext: Mapped[str | None] = mapped_column(Text)
+    token_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resource_uri: Mapped[str | None] = mapped_column(Text)
+    last_connected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ExternalOAuthStateModel(Base):
+    __tablename__ = "external_oauth_states"
+
+    state: Mapped[str] = mapped_column(String(128), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), index=True)
+    provider: Mapped[str] = mapped_column(String(64), index=True)
+    code_verifier: Mapped[str] = mapped_column(Text)
+    redirect_after: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)

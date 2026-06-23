@@ -25,6 +25,7 @@ from app.repositories.agent_repository import (
 )
 from app.repositories.knowledge_graph_repository import DatabaseKnowledgeGraphRepository, KnowledgeGraphRepository
 from app.repositories.external_import_repository import DatabaseExternalImportRepository, ExternalImportRepository
+from app.repositories.external_source_repository import DatabaseExternalSourceRepository, ExternalSourceRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.input_repository import InputRepository
 from app.repositories.session_repository import DatabaseSessionRepository, MemorySessionRepository
@@ -40,6 +41,7 @@ from app.services.profile_service import ProfileService
 from app.services.report_service import ReportService
 from app.services.knowledge_graph_query import KnowledgeGraphQueryService
 from app.services.observation_service import ObservationService
+from app.services.external_source_service import ExternalSourceService
 from app.services.timeline_service import TimelineService
 from app.services.session_service import SessionService
 from app.workflows.aesthetic_analysis_v1 import memory_workflow_persistence
@@ -188,4 +190,16 @@ def get_observation_service(
         timeline_service,
         profile_service,
         knowledge_service,
+    )
+
+
+def get_external_source_service(session: Session = Depends(get_session)) -> ExternalSourceService:
+    if settings.repository_backend == "database":
+        return ExternalSourceService(
+            DatabaseExternalSourceRepository(session),
+            DatabaseExternalImportRepository(session),
+        )
+    return ExternalSourceService(
+        ExternalSourceRepository(store),
+        ExternalImportRepository(store),
     )

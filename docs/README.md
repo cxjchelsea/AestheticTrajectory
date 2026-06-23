@@ -69,7 +69,8 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V5-C 待启动**（V5-B `accepted / manual_validation_passed`）
+- 当前：**V5-D 待启动**（V5-C `accepted / manual_validation_passed`）
+- V5-C：`iterations/v5-c-production-mcp-oauth.md`（已验收）
 - V5-B：`iterations/v5-b-real-report-runtime.md`（已验收）
 - V4-0：`iterations/v4-0-long-term-personalized-agent-research.md`
 - V4-A：`iterations/v4-a-runtime-multimodal-foundation.md`（已验收）

@@ -10,6 +10,7 @@ from app.schemas.profile import ProfileResponse
 from app.schemas.report import ReportResponse
 from app.schemas.agent import AgentActionLog, ObservationSession
 from app.schemas.external_context import ExternalContextItem, ExternalImportBatch
+from app.schemas.external_source import ExternalOAuthState
 from app.schemas.timeline import TimelineEvent
 
 
@@ -30,6 +31,8 @@ class MemoryStore:
     agent_action_logs: dict[str, AgentActionLog] = field(default_factory=dict)
     external_import_batches: dict[str, ExternalImportBatch] = field(default_factory=dict)
     external_context_items: dict[str, ExternalContextItem] = field(default_factory=dict)
+    external_source_connections: dict[str, dict[str, object]] = field(default_factory=dict)
+    external_oauth_states: dict[str, ExternalOAuthState] = field(default_factory=dict)
     user_sessions: dict[str, dict[str, object]] = field(default_factory=dict)
 
 

@@ -315,5 +315,5 @@ V5-B 已验收通过，状态 accepted / manual_validation_passed。
 验收修复：OllamaInterpretationGenerator InputFeature 字段；mockUsage ollama 显示；
 前端 evidenceRefs 与 server input id 对齐及展示优化。
 pytest：109+ passed。
-下一子阶段：V5-C Production MCP OAuth（版本级任务单待起草）。
+下一子阶段：V5-C Production MCP OAuth（任务单已起草，待 §11 确认）。
 ```

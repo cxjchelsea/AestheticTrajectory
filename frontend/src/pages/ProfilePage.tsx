@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { createObservation, listAgentActions, type ObservationSession } from "../services/observationApi";
+import {
+  confirmExternalImport,
+  connectExternalSource,
+  disconnectExternalSource,
+  listExternalSources,
+  previewExternalImport,
+  rejectExternalImport,
+  completeExternalSourceCallback,
+  type ExternalImportBatch,
+  type ExternalSourceConnection,
+} from "../services/externalSourceApi";
 import { getUserProfile } from "../services/profileApi";
 import type { ProfileEvidence, ProfileItem, ProfileResponse } from "../types/aesthetic";
 
@@ -20,6 +31,11 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
   const [observationStatus, setObservationStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [observationError, setObservationError] = useState<string | null>(null);
   const [agentToolTrace, setAgentToolTrace] = useState<string[]>([]);
+  const [externalRuntime, setExternalRuntime] = useState("disabled");
+  const [externalConnection, setExternalConnection] = useState<ExternalSourceConnection | null>(null);
+  const [externalBatch, setExternalBatch] = useState<ExternalImportBatch | null>(null);
+  const [externalStatus, setExternalStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [externalError, setExternalError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +55,28 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
     }
 
     loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadExternalSources() {
+      try {
+        const response = await listExternalSources(userId);
+        if (cancelled) return;
+        setExternalRuntime(response.runtime);
+        setExternalConnection(response.connections.find((item) => item.provider === "demo_notes") ?? null);
+      } catch {
+        if (cancelled) return;
+        setExternalRuntime("disabled");
+        setExternalConnection(null);
+      }
+    }
+
+    void loadExternalSources();
     return () => {
       cancelled = true;
     };
@@ -65,6 +103,59 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
       setObservationError(error instanceof Error ? error.message : "API request failed");
       setObservationStatus("error");
     }
+  }
+
+  async function handleConnectExternalSource() {
+    try {
+      setExternalStatus("loading");
+      setExternalError(null);
+      const connect = await connectExternalSource(userId, "demo_notes");
+      const connection = await completeExternalSourceCallback(connect.authorizationUrl);
+      setExternalConnection(connection);
+      setExternalStatus("ready");
+    } catch (error) {
+      setExternalError(error instanceof Error ? error.message : "External source request failed");
+      setExternalStatus("error");
+    }
+  }
+
+  async function handleDisconnectExternalSource() {
+    try {
+      setExternalStatus("loading");
+      setExternalError(null);
+      const connection = await disconnectExternalSource(userId, "demo_notes");
+      setExternalConnection(connection);
+      setExternalBatch(null);
+      setExternalStatus("ready");
+    } catch (error) {
+      setExternalError(error instanceof Error ? error.message : "External source request failed");
+      setExternalStatus("error");
+    }
+  }
+
+  async function handlePreviewExternalImport() {
+    try {
+      setExternalStatus("loading");
+      setExternalError(null);
+      const batch = await previewExternalImport(userId, "demo_notes", 3);
+      setExternalBatch(batch);
+      setExternalStatus("ready");
+    } catch (error) {
+      setExternalError(error instanceof Error ? error.message : "External source preview failed");
+      setExternalStatus("error");
+    }
+  }
+
+  async function handleConfirmExternalImport() {
+    if (!externalBatch) return;
+    const batch = await confirmExternalImport(userId, externalBatch.id);
+    setExternalBatch(batch);
+  }
+
+  async function handleRejectExternalImport() {
+    if (!externalBatch) return;
+    const batch = await rejectExternalImport(userId, externalBatch.id);
+    setExternalBatch(batch);
   }
 
   const profile = profileResponse?.profile ?? null;
@@ -158,6 +249,74 @@ export function ProfilePage({ userId, onBack, onStart, onViewHistory, onViewTime
                   </ul>
                 ) : null}
                 <p className="disclaimer">{observation.disclaimer}</p>
+              </article>
+            ) : null}
+          </section>
+
+          <section className="profile-summary">
+            <div className="section-heading">
+              <p className="eyebrow">V5-C External Context</p>
+              <h2>外部上下文导入</h2>
+              <p className="muted">
+                只读外部源必须由你主动连接、预览并确认。确认后的内容只作为补充上下文，不会写入正向画像证据。
+              </p>
+            </div>
+            <div className="external-source-status">
+              <strong>demo_notes</strong>
+              <span>runtime: {externalRuntime}</span>
+              <span>status: {externalConnection?.status ?? "not_connected"}</span>
+              {externalConnection?.scopes.length ? <span>scopes: {externalConnection.scopes.join(", ")}</span> : null}
+            </div>
+            <div className="actions-row">
+              <Button
+                variant="secondary"
+                onClick={handleConnectExternalSource}
+                disabled={externalStatus === "loading" || externalRuntime === "disabled"}
+              >
+                {externalConnection?.status === "connected" ? "重新连接" : "连接只读外部源"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handlePreviewExternalImport}
+                disabled={externalStatus === "loading" || externalConnection?.status !== "connected"}
+              >
+                预览导入
+              </Button>
+              {externalConnection?.status === "connected" ? (
+                <Button variant="secondary" onClick={handleDisconnectExternalSource} disabled={externalStatus === "loading"}>
+                  断开连接
+                </Button>
+              ) : null}
+            </div>
+            {externalRuntime === "disabled" ? (
+              <p className="muted">当前 `EXTERNAL_SOURCE_RUNTIME=disabled`，不会连接外部源。</p>
+            ) : null}
+            {externalStatus === "error" ? <p className="muted">{externalError}</p> : null}
+            {externalBatch ? (
+              <article className="wide-item">
+                <div className="profile-card-header">
+                  <div>
+                    <p className="eyebrow">{externalBatch.status}</p>
+                    <h3>{externalBatch.sourceSystem} · {externalBatch.itemCount} 条候选上下文</h3>
+                  </div>
+                  <small>{new Date(externalBatch.createdAt).toLocaleString()}</small>
+                </div>
+                <ul>
+                  {externalBatch.items.map((item) => (
+                    <li key={item.id}>
+                      <strong>{item.title}</strong>
+                      <p>{item.snippet}</p>
+                      <small>{item.sourceUri ?? item.id}</small>
+                    </li>
+                  ))}
+                </ul>
+                {externalBatch.status === "pending_confirmation" ? (
+                  <div className="actions-row">
+                    <Button onClick={handleConfirmExternalImport}>确认导入</Button>
+                    <Button variant="secondary" onClick={handleRejectExternalImport}>拒绝</Button>
+                  </div>
+                ) : null}
+                <p className="disclaimer">{externalBatch.disclaimer}</p>
               </article>
             ) : null}
           </section>

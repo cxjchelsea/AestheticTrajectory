@@ -56,5 +56,22 @@ class Settings:
     def report_llm_timeout_seconds(self) -> int:
         return int(os.getenv("REPORT_LLM_TIMEOUT_SECONDS", "120"))
 
+    @property
+    def external_source_runtime(self) -> str:
+        return os.getenv("EXTERNAL_SOURCE_RUNTIME", "disabled")
+
+    @property
+    def external_source_provider(self) -> str:
+        return os.getenv("EXTERNAL_SOURCE_PROVIDER", "demo_notes")
+
+    @property
+    def external_source_redirect_uri(self) -> str:
+        return os.getenv("EXTERNAL_SOURCE_REDIRECT_URI", "")
+
+    @property
+    def external_source_required_scopes(self) -> list[str]:
+        raw = os.getenv("EXTERNAL_SOURCE_REQUIRED_SCOPES", "read")
+        return [scope.strip() for scope in raw.split(",") if scope.strip()]
+
 
 settings = Settings()

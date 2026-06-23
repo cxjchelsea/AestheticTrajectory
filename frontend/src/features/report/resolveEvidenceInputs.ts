@@ -1,4 +1,4 @@
-import type { AestheticInput, InputFeature, ReportResponse } from "../types/aesthetic";
+import type { AestheticInput, InputFeature, ReportResponse } from "../../types/aesthetic";
 
 export function resolveEvidenceInputs(report: ReportResponse, inputs: AestheticInput[]): AestheticInput[] {
   const byId = new Map(inputs.map((input) => [input.id, input]));

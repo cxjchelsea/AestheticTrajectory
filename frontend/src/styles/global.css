@@ -534,6 +534,19 @@ textarea {
   padding-left: 18px;
 }
 
+.external-source-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin: 12px 0;
+  color: var(--muted, #6b7280);
+}
+
+.external-source-status strong {
+  color: inherit;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
