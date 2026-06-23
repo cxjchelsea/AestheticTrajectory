@@ -71,8 +71,12 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V6 已归档**（`accepted / archived`）
-- 下一步：创建 V7-0 版本级调研与架构闸门（待用户确认主题）
+- 当前：**V7-C 任务单待确认**（`draft / pending_user_review`）
+- 下一步：确认 V7-C §8 后进入 Golden Dataset & Evaluation Pack 实现
+- V7-C：`iterations/v7-c-golden-dataset-evaluation-pack.md`
+- V7-B：`iterations/v7-b-real-runtime-smoke-pack.md`
+- V7-A：`iterations/v7-a-graduation-roadmap-acceptance-bar.md`
+- V7-0：`iterations/v7-0-production-validation-graduation-roadmap-research.md`
 - V6 归档入口：`archive/v6/`、`23-V6开发收口清单.md`
 - V6-E：`iterations/v6-e-multimodal-governance-validation-closure-prep.md`
 - V6-D：`iterations/v6-d-production-hardening-runtime-ci.md`
