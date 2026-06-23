@@ -18,6 +18,9 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["app/tests"]
+filterwarnings = [
+  "ignore:The 'alias' attribute with value .* was provided to the `Field\\(\\)` function, which has no effect in the context it was used.*:UserWarning:pydantic._internal._generate_schema"
+]
 
 [tool.setuptools.packages.find]
 include = ["app*"]

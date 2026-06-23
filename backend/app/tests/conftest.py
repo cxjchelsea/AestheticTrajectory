@@ -13,7 +13,7 @@ def _reset_chroma_debug_store() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _reset_embedding_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+def _reset_runtime_environment(monkeypatch: pytest.MonkeyPatch, tmp_path):
     monkeypatch.setenv("EMBEDDING_RUNTIME", "mock")
     monkeypatch.setenv("CHROMA_ENABLED", "false")
     monkeypatch.setenv("AUTH_MODE", "dev")
@@ -23,14 +23,19 @@ def _reset_embedding_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("VIDEO_FEATURE_RUNTIME", "metadata_only")
     monkeypatch.setenv("EXTERNAL_SOURCE_RUNTIME", "disabled")
     monkeypatch.setenv("REPOSITORY_BACKEND", "memory")
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "uploads"))
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("LLM_API_KEY", raising=False)
 
     import app.core.config as config_module
+    import app.storage.file_storage as file_storage_module
+    import app.storage.local_storage as local_storage_module
     import app.vector_store.chroma_client as chroma_client_module
     import app.vector_store.knowledge_vector_store as knowledge_vector_store_module
 
     importlib.reload(config_module)
+    importlib.reload(local_storage_module)
+    importlib.reload(file_storage_module)
     importlib.reload(chroma_client_module)
     importlib.reload(knowledge_vector_store_module)
 
