@@ -69,7 +69,8 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V5-D 已验收，通过进入 V5-E 准备**（`accepted / manual_validation_passed`）
+- 当前：**V5-E 已验收，通过进入 V5 final closure 准备**（`accepted / manual_validation_passed`）
+- V5-E：`iterations/v5-e-governance-validation-closure-prep.md`
 - V5-D：`iterations/v5-d-resilience-observability-tech-debt.md`
 - V5-C：`iterations/v5-c-production-mcp-oauth.md`（已验收）
 - V5-B：`iterations/v5-b-real-report-runtime.md`（已验收）
