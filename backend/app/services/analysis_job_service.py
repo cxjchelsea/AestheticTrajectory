@@ -164,14 +164,16 @@ def _mock_usage() -> list[MockUsageRecord]:
         ]
 
     image_feature_records = _image_feature_mock_usage()
+    music_feature_records = _music_feature_mock_usage()
     embedding_records = [
         MockUsageRecord(
             component="MockFeatureExtractor",
             status="enabled",
             devOnly=True,
-            developerMessage="Text/music/video feature extraction still uses mock or heuristic logic.",
+            developerMessage="Text/video feature extraction still uses mock or heuristic logic.",
         ),
         *image_feature_records,
+        *music_feature_records,
         *interpretation_records,
     ]
     if embedding_runtime == "openai" and settings.openai_api_key:
@@ -422,9 +424,63 @@ def _image_feature_mock_usage() -> list[MockUsageRecord]:
     ]
 
 
+def _music_feature_mock_usage() -> list[MockUsageRecord]:
+    runtime = settings.music_feature_runtime
+    if runtime == "disabled":
+        return [
+            MockUsageRecord(
+                component="MockAudioMusicFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="MUSIC_FEATURE_RUNTIME=disabled; music inputs fail fast instead of using mock music.",
+            )
+        ]
+    if runtime == "mock":
+        return [
+            MockUsageRecord(
+                component="MockAudioMusicFeatureExtractor",
+                status="enabled",
+                devOnly=True,
+                developerMessage=(
+                    "V6-B music understanding uses a dev-only mock placeholder; it must not be treated as real audio."
+                ),
+            )
+        ]
+    if runtime == "text_notes":
+        return [
+            MockUsageRecord(
+                component="TextNotesAudioMusicFeatureExtractor",
+                status="disabled",
+                devOnly=False,
+                developerMessage="Music features are derived from user-provided lyrics, transcript, or notes.",
+            ),
+            MockUsageRecord(
+                component="MockAudioMusicFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="Mock music features are bypassed because MUSIC_FEATURE_RUNTIME=text_notes.",
+            ),
+        ]
+    return [
+        MockUsageRecord(
+            component="MetadataOnlyAudioMusicFeatureExtractor",
+            status="disabled",
+            devOnly=False,
+            developerMessage="Music features use metadata only; no audio content is parsed.",
+        ),
+        MockUsageRecord(
+            component="MockAudioMusicFeatureExtractor",
+            status="disabled",
+            devOnly=True,
+            developerMessage="Mock music features are bypassed because MUSIC_FEATURE_RUNTIME=metadata_only.",
+        ),
+    ]
+
+
 def _runtime_boundary_status() -> tuple[str, str]:
     report_status, report_message = _report_llm_boundary_status()
     image_runtime = settings.image_feature_runtime
+    music_runtime = settings.music_feature_runtime
     if image_runtime == "ollama_vision":
         image_message = f"IMAGE_FEATURE_RUNTIME=ollama_vision configured ({settings.image_feature_model})."
         status = "dev_only" if report_status == "dev_only" else report_status
@@ -434,4 +490,14 @@ def _runtime_boundary_status() -> tuple[str, str]:
     else:
         image_message = "IMAGE_FEATURE_RUNTIME=mock; image features are dev-only placeholders."
         status = report_status if report_status == "dev_only" else "not_used"
-    return (status, f"{report_message} {image_message}")
+
+    if music_runtime == "disabled":
+        music_message = "MUSIC_FEATURE_RUNTIME=disabled; music content parsing fails fast."
+    elif music_runtime == "mock":
+        music_message = "MUSIC_FEATURE_RUNTIME=mock; music features are dev-only placeholders."
+        status = "dev_only" if status == "not_used" else status
+    elif music_runtime == "text_notes":
+        music_message = "MUSIC_FEATURE_RUNTIME=text_notes; music features use user-provided lyrics/transcript/notes."
+    else:
+        music_message = "MUSIC_FEATURE_RUNTIME=metadata_only; music inputs do not claim parsed audio."
+    return (status, f"{report_message} {image_message} {music_message}")

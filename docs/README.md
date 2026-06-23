@@ -70,7 +70,8 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V6-A 自动验收完成，真实模型验收待部署**（`ready_for_validation / real_model_pending`）
+- 当前：**V6-B 自动验收完成**（`ready_for_validation / accepted_auto`）
+- V6-B：`iterations/v6-b-audio-music-understanding-boundary.md`
 - V6-A：`iterations/v6-a-image-understanding-runtime.md`
 - V6-0：`iterations/v6-0-multimodal-runtime-production-hardening-research.md`
 - V5 归档入口：`archive/v5/`、`22-V5开发收口清单.md`

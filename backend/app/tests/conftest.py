@@ -19,6 +19,7 @@ def _reset_embedding_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AUTH_MODE", "dev")
     monkeypatch.setenv("REPORT_LLM_RUNTIME", "mock")
     monkeypatch.setenv("IMAGE_FEATURE_RUNTIME", "mock")
+    monkeypatch.setenv("MUSIC_FEATURE_RUNTIME", "metadata_only")
     monkeypatch.setenv("EXTERNAL_SOURCE_RUNTIME", "disabled")
     monkeypatch.setenv("REPOSITORY_BACKEND", "memory")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)

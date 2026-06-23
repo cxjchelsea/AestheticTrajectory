@@ -9,15 +9,24 @@ from app.schemas.input import AestheticInputResponse
 
 
 class ModalityFeatureExtractor:
-    model_name = "modality-feature-extractor-v6a"
+    model_name = "modality-feature-extractor-v6b"
 
-    def __init__(self, *, fallback_extractor: FeatureExtractor, image_extractor: FeatureExtractor) -> None:
+    def __init__(
+        self,
+        *,
+        fallback_extractor: FeatureExtractor,
+        image_extractor: FeatureExtractor,
+        music_extractor: FeatureExtractor,
+    ) -> None:
         self.fallback_extractor = fallback_extractor
         self.image_extractor = image_extractor
+        self.music_extractor = music_extractor
 
     def extract(self, input_record: AestheticInputResponse, index: int) -> InputFeature:
         if input_record.type == "image":
             return self.image_extractor.extract(input_record, index)
+        if input_record.type == "music":
+            return self.music_extractor.extract(input_record, index)
         return self.fallback_extractor.extract(input_record, index)
 
 
@@ -50,12 +59,12 @@ def get_embedding_client() -> EmbeddingClient:
 def get_feature_extractor() -> FeatureExtractor:
     from app.core.config import settings
 
-    runtime = settings.image_feature_runtime
-    if runtime == "disabled":
+    image_runtime = settings.image_feature_runtime
+    if image_runtime == "disabled":
         from app.ai.image_feature_extractor import DisabledImageFeatureExtractor
 
         image_extractor = DisabledImageFeatureExtractor()
-    elif runtime == "ollama_vision":
+    elif image_runtime == "ollama_vision":
         if not settings.ollama_base_url.strip():
             raise ValueError("OLLAMA_BASE_URL or LLM_BASE_URL is required when IMAGE_FEATURE_RUNTIME=ollama_vision")
         from app.ai.image_feature_extractor import OllamaVisionImageFeatureExtractor
@@ -65,16 +74,37 @@ def get_feature_extractor() -> FeatureExtractor:
             model_name=settings.image_feature_model,
             timeout_seconds=settings.image_feature_timeout_seconds,
         )
-    elif runtime == "mock":
+    elif image_runtime == "mock":
         from app.ai.image_feature_extractor import MockImageFeatureExtractor
 
         image_extractor = MockImageFeatureExtractor()
     else:
-        raise ValueError(f"Unsupported IMAGE_FEATURE_RUNTIME={runtime}")
+        raise ValueError(f"Unsupported IMAGE_FEATURE_RUNTIME={image_runtime}")
+
+    music_runtime = settings.music_feature_runtime
+    if music_runtime == "disabled":
+        from app.ai.audio_music_feature_extractor import DisabledAudioMusicFeatureExtractor
+
+        music_extractor = DisabledAudioMusicFeatureExtractor()
+    elif music_runtime == "mock":
+        from app.ai.audio_music_feature_extractor import MockAudioMusicFeatureExtractor
+
+        music_extractor = MockAudioMusicFeatureExtractor()
+    elif music_runtime == "text_notes":
+        from app.ai.audio_music_feature_extractor import TextNotesAudioMusicFeatureExtractor
+
+        music_extractor = TextNotesAudioMusicFeatureExtractor()
+    elif music_runtime == "metadata_only":
+        from app.ai.audio_music_feature_extractor import MetadataOnlyAudioMusicFeatureExtractor
+
+        music_extractor = MetadataOnlyAudioMusicFeatureExtractor()
+    else:
+        raise ValueError(f"Unsupported MUSIC_FEATURE_RUNTIME={music_runtime}")
 
     return ModalityFeatureExtractor(
         fallback_extractor=MockFeatureExtractor(),
         image_extractor=image_extractor,
+        music_extractor=music_extractor,
     )
 
 
