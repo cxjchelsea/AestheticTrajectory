@@ -66,10 +66,12 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - `archive/v2/`：V2 Memory / User Model baseline，accepted / archived。
 - `archive/v3/`：V3 Personalized Retrieval / RAG / Evaluation / Observability baseline，accepted / archived。
 - `archive/v4/`：V4 Long-term Personalized Agent baseline，accepted / archived。
+- `archive/v5/`：V5 Production Runtime & Trust Boundary baseline，accepted / archived。
 
 当前迭代：
 
-- 当前：**V5-E 已验收，通过进入 V5 final closure 准备**（`accepted / manual_validation_passed`）
+- 当前：**V5 已归档，等待 V6 版本级研究或用户指定后续方向**（`accepted / archived`）
+- V5 归档入口：`archive/v5/`、`22-V5开发收口清单.md`
 - V5-E：`iterations/v5-e-governance-validation-closure-prep.md`
 - V5-D：`iterations/v5-d-resilience-observability-tech-debt.md`
 - V5-C：`iterations/v5-c-production-mcp-oauth.md`（已验收）
