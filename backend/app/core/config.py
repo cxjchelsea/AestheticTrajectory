@@ -57,6 +57,18 @@ class Settings:
         return int(os.getenv("REPORT_LLM_TIMEOUT_SECONDS", "120"))
 
     @property
+    def image_feature_runtime(self) -> str:
+        return os.getenv("IMAGE_FEATURE_RUNTIME", "mock")
+
+    @property
+    def image_feature_model(self) -> str:
+        return os.getenv("IMAGE_FEATURE_MODEL", "mock-image-feature-v1")
+
+    @property
+    def image_feature_timeout_seconds(self) -> int:
+        return int(os.getenv("IMAGE_FEATURE_TIMEOUT_SECONDS", "120"))
+
+    @property
     def external_source_runtime(self) -> str:
         return os.getenv("EXTERNAL_SOURCE_RUNTIME", "disabled")
 

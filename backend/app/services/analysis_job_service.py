@@ -163,13 +163,15 @@ def _mock_usage() -> list[MockUsageRecord]:
             ),
         ]
 
+    image_feature_records = _image_feature_mock_usage()
     embedding_records = [
         MockUsageRecord(
             component="MockFeatureExtractor",
             status="enabled",
             devOnly=True,
-            developerMessage="V4-A still uses mock or heuristic feature extraction; real vision/audio parsing is not enabled.",
+            developerMessage="Text/music/video feature extraction still uses mock or heuristic logic.",
         ),
+        *image_feature_records,
         *interpretation_records,
     ]
     if embedding_runtime == "openai" and settings.openai_api_key:
@@ -288,7 +290,7 @@ def _boundary_warnings(
     knowledge_status = "dev_only" if "retrieve_aesthetic_knowledge" in step_ids else "planned"
     knowledge_message = _knowledge_boundary_message(knowledge_status, report)
     chroma_status, chroma_message = _chroma_boundary_status(chroma_result)
-    llm_status, llm_message = _report_llm_boundary_status()
+    llm_status, llm_message = _runtime_boundary_status()
     return [
         BoundaryWarning(
             capability="Real vision / LLM runtime",
@@ -378,3 +380,58 @@ def _report_llm_boundary_status() -> tuple[str, str]:
         "not_used",
         "REPORT_LLM_RUNTIME=mock; interpretations and insights use MockInterpretationGenerator.",
     )
+
+
+def _image_feature_mock_usage() -> list[MockUsageRecord]:
+    runtime = settings.image_feature_runtime
+    if runtime == "ollama_vision":
+        return [
+            MockUsageRecord(
+                component="OllamaVisionImageFeatureExtractor",
+                status="disabled",
+                devOnly=False,
+                developerMessage=(
+                    f"Real image feature runtime is configured ({settings.image_feature_model} @ {settings.ollama_base_url})."
+                ),
+            ),
+            MockUsageRecord(
+                component="MockImageFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="Mock image features are bypassed because IMAGE_FEATURE_RUNTIME=ollama_vision.",
+            ),
+        ]
+    if runtime == "disabled":
+        return [
+            MockUsageRecord(
+                component="MockImageFeatureExtractor",
+                status="disabled",
+                devOnly=True,
+                developerMessage="IMAGE_FEATURE_RUNTIME=disabled; image inputs fail fast instead of using mock vision.",
+            )
+        ]
+    return [
+        MockUsageRecord(
+            component="MockImageFeatureExtractor",
+            status="enabled",
+            devOnly=True,
+            developerMessage=(
+                "V6-A image understanding uses a dev-only mock placeholder; it must not be treated as real vision."
+            ),
+        )
+    ]
+
+
+def _runtime_boundary_status() -> tuple[str, str]:
+    report_status, report_message = _report_llm_boundary_status()
+    image_runtime = settings.image_feature_runtime
+    if image_runtime == "ollama_vision":
+        image_message = f"IMAGE_FEATURE_RUNTIME=ollama_vision configured ({settings.image_feature_model})."
+        status = "dev_only" if report_status == "dev_only" else report_status
+    elif image_runtime == "disabled":
+        image_message = "IMAGE_FEATURE_RUNTIME=disabled; image content parsing fails fast."
+        status = report_status
+    else:
+        image_message = "IMAGE_FEATURE_RUNTIME=mock; image features are dev-only placeholders."
+        status = report_status if report_status == "dev_only" else "not_used"
+    return (status, f"{report_message} {image_message}")

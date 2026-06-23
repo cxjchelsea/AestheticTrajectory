@@ -70,7 +70,9 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 
 当前迭代：
 
-- 当前：**V5 已归档，等待 V6 版本级研究或用户指定后续方向**（`accepted / archived`）
+- 当前：**V6-A 自动验收完成，真实模型验收待部署**（`ready_for_validation / real_model_pending`）
+- V6-A：`iterations/v6-a-image-understanding-runtime.md`
+- V6-0：`iterations/v6-0-multimodal-runtime-production-hardening-research.md`
 - V5 归档入口：`archive/v5/`、`22-V5开发收口清单.md`
 - V5-E：`iterations/v5-e-governance-validation-closure-prep.md`
 - V5-D：`iterations/v5-d-resilience-observability-tech-debt.md`
