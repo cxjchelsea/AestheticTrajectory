@@ -3,7 +3,7 @@
 当前状态：
 
 ```text
-draft / pending_user_review
+ready_for_validation / accepted_auto
 ```
 
 创建日期：
@@ -96,20 +96,20 @@ V7-C 不做复杂 evaluation SaaS dashboard，也不默认引入 LLM-as-judge。
 
 ## 7. 验收标准
 
-- [ ] 有 representative sample set 结构。
-- [ ] 有 manual evaluation rubric。
-- [ ] 有 evaluation record template。
-- [ ] `docs/13` 更新 V7-C 评估方式。
-- [ ] 不引入 LLM-as-judge dashboard。
-- [ ] 不修改 runtime 代码。
-- [ ] 不把评估样本结果写入真实用户 profile。
+- [x] 有 representative sample set 结构。
+- [x] 有 manual evaluation rubric。
+- [x] 有 evaluation record template。
+- [x] `docs/13` 更新 V7-C 评估方式。
+- [x] 不引入 LLM-as-judge dashboard。
+- [x] 不修改 runtime 代码。
+- [x] 不把评估样本结果写入真实用户 profile。
 
-## 8. 用户确认（待确认）
+## 8. 用户确认（已接受，2026-06-24）
 
-- [ ] 接受 V7-C 首版只做小型代表样本和人工评估 rubric。
-- [ ] 接受 V7-C 不接复杂 LLM-as-judge dashboard。
-- [ ] 接受评估结果只用于版本质量复核，不写入用户 profile。
-- [ ] 接受样本集覆盖 text/image/music/video/governance 边界，但不要求真实 audio/video 模型。
+- [x] 接受 V7-C 首版只做小型代表样本和人工评估 rubric。
+- [x] 接受 V7-C 不接复杂 LLM-as-judge dashboard。
+- [x] 接受评估结果只用于版本质量复核，不写入用户 profile。
+- [x] 接受样本集覆盖 text/image/music/video/governance 边界，但不要求真实 audio/video 模型。
 
 ## 9. AI 生成顺序
 
@@ -124,6 +124,20 @@ V7-C 不做复杂 evaluation SaaS dashboard，也不默认引入 LLM-as-judge。
 ## 10. 当前结论
 
 ```text
-V7-C 任务单已创建，状态 draft / pending_user_review。
-等待用户确认 §8 后进入 V7-C 实现。
+V7-C 已完成 Golden Dataset & Evaluation Pack，状态 ready_for_validation / accepted_auto。
+本轮结果：
+- 新增 `docs/evaluation/v7-c-golden-dataset-and-rubric.md`。
+- 定义首版代表样本组：text-basic、image-placeholder、music-metadata、video-metadata、mixed-multimodal、governance-negative。
+- 定义人工评估 rubric：evidence grounding、interpretation usefulness、specificity、governance safety、modality honesty、profile restraint、uncertainty language。
+- 定义 evaluation record template。
+- `docs/13` 已同步 V7-C 评估方式。
+- 未修改 runtime 代码。
 ```
+
+## 11. 本轮实现记录（2026-06-24）
+
+- V7-C 首版评估包已落地到 `docs/evaluation/v7-c-golden-dataset-and-rubric.md`。
+- 评估包仅用于版本质量复核，不写入用户真实 profile。
+- V7-C 不接复杂 LLM-as-judge dashboard。
+- 当前样本集覆盖 text/image/music/video/mixed/governance 边界。
+- 本阶段不涉及自动化测试运行。

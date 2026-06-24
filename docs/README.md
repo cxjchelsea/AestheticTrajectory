@@ -12,7 +12,7 @@
 12 开发执行
 13-14 验证与展示
 15 迭代记录
-16/17/18/21 历史收口兼容入口
+16/17/18/21/22/23/24 历史收口兼容入口
 19 记忆与用户模型
 iterations 当前迭代任务单
 archive 历史归档，包括已完成版本的任务拆分、收口清单、验收记录和遗留问题
@@ -68,11 +68,15 @@ archive 历史归档，包括已完成版本的任务拆分、收口清单、验
 - `archive/v4/`：V4 Long-term Personalized Agent baseline，accepted / archived。
 - `archive/v5/`：V5 Production Runtime & Trust Boundary baseline，accepted / archived。
 - `archive/v6/`：V6 Multimodal Runtime & Production Hardening baseline，accepted / archived。
+- `archive/v7/`：V7 Production Validation & Graduation Roadmap baseline，accepted / archived。
 
 当前迭代：
 
-- 当前：**V7-C 任务单待确认**（`draft / pending_user_review`）
-- 下一步：确认 V7-C §8 后进入 Golden Dataset & Evaluation Pack 实现
+- 当前：**V7 已归档**（`accepted / archived`）
+- 下一步：进入 V8-0 Product Experience & Portfolio Demo 版本级调研与架构闸门
+- V7 归档入口：`archive/v7/`、`24-V7开发收口清单.md`
+- V7-E：`iterations/v7-e-validation-governance-closure-prep.md`
+- V7-D：`iterations/v7-d-product-demo-acceptance-planning.md`
 - V7-C：`iterations/v7-c-golden-dataset-evaluation-pack.md`
 - V7-B：`iterations/v7-b-real-runtime-smoke-pack.md`
 - V7-A：`iterations/v7-a-graduation-roadmap-acceptance-bar.md`
